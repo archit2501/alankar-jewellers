@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "feature": "M2 — Storefront (catalogue, product, cart, checkout)",
+  "feature": "M2 \u2014 Storefront (catalogue, product, cart, checkout)",
   "scope": "large",
   "decisions": {
     "commerceModel": "full-checkout-fake-door-first",
@@ -23,21 +23,27 @@
               "id": "1.1.1",
               "title": "Corrected commerce schema + single migration",
               "acceptance": [
-                "Purity stored as FINENESS (999/995/916/750/585), never karat — 995 has no karat equivalent and would collapse onto 24K",
+                "Purity stored as FINENESS (999/995/916/750/585), never karat \u2014 995 has no karat equivalent and would collapse onto 24K",
                 "Gold rate column unit matches IBJA's per-10g quoting, with an explicit documented rounding rule",
                 "Hallmarking charge defaults to the published per-article rate and is a separate invoice line (BIS Reg. 5(11))",
                 "orders carries a complaint ticket number (E-Commerce Rule 7(1)(f)) and a PAN field",
-                "Customer deletion is SOFT — DPDP Rule 8(3) imposes a one-year retention floor and the order snapshot must survive",
+                "Customer deletion is SOFT \u2014 DPDP Rule 8(3) imposes a one-year retention floor and the order snapshot must survive",
                 "Order line items snapshot full price composition at order time (statutory, not preference)",
-                "Single gstRateBps at 3% of total transaction value — CBIC FAQ Q7, do not split making charges",
+                "Single gstRateBps at 3% of total transaction value \u2014 CBIC FAQ Q7, do not split making charges",
                 "One migration file; drizzle-kit generate produces no follow-up ALTERs"
               ],
               "estimateHours": 6,
-              "files": ["db/schema.ts", "drizzle/"],
+              "files": [
+                "db/schema.ts",
+                "drizzle/"
+              ],
               "dependencies": [],
               "smokeTest": "npm run db:generate && npm run type-check && npm test",
-              "ciJobs": ["quality", "test"],
-              "status": "in_progress",
+              "ciJobs": [
+                "quality",
+                "test"
+              ],
+              "status": "done",
               "criticalPath": true
             },
             {
@@ -46,13 +52,21 @@
               "acceptance": [
                 "Rates fetched from IBJA, not MCX (licence forbids public display) and not derived from XAU spot",
                 "Every rate row is retained as an audit trail; rates are never overwritten",
-                "A stale rate fails closed — the storefront must not price against an unknown rate"
+                "A stale rate fails closed \u2014 the storefront must not price against an unknown rate"
               ],
               "estimateHours": 5,
-              "files": ["app/_pricing/", "app/api/gold-rate/route.ts"],
-              "dependencies": ["1.1.1"],
+              "files": [
+                "app/_pricing/",
+                "app/api/gold-rate/route.ts"
+              ],
+              "dependencies": [
+                "1.1.1"
+              ],
               "smokeTest": "npm test",
-              "ciJobs": ["quality", "test"],
+              "ciJobs": [
+                "quality",
+                "test"
+              ],
               "status": "todo",
               "criticalPath": true
             },
@@ -62,14 +76,21 @@
               "acceptance": [
                 "All money in integer paise; no floats anywhere in the path",
                 "GST applied to total transaction value at 3%",
-                "Composition is itemised and renderable — the breakup is a product feature, not a debug view",
+                "Composition is itemised and renderable \u2014 the breakup is a product feature, not a debug view",
                 "Pure functions, unit tested against worked examples"
               ],
               "estimateHours": 5,
-              "files": ["app/_pricing/"],
-              "dependencies": ["1.1.1"],
+              "files": [
+                "app/_pricing/"
+              ],
+              "dependencies": [
+                "1.1.1"
+              ],
               "smokeTest": "npm test",
-              "ciJobs": ["quality", "test"],
+              "ciJobs": [
+                "quality",
+                "test"
+              ],
               "status": "todo",
               "criticalPath": true
             }
@@ -91,14 +112,22 @@
               "title": "Catalogue listing with filters",
               "acceptance": [
                 "Filter by metal, purity, occasion, price band",
-                "Uses the Flip on every card — the reverse is the differentiator",
+                "Uses the Flip on every card \u2014 the reverse is the differentiator",
                 "Server component; no client JS for browsing"
               ],
               "estimateHours": 8,
-              "files": ["app/shop/page.tsx"],
-              "dependencies": ["1.1.3"],
+              "files": [
+                "app/shop/page.tsx"
+              ],
+              "dependencies": [
+                "1.1.3"
+              ],
               "smokeTest": "npm test",
-              "ciJobs": ["quality", "test", "build"],
+              "ciJobs": [
+                "quality",
+                "test",
+                "build"
+              ],
               "status": "todo",
               "criticalPath": true
             },
@@ -112,10 +141,19 @@
                 "Product/Offer JSON-LD extending the existing JewelryStore node; price gated the way contact facts already are"
               ],
               "estimateHours": 8,
-              "files": ["app/shop/[slug]/page.tsx", "app/_seo/structured-data.ts"],
-              "dependencies": ["2.1.1"],
+              "files": [
+                "app/shop/[slug]/page.tsx",
+                "app/_seo/structured-data.ts"
+              ],
+              "dependencies": [
+                "2.1.1"
+              ],
               "smokeTest": "npm test",
-              "ciJobs": ["quality", "test", "build"],
+              "ciJobs": [
+                "quality",
+                "test",
+                "build"
+              ],
               "status": "todo",
               "criticalPath": true
             }
@@ -137,13 +175,22 @@
               "title": "Cart (no price snapshot at add-to-cart)",
               "acceptance": [
                 "Cart stores intent only; price is resolved at order time against the live rate",
-                "Single-quantity pieces are the norm — reserving must handle one-of-a-kind stock"
+                "Single-quantity pieces are the norm \u2014 reserving must handle one-of-a-kind stock"
               ],
               "estimateHours": 6,
-              "files": ["app/cart/", "app/api/cart/route.ts"],
-              "dependencies": ["2.1.2"],
+              "files": [
+                "app/cart/",
+                "app/api/cart/route.ts"
+              ],
+              "dependencies": [
+                "2.1.2"
+              ],
               "smokeTest": "npm test",
-              "ciJobs": ["quality", "test", "build"],
+              "ciJobs": [
+                "quality",
+                "test",
+                "build"
+              ],
               "status": "todo",
               "criticalPath": true
             },
@@ -152,16 +199,25 @@
               "title": "Checkout + order creation behind the payment flag",
               "acceptance": [
                 "Order creation is ALWAYS real; only capture is flagged",
-                "With the flag off, nothing states or implies payment succeeded — the shop calls to take payment",
+                "With the flag off, nothing states or implies payment succeeded \u2014 the shop calls to take payment",
                 "Dual-sink rule from the appointments route is INVERTED: no D1 row means the order failed, full stop",
-                "The appointments throttle is NOT reused — a legitimate second order must never silently no-op",
+                "The appointments throttle is NOT reused \u2014 a legitimate second order must never silently no-op",
                 "No COD offered"
               ],
               "estimateHours": 8,
-              "files": ["app/checkout/", "app/api/orders/route.ts"],
-              "dependencies": ["3.1.1"],
+              "files": [
+                "app/checkout/",
+                "app/api/orders/route.ts"
+              ],
+              "dependencies": [
+                "3.1.1"
+              ],
               "smokeTest": "npm test",
-              "ciJobs": ["quality", "test", "build"],
+              "ciJobs": [
+                "quality",
+                "test",
+                "build"
+              ],
               "status": "todo",
               "criticalPath": true
             }
@@ -170,9 +226,11 @@
       ]
     }
   ],
-  "deferredToM3": ["Admin panel: order list, order detail, catalogue management, R2 upload"],
+  "deferredToM3": [
+    "Admin panel: order list, order detail, catalogue management, R2 upload"
+  ],
   "externalBlockers": [
-    "BIS certificate — prerequisite for gateway activation, weeks to months, client must start now",
+    "BIS certificate \u2014 prerequisite for gateway activation, weeks to months, client must start now",
     "Indian counsel on Legal Metrology MRP and BIS 'certified sales outlets' for online sale",
     "Rendering R2-hosted uploads needs a worker/index.ts change (optimizer resolves via env.ASSETS)"
   ]
