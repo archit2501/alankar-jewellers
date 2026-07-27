@@ -33,6 +33,22 @@
   --gutter: clamp(var(--s-5), 5vw, var(--m-2));
   --content-max: 1320px;
   --measure: 62ch;
+
+  /* THE PHOTOGRAPHIC GROUND — the field every catalogue image sits on.
+   *
+   * Measured off the shipped assets rather than assumed: the studio sweep runs
+   * #959595 at the top of the frame to #a2a2a2 at the bottom, and it is
+   * neutral, where --field-stone is both a step darker and slightly green. A
+   * plane at raw --field-stone therefore puts a DARKER rectangle around every
+   * piece, which is the same bug as the grey-on-cream one, inverted. Mixing the
+   * token 82/18 toward --paper lands on the sweep's own value: field and
+   * photograph measure 1.006:1 against each other, i.e. there is no edge to
+   * see. Derived from tokens, never a raw hex, so tokens.css stays the source.
+   *
+   * The contrast rule that travels with it is unchanged in kind: --ink measures
+   * 7.12:1 here and is the ONLY legal text colour. --ink-2 is 2.98:1 and
+   * --meena 3.66:1, so both are illegal on this field at any size. */
+  --field-sweep: color-mix(in srgb, var(--field-stone) 82%, var(--paper));
 }
 
 *,
@@ -49,6 +65,11 @@ html {
 
 body {
   margin: 0;
+  /* Sections that bleed a photograph off one edge do it by zeroing that side's
+     padding, never with a viewport-width negative margin, so nothing here can
+     overflow. `clip` is the guard rail, and unlike `hidden` it does not turn the
+     body into a scroll container, so the sticky header still sticks. */
+  overflow-x: clip;
   background: var(--paper);
   color: var(--ink);
   font-family: var(--font-body);
@@ -129,10 +150,17 @@ ol {
   outline-offset: 3px;
 }
 
-/* Meena is invisible against the two dark fields, so the ring inverts there. */
+/* Meena is invisible against the dark fields, so the ring inverts there. */
 .section--reverse :focus-visible,
+.section--dark :focus-visible,
 .site-footer :focus-visible {
   outline-color: var(--paper);
+}
+
+/* And on the photographic ground meena measures 3.66:1, which is not a focus
+   indicator. Ink is 7.12:1 on the same field. */
+.section--stone :focus-visible {
+  outline-color: var(--ink);
 }
 
 .visually-hidden {
@@ -187,6 +215,7 @@ h3 {
 }
 
 .section--reverse .label,
+.section--dark .label,
 .site-footer .label {
   color: var(--paper-sunk);
 }
@@ -198,7 +227,8 @@ h3 {
   line-height: 1.5;
 }
 
-.section--reverse .lede {
+.section--reverse .lede,
+.section--dark .lede {
   color: var(--paper-sunk);
 }
 
@@ -212,22 +242,48 @@ h3 {
   margin-top: var(--s-4);
 }
 
-.section--reverse .prose {
+.section--reverse .prose,
+.section--dark .prose {
   color: var(--paper-sunk);
+}
+
+/* THE STONE RULE. On --field-sweep --ink-2 measures 2.98:1 and --meena 3.66:1,
+   so this field has exactly one legal text colour and it is --ink at 7.12:1.
+   Every secondary colour is promoted rather than dimmed. */
+.section--stone .label,
+.section--stone .lede,
+.section--stone .prose,
+.section--stone .flip__caption,
+.section--stone .text-action,
+.section--stone .piece__spec,
+.section--stone .piece__copy,
+.section--stone .pieces__note p {
+  color: var(--ink);
 }
 
 /* --- Fields -------------------------------------------------------------- */
 
-/* Structure comes from the field changing, never from a line. The ladder down
- * the page alternates paper and paper-raised, and is broken exactly once:
+/* Structure comes from the field changing, never from a line — but the first
+ * pass proved the corollary: if the fields do not actually differ, there is no
+ * structure at all. paper -> paper-raised measured 1.08:1, i.e. the page was
+ * one flat sheet for its whole length, which is why restraint read as empty.
  *
- *   paper (header + hero) -> raised (the pieces) -> MEENA-DEEP (the reverse) ->
- *   paper (craft) -> raised (the house) -> paper (visit) -> ink (footer)
+ * The ladder now moves through real value:
  *
- * meena-deep is the ONLY saturated field on the site, and it is the section
- * about turning a piece over. That is the whole direction in one rule: colour
- * is a physical event, not decoration. --paper-sunk stays reserved for data
- * blocks sitting inside a field (the pending-details notice). */
+ *   paper (header + hero)   0.84 L
+ *   STONE (the pieces)      0.35 L   <- 2.4x darker, and the exact value of the
+ *                                       sweep the pieces were photographed on
+ *   MEENA-DEEP (the reverse) 0.04 L  <- the only saturated field on the site
+ *   paper-raised (the house)
+ *   DARK (at the bench)     0.006 L  <- near-black, warm
+ *   paper (visit)
+ *   ink (footer)
+ *
+ * Two rules travel with the two new fields:
+ *   - on the stone/sweep field the only legal text colour is --ink (7.12:1);
+ *   - on --field-dark and --meena-deep, text is --paper / --paper-sunk / --polki
+ *     (15.9:1, 13.2:1, 11.1:1 and 10.3:1, 8.5:1, 7.2:1 respectively).
+ * --paper-sunk stays reserved for data blocks sitting inside a light field. */
 
 .section {
   padding: var(--m-3) var(--gutter);
@@ -237,9 +293,66 @@ h3 {
   background: var(--paper-raised);
 }
 
+.section--stone {
+  background: var(--field-sweep);
+  color: var(--ink);
+}
+
+.section--dark {
+  background: var(--field-dark);
+  color: var(--paper);
+}
+
 .section--reverse {
   background: var(--meena-deep);
   color: var(--paper);
+}
+
+/* Bleed. A section drops the padding on one side and its container drops the
+ * measure cap, so the media column runs to the edge of the viewport — no
+ * negative viewport-width margins, nothing that can overflow. */
+.section--bleed-end {
+  padding-inline-end: 0;
+}
+
+.section--bleed-start {
+  padding-inline-start: 0;
+}
+
+/* Only the container that actually holds the bleeding media loses its measure
+   cap; anything else inside the section keeps it. */
+.section--bleed-end > .craft,
+.section--bleed-end > .reverse,
+.section--bleed-start > .visit__intro {
+  max-width: none;
+}
+
+/* Block padding moves onto the copy column so the media can run the full height
+ * of the field. */
+.section--flush {
+  padding-block: 0;
+}
+
+/* A stone plane holding a photograph. Every catalogue piece was shot on a
+ * mid-grey sweep, so a plate is the ground the photograph already has: the
+ * image has no visible edge, and the boundary you do see is the plane's, which
+ * is a field change rather than a frame. Never put a border on this. */
+.plate {
+  display: grid;
+  align-content: center;
+  padding: var(--m-1);
+  background: var(--field-sweep);
+}
+
+.plate .flip__caption {
+  color: var(--ink);
+}
+
+/* The Flip's own field is the colour behind the crossfade. On stone it has to
+   be stone, or the piece flashes a lighter rectangle mid-turn. */
+.section--stone .flip__frame,
+.plate .flip__frame {
+  background: var(--field-sweep);
 }
 
 .section-head {
@@ -259,10 +372,10 @@ h3 {
 
 .button {
   display: inline-flex;
-  min-height: 48px;
+  min-height: 56px;
   align-items: center;
   justify-content: center;
-  padding: var(--s-2) var(--s-5);
+  padding: var(--s-3) var(--s-7);
   border: 1px solid var(--meena);
   background: var(--meena);
   color: var(--paper-raised);
@@ -294,8 +407,9 @@ h3 {
   color: var(--meena-deep);
 }
 
-/* On the two dark fields the fill inverts: paper block, dark green ink. */
+/* On the dark fields the fill inverts: paper block, dark green ink. */
 .section--reverse .button,
+.section--dark .button,
 .site-footer .button {
   border-color: var(--paper-raised);
   background: var(--paper-raised);
@@ -303,6 +417,7 @@ h3 {
 }
 
 .section--reverse .button:hover,
+.section--dark .button:hover,
 .site-footer .button:hover {
   border-color: var(--paper);
   background: var(--paper);
@@ -334,6 +449,34 @@ h3 {
 
 .text-action:hover {
   color: var(--meena-deep);
+}
+
+/* On stone and on the dark fields the link cannot change colour on hover
+   without dropping below 4.5:1, so the underline carries the state instead. */
+.section--stone .text-action,
+.section--dark .text-action,
+.section--reverse .text-action {
+  transition: text-decoration-thickness var(--motion-fast);
+}
+
+.section--dark .text-action,
+.section--reverse .text-action {
+  color: var(--paper);
+}
+
+.section--stone .text-action:hover,
+.section--dark .text-action:hover,
+.section--reverse .text-action:hover {
+  text-decoration-thickness: 2px;
+}
+
+.section--stone .text-action:hover {
+  color: var(--ink);
+}
+
+.section--dark .text-action:hover,
+.section--reverse .text-action:hover {
+  color: var(--paper);
 }
 
 /* --- Header -------------------------------------------------------------- */
@@ -438,24 +581,43 @@ h3 {
 
 /* --- Hero ---------------------------------------------------------------- */
 
+/* One editorial stack in the left column — eyebrow, headline, lede, actions —
+ * beside one tall stone plane. The two columns come out within ~50px of each
+ * other in height, which is why the hero has no leftover space in it: the
+ * emptiness in the first pass was a full-width headline sitting on top of a
+ * half-width column of body copy. The column is the wider of the two so that
+ * "heirlooms." still fits on one line at --d-xl's 8rem ceiling. */
 .hero {
   display: grid;
   align-items: center;
-  padding: var(--m-2) 0 var(--m-3) var(--gutter);
-  gap: var(--m-1);
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.02fr);
+  /* No block padding at the top: the stone plane starts immediately under the
+     header and runs the full height of the hero, so it reads as a wall the
+     piece is hung on rather than a panel floating in the page. The macro step
+     moves onto the copy column instead. */
+  padding: 0 0 var(--m-3) var(--gutter);
+  gap: var(--s-7) var(--m-1);
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+}
+
+.hero__head {
+  align-self: end;
+  padding-block-start: var(--m-2);
+  grid-area: 1 / 1;
 }
 
 .hero__copy {
-  max-width: 620px;
+  align-self: start;
+  max-width: 36em;
+  grid-area: 2 / 1;
 }
 
 .hero h1 {
-  margin: 0 0 var(--s-5);
+  max-width: 16ch;
+  margin: 0;
+  text-wrap: balance;
 }
 
 .hero__lede {
-  max-width: 34em;
   margin-bottom: var(--s-7);
   color: var(--ink-2);
   font-size: var(--t-lg);
@@ -469,10 +631,15 @@ h3 {
   gap: var(--s-3) var(--s-4);
 }
 
-/* The image bleeds to the right edge of the viewport. No border, no frame —
- * the photograph's own grey sweep is the field change. */
+/* A stone plane that runs off the right edge of the viewport with the piece
+ * floating inside it. The photograph's own sweep and the plane are the same
+ * value, so the image has no edge at all; the plane's left boundary is the only
+ * line, and it is a field change, not a frame. */
 .hero__media {
+  align-self: stretch;
   margin: 0;
+  padding: var(--m-1) var(--m-1) var(--m-1) var(--m-2);
+  grid-area: 1 / 2 / 3 / 3;
 }
 
 /* The one orchestrated arrival on the site: the photograph comes up to colour
@@ -505,45 +672,63 @@ h3 {
   width: 100%;
   animation: arrive-image 320ms ease-out both;
   aspect-ratio: 4 / 5;
-  border-radius: var(--radius-media) 0 0 var(--radius-media);
+  border-radius: var(--radius-media);
   object-fit: cover;
 }
 
+.hero__head > *,
 .hero__copy > * {
   animation: arrive-copy 260ms ease-out both;
 }
 
-.hero__copy > :nth-child(2) {
+.hero__head > :nth-child(2) {
   animation-delay: 60ms;
 }
 
-.hero__copy > :nth-child(3) {
+.hero__copy > :nth-child(1) {
   animation-delay: 120ms;
 }
 
-.hero__copy > :nth-child(4) {
+.hero__copy > :nth-child(2) {
   animation-delay: 180ms;
 }
 
 /* --- Pieces -------------------------------------------------------------- */
 
+/* Five pieces, four sizes. The previous grid was three identical columns of
+ * identical 4:5 crops, which is why nothing on it read as important — and it
+ * left a literal hole, six cells for five pieces. Here the haar takes seven of
+ * twelve columns and the tikka three, with nothing in between, and the rows are
+ * bottom-aligned so the tops stagger by themselves. The commission note is the
+ * last cell, as text, so the grid ends on content rather than on a gap. */
 .pieces {
   display: grid;
   max-width: var(--content-max);
-  align-items: start;
+  align-items: end;
   margin-inline: auto;
-  gap: var(--m-1) var(--s-5);
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--m-3) var(--s-6);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
 }
 
 .piece {
   display: flex;
   flex-direction: column;
+  gap: var(--s-5);
+}
+
+.piece__body {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
   gap: var(--s-3);
 }
 
+/* Name first, then the spec, then the sentence, then the action. The reverse's
+ * one-line caption used to sit ABOVE all of it, so the first thing you read
+ * about a necklace was a footnote about its back. */
 .piece h3 {
   margin: 0;
+  font-size: var(--t-lg);
 }
 
 .piece__spec {
@@ -561,22 +746,62 @@ h3 {
 }
 
 .piece .text-action {
-  margin-top: auto;
+  margin-top: var(--s-1);
 }
 
-/* Sixth cell of a six-cell grid. A text block rather than a card keeps the row
- * from reading as a leftover. */
+/* Row 1 — the dominant piece. Seven columns of photograph with its own text
+   set beside it rather than under it, so the image is the largest thing on the
+   page after the headline. */
+.piece:nth-of-type(1) {
+  display: grid;
+  align-items: end;
+  gap: 0 var(--s-6);
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+}
+
+.piece:nth-of-type(1) > .flip {
+  grid-column: 1 / span 7;
+}
+
+.piece:nth-of-type(1) > .piece__body {
+  align-self: center;
+  grid-column: 9 / -1;
+}
+
+.piece:nth-of-type(1) h3 {
+  font-size: var(--d-m);
+}
+
+/* Row 2 — six columns hard left, four hard right. Row 3 — four, three, and the
+   note, so the row of small things still spans the full measure. */
+.piece:nth-of-type(2) {
+  grid-column: 1 / span 6;
+}
+
+.piece:nth-of-type(3) {
+  grid-column: 9 / -1;
+}
+
+.piece:nth-of-type(4) {
+  grid-column: 1 / span 4;
+}
+
+.piece:nth-of-type(5) {
+  grid-column: 6 / span 3;
+}
+
 .pieces__note {
   display: flex;
   align-items: flex-start;
   flex-direction: column;
-  justify-content: center;
   gap: var(--s-4);
-  padding-block: var(--s-5);
+  grid-column: 10 / -1;
 }
 
 .pieces__note h3 {
   margin: 0;
+  font-size: var(--t-lg);
 }
 
 .pieces__note p {
@@ -588,11 +813,15 @@ h3 {
 
 .reverse {
   display: grid;
-  max-width: var(--content-max);
-  align-items: center;
-  margin-inline: auto;
+  align-items: stretch;
   gap: var(--m-1) var(--m-2);
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.reverse__copy {
+  align-self: center;
+  max-width: 44rem;
+  padding-block: var(--m-3);
 }
 
 .reverse h2 {
@@ -607,6 +836,13 @@ h3 {
   line-height: 1.25;
 }
 
+/* The stone plane runs the full height of the green field and off the right
+   edge of the viewport. One vertical boundary between two fields, and the
+   photograph inside it has no edge of its own. */
+.reverse__media {
+  padding: var(--m-2);
+}
+
 .section--reverse .flip__caption {
   color: var(--paper-sunk);
 }
@@ -615,11 +851,13 @@ h3 {
 
 .craft {
   display: grid;
-  max-width: var(--content-max);
   align-items: center;
-  margin-inline: auto;
   gap: var(--m-1) var(--m-2);
-  grid-template-columns: minmax(0, 1fr) minmax(0, 0.86fr);
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr);
+}
+
+.craft__copy {
+  max-width: 40rem;
 }
 
 .craft h2 {
@@ -630,36 +868,61 @@ h3 {
   margin-top: var(--s-5);
 }
 
+/* The bench photograph is the only dark, warm, non-sweep image in the set, so
+   on the near-black field it needs no plane under it — it dissolves into the
+   room. It runs off the right edge of the viewport instead. */
 .craft__media {
   margin: 0;
 }
 
 .craft__media img {
   width: 100%;
-  aspect-ratio: 4 / 5;
-  border-radius: var(--radius-media);
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius-media) 0 0 var(--radius-media);
   object-fit: cover;
 }
 
 .craft__media figcaption {
-  margin-top: var(--s-3);
-  color: var(--ink-2);
+  margin-top: var(--s-4);
+  color: var(--polki);
   font-size: var(--t-xs);
 }
 
 /* --- The house ----------------------------------------------------------- */
 
+/* This section used to end in a void: two short columns under macro padding.
+ * It now carries the one date the business can evidence at display size and
+ * sets the three checkable statements large enough to be read as the argument
+ * of the section rather than as a footer table. */
 .house {
   display: grid;
   max-width: var(--content-max);
   align-items: start;
   margin-inline: auto;
   gap: var(--m-1) var(--m-2);
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
 }
 
 .house h2 {
   margin: 0 0 var(--s-5);
+}
+
+.house__since {
+  color: var(--ink-2);
+  font-family: var(--font-body);
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.house__year {
+  margin-bottom: var(--m-1);
+  font-family: var(--font-display);
+  font-size: var(--d-l);
+  font-variant-numeric: lining-nums;
+  letter-spacing: -0.03em;
+  line-height: var(--leading-tight);
 }
 
 /* The ONE legitimate hairline job on the page: separating a row of data from
@@ -671,21 +934,26 @@ h3 {
 
 .facts__row {
   display: grid;
-  padding: var(--s-3) 0;
+  align-items: baseline;
+  padding: var(--s-5) 0;
   border-bottom: 1px solid var(--hairline);
-  gap: var(--s-2) var(--s-4);
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: var(--s-2) var(--s-5);
+  grid-template-columns: minmax(0, 0.62fr) minmax(0, 1.38fr);
 }
 
 .facts dt {
   color: var(--ink-2);
-  font-size: var(--t-xs);
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  line-height: 1.4;
+  text-transform: uppercase;
 }
 
 .facts dd {
   color: var(--ink);
   font-family: var(--font-data);
-  font-size: var(--t-xs);
+  font-size: var(--t-sm);
   line-height: 1.5;
 }
 
@@ -693,13 +961,13 @@ h3 {
 
 .visit__intro {
   display: grid;
-  max-width: var(--content-max);
   align-items: center;
-  margin: 0 auto var(--m-2);
+  margin: 0 auto var(--m-3);
   gap: var(--m-1) var(--m-2);
-  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
 }
 
+/* Runs off the left edge of the viewport. */
 .visit__media {
   margin: 0;
 }
@@ -707,8 +975,19 @@ h3 {
 .visit__media img {
   width: 100%;
   aspect-ratio: 4 / 5;
-  border-radius: var(--radius-media);
+  border-radius: 0 var(--radius-media) var(--radius-media) 0;
   object-fit: cover;
+}
+
+.visit__copy {
+  max-width: 40rem;
+  padding-inline-end: var(--gutter);
+}
+
+/* The section bleeds on the inline-start side, so the block that follows the
+   media has to restore its own gutter. */
+.section--bleed-start > .contact {
+  padding-inline-start: var(--gutter);
 }
 
 .visit h2 {
@@ -727,8 +1006,11 @@ h3 {
 }
 
 .contact__intro {
-  max-width: var(--measure);
-  margin-bottom: var(--s-7);
+  display: grid;
+  align-items: end;
+  margin-bottom: var(--m-1);
+  gap: var(--s-5) var(--m-1);
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
 }
 
 .contact h2 {
@@ -739,8 +1021,7 @@ h3 {
  * block says so in plain language, and no tel:/wa.me/maps link is rendered. */
 .contact__notice {
   max-width: var(--measure);
-  margin-bottom: var(--m-1);
-  padding: var(--s-4);
+  padding: var(--s-5);
   background: var(--paper-sunk);
   color: var(--ink-2);
   font-size: var(--t-sm);
@@ -811,6 +1092,27 @@ a.contact__value:hover {
   line-height: 1.55;
 }
 
+/* The contact block closes the page on the near-black field, so every ink value
+   in it inverts. Measured on --field-dark: --paper 15.9:1, --paper-sunk 13.2:1,
+   --polki 11.1:1, --meena-tint 14.7:1. --ink-2 and --meena are illegal here.
+   The pending notice deliberately stays a light card: it is a data block sitting
+   in a field, which is exactly what --paper-sunk is for. */
+.section--dark .contact__value,
+.section--dark a.contact__value,
+.section--dark .contact__hours dd {
+  color: var(--paper);
+}
+
+.section--dark a.contact__value:hover {
+  color: var(--meena-tint);
+}
+
+.section--dark .contact__meta,
+.section--dark .contact__value--pending,
+.section--dark .contact__hours dt {
+  color: var(--polki);
+}
+
 .contact__action {
   margin-top: var(--s-2);
 }
@@ -826,6 +1128,15 @@ a.contact__value:hover {
   border-color: var(--hairline);
   background: transparent;
   color: var(--ink-2);
+}
+
+/* Unavailable must still read as unavailable on the dark field — the inverted
+   .button fill would otherwise dress a dead control as the live one beside it. */
+.section--dark .contact__action--pending,
+.section--dark .contact__action--pending:hover {
+  border-color: var(--polki);
+  background: transparent;
+  color: var(--polki);
 }
 
 /* Opening hours are tabular, so the hairline is doing its one job again. */
@@ -1150,21 +1461,63 @@ a.contact__value:hover {
     padding: var(--m-1) 0 var(--m-2);
   }
 
+  .hero__head,
   .hero__copy {
     max-width: none;
     padding-inline: var(--gutter);
   }
 
-  /* Full-bleed, and the 4:5 catalogue crop is kept rather than reflowed to a
-   * landscape box — a necklace shot cropped to 3:2 loses its drops. The cap
-   * only bites on wide tablets, where object-fit centres the crop. */
+  /* The explicit two-column placement is reset, or the hero keeps an implicit
+     second column and the copy sets one word per line. */
+  .hero__head,
+  .hero__copy,
+  .hero__media {
+    grid-area: auto;
+  }
+
+  .hero__media {
+    padding: var(--m-1) 0;
+  }
+
+  /* The 4:5 catalogue crop is kept rather than reflowed to a landscape box — a
+   * necklace shot cropped to 3:2 loses its drops. The cap only bites on wide
+   * tablets, where object-fit centres the crop. */
   .hero__image {
     max-height: 68svh;
     border-radius: var(--radius);
   }
 
+  /* Two columns, with the lead piece still breaking the grid: image and text
+     side by side across the full width, so scale contrast survives the
+     breakpoint instead of collapsing into five identical cells again. */
   .pieces {
+    gap: var(--m-2) var(--s-5);
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .piece:nth-of-type(n),
+  .pieces__note {
+    grid-column: auto;
+  }
+
+  .piece:nth-of-type(1) {
+    display: flex;
+    align-items: flex-end;
+    flex-direction: row;
+    gap: var(--s-6);
+    grid-column: 1 / -1;
+  }
+
+  .piece:nth-of-type(1) > .flip {
+    flex: 1 1 58%;
+  }
+
+  .piece:nth-of-type(1) > .piece__body {
+    flex: 1 1 42%;
+  }
+
+  .pieces__note {
+    grid-column: 1 / -1;
   }
 
   .reverse,
@@ -1174,13 +1527,30 @@ a.contact__value:hover {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .reverse__media,
+  /* The green field runs edge to edge and the stone plane becomes a band, so
+     the photograph is full-bleed on a phone with stone above and below it. */
+  .section--reverse {
+    padding-inline: 0;
+  }
+
+  .reverse__copy {
+    padding: var(--m-2) var(--gutter) 0;
+  }
+
+  .reverse__media {
+    padding: var(--m-1) 0 var(--m-2);
+  }
+
   .craft__media,
   .visit__media {
-    max-width: 560px;
+    max-width: none;
   }
 
   .section-head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .contact__intro {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -1198,8 +1568,15 @@ a.contact__value:hover {
 }
 
 @media (max-width: 780px) {
+  /* Block only: the inline shorthand here used to re-apply a gutter to the two
+     sections that deliberately zero one, which put a 24px stripe of the field
+     down the side of a photograph meant to bleed. */
   .section {
-    padding: var(--m-2) var(--gutter);
+    padding-block: var(--m-2);
+  }
+
+  .section--flush {
+    padding-block: 0;
   }
 
   .section-head {
@@ -1210,6 +1587,15 @@ a.contact__value:hover {
    * catalogue feel endless. The piece name steps down instead. */
   .pieces {
     gap: var(--s-7) var(--s-4);
+  }
+
+  /* Side by side stops working once the text column is ~150px wide, so the
+     lead piece returns to image-over-text — still full width, so it is still
+     twice the size of everything else on the page. */
+  .piece:nth-of-type(1) {
+    align-items: stretch;
+    flex-direction: column;
+    gap: var(--s-5);
   }
 
   .piece h3,

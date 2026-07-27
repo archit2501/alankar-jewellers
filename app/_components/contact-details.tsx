@@ -22,19 +22,25 @@ export function ContactDetails() {
 
   return (
     <div className="contact">
+      {/* The notice sits BESIDE the heading rather than under it: on a wide
+          screen the second column of this row was otherwise empty, and a void
+          next to a heading is the difference between a page that looks
+          restrained and one that looks unfinished. */}
       <div className="contact__intro">
-        <p className="label">Find us</p>
-        <h2>Come and see them in person.</h2>
-      </div>
+        <div>
+          <p className="label">Find us</p>
+          <h2>Come and see them in person.</h2>
+        </div>
 
-      {detailsPending ? (
-        <p className="contact__notice">
-          <span className="contact__tag">Details pending</span>
-          Our shop number, WhatsApp line and street address are being finalised.
-          The values below are placeholders and are not yet live — please use the
-          appointment request above and we will call you back.
-        </p>
-      ) : null}
+        {detailsPending ? (
+          <p className="contact__notice">
+            <span className="contact__tag">Details pending</span>
+            Our shop number, WhatsApp line and street address are being
+            finalised. The values below are placeholders and are not yet live —
+            please use the appointment request above and we will call you back.
+          </p>
+        ) : null}
+      </div>
 
       <div className="contact__grid">
         <section className="contact__card" aria-labelledby="contact-call">

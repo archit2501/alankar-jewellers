@@ -228,9 +228,24 @@
 
 /* ---- 3. The hinge: an object strip --------------------------------------- */
 
+/* The same photographic ground the homepage puts its pieces on. Four of the
+   five objects in this strip are catalogue shots taken on the studio sweep, so
+   on --paper-sunk they arrived as five grey rectangles — the frames the
+   direction bans, baked into the pixels. On --field-sweep they have no edge.
+   The field costs one contrast rule: --ink is the only legal text colour on it
+   (7.12:1), so nothing in this strip is set in --ink-2 (2.98:1). */
 .f-strip {
-  background: var(--paper-sunk);
+  background: var(--field-sweep);
   padding-block: var(--m-2);
+}
+
+.f-strip .f-label,
+.f-strip .f-object__note {
+  color: var(--ink);
+}
+
+.f-strip :focus-visible {
+  outline-color: var(--ink);
 }
 
 .f-strip__list {
@@ -261,7 +276,7 @@
   aspect-ratio: 1 / 1;
   object-fit: cover;
   border-radius: var(--radius-media);
-  background: var(--polki);
+  background: var(--field-sweep);
 }
 
 .f-object figcaption {
@@ -286,15 +301,29 @@
 
 /* ---- 6. What changed ----------------------------------------------------- */
 
+/* --paper-raised measures 1.08:1 against --paper, so as a section boundary it
+   did not exist: this block simply merged into the two around it. It takes the
+   homepage's near-black field instead, which is also the field the homepage
+   uses for its own "things you can check" moment. Text inverts to paper /
+   paper-sunk / polki (15.9:1, 13.2:1, 11.1:1); --ink-2 is illegal here. */
 .f-changed {
-  background: var(--paper-raised);
+  background: var(--field-dark);
+  color: var(--paper);
   padding-block: var(--m-2);
+}
+
+.f-changed .f-label {
+  color: var(--paper-sunk);
+}
+
+.f-changed :focus-visible {
+  outline-color: var(--paper);
 }
 
 .f-changed__lede {
   max-width: var(--f-measure);
   margin-block: var(--s-5) var(--s-6);
-  color: var(--ink-2);
+  color: var(--polki);
   font-size: var(--t-sm);
 }
 
@@ -317,11 +346,15 @@
 }
 
 .f-row dt {
-  color: var(--ink-2);
+  color: var(--polki);
   font-family: var(--font-data);
   font-size: var(--t-xs);
   letter-spacing: var(--tracking-label);
   text-transform: uppercase;
+}
+
+.f-changed .f-pending {
+  color: var(--polki);
 }
 
 .f-row dd {
@@ -441,6 +474,33 @@
   .f-changed,
   .f-close {
     padding-block: var(--m-3);
+  }
+
+  /* The four rows used to sit in one narrow column with the whole right half of
+     the field empty beside them. Heading on the left, data on the right: the
+     space is now between two things rather than left over after one. */
+  .f-changed .f-shell {
+    display: grid;
+    align-items: start;
+    gap: var(--s-4) var(--m-2);
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr);
+    /* The list is taller than the three items beside it; without this the
+       spare height is shared between them and the heading drifts apart. */
+    grid-template-rows: auto auto 1fr;
+  }
+
+  .f-changed .f-label {
+    margin-bottom: 0;
+  }
+
+  .f-changed__lede {
+    margin-block: 0;
+  }
+
+  .f-changed__list {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    max-width: none;
   }
 
   .f-strip__list {

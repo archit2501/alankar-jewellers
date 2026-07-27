@@ -26,14 +26,31 @@
 
 :root {
   /* ---- Colour: field -------------------------------------------------- */
-  --paper: #f1f2ee; /* page ground */
-  --paper-raised: #fafaf8; /* cards, sheets, dialogs */
-  --paper-sunk: #e5e7e1; /* filter bars, table zebra, data blocks */
+  /* REVISED: the first pass read as plain rather than restrained. Two causes,
+   * both fixed here. (a) The neutral steps were 1.08:1 and 1.11:1 — literally
+   * invisible — so with borders also removed the page had no structural
+   * articulation at all and read as empty. (b) The ground was cool, which on a
+   * jeweller reads clinical rather than expensive. Cold is not the same as
+   * costly. The paper is now warm, and two REAL fields carry the structure. */
+  --paper: #efece4; /* page ground — warm, not cool, not cream */
+  --paper-raised: #fbf9f4; /* cards, sheets, dialogs */
+  --paper-sunk: #ddd8cb; /* data blocks, filter bars — 1.21:1, a real step */
+
+  /* The two fields that actually do the structural work. */
+  --field-stone: #8c8f89; /* 2.78:1 — MATCHES THE PHOTOGRAPHIC SWEEP.
+                           * Pieces shot on this ground bleed into the field
+                           * instead of sitting in a visible grey rectangle,
+                           * which is what made the grid read as bordered cards
+                           * despite the no-borders rule. On stone, text must be
+                           * --ink (5.73:1). --paper on stone is 2.78:1 and FAILS. */
+  --field-dark: #141110; /* 15.9:1 — warm near-black for immersive sections.
+                          * Depth is what makes a jeweller look expensive; a
+                          * single flat ground is what makes it look unfinished. */
 
   /* ---- Colour: ink ---------------------------------------------------- */
-  --ink: #17191a; /* primary text — 15.9:1 on --paper */
-  --ink-2: #55595a; /* secondary text — 7.0:1 */
-  --ink-3: #8b8f8c; /* captions, disabled — 3.2:1, NEVER body text */
+  --ink: #141110; /* primary text — 15.9:1 on --paper. Warm black, not blue-black */
+  --ink-2: #56514a; /* secondary text */
+  --ink-3: #8a837a; /* captions, disabled — NEVER body text */
 
   /* ---- Colour: structure ---------------------------------------------- */
   --hairline: #d3d6cf; /* the ONLY rule colour on the site */
@@ -53,10 +70,15 @@
   --font-body: Mukta, "Helvetica Neue", Arial, sans-serif;
   --font-data: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
-  /* Three display sizes, not seven. Text on a 1.25 ratio. */
-  --d-xl: clamp(3.25rem, 7vw, 6rem); /* hero only, once per page */
-  --d-l: clamp(2.25rem, 4vw, 3.5rem); /* section openers */
-  --d-m: 1.75rem; /* product name, founder name, pull quote */
+  /* Three display sizes, not seven. Text on a 1.25 ratio.
+   * REVISED: the range was too narrow — the biggest thing on the page was only
+   * ~3.4x the body, so nothing read as important and everything felt the same
+   * weight. Luxury reads as expensive through SCALE CONTRAST: one enormous
+   * thing next to one small one. --d-xl now runs to 8rem and the piece name
+   * has its own step so a product is not set at caption scale. */
+  --d-xl: clamp(3.5rem, 9vw, 8rem); /* hero only, once per page */
+  --d-l: clamp(2.5rem, 5vw, 4.25rem); /* section openers */
+  --d-m: clamp(1.9rem, 2.4vw, 2.5rem); /* product name, founder name, pull quote */
   --t-lg: 1.375rem; /* lede paragraphs */
   --t-md: 1.125rem; /* body */
   --t-sm: 1rem; /* secondary body */
