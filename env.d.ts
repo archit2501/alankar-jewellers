@@ -14,6 +14,17 @@ declare namespace Cloudflare {
   interface Env {
     /** Cloudflare D1, requested via `"d1": "DB"` in .openai/hosting.json. */
     DB: D1Database;
+    /**
+     * Cloudflare R2, requested via `"r2": "MEDIA"` in .openai/hosting.json —
+     * the value of that field IS the binding name. Product photography uploaded
+     * from the admin panel lands here.
+     *
+     * NOTE: the /_vinext/image optimizer cannot serve R2 objects without a code
+     * change to worker/index.ts, because it resolves assets through `env.ASSETS`
+     * (which this build path never declares anyway). See research/02-market-tech.md
+     * §6.3 before wiring uploads to a rendering path.
+     */
+    MEDIA: R2Bucket;
     /** Optional outbound webhook for appointment leads. See .env.example. */
     LEAD_WEBHOOK_URL?: string;
   }
