@@ -1,0 +1,52 @@
+{
+  "phase": "4",
+  "scope": "xl",
+  "stack": "node",
+  "toolchain": {
+    "lint": "npm run lint",
+    "typeCheck": "npm run type-check",
+    "test": "npm test",
+    "build": "npm run build",
+    "dev": "npm run dev (serves on :3000, NOT :5173)",
+    "images": "node scripts/build-images.mjs",
+    "fonts": "node scripts/fetch-fonts.mjs"
+  },
+  "researchComplete": true,
+  "research": {
+    "01-codebase": "complete",
+    "02-market-tech": "complete (agent died after writing; Part B of uiux also affected)",
+    "03-uiux": "complete"
+  },
+  "decisions": "see decisions.json — Meena Reverse direction chosen 2026-07-27",
+  "milestones": [
+    {
+      "id": "M1",
+      "name": "Premium redesign + founders page",
+      "status": "in_progress",
+      "done": [
+        "Type gate established: @cloudflare/workers-types v4 + Cloudflare.Env augmentation in env.d.ts; npm run type-check passes 0 errors (was 4)",
+        "Typefaces self-hosted: Eczar/Mukta/IBM Plex Mono, 233KB, latin+latin-ext, metric-matched fallbacks",
+        "Token layer: app/tokens.css — Meena Reverse ramp, type scale, two-tier spacing, motion",
+        "Imagery: 17/18 masters generated as matched front/reverse pairs + 2 founder portraits + 2 workshop",
+        "Derivative pipeline: scripts/build-images.mjs, 26.8MB masters -> 2.7MB WebP, generated app/_media/images.ts manifest"
+      ],
+      "next": [
+        "Rerun build-images.mjs once maang-tikka-reverse lands",
+        "Component rewrite: ~400 lines (hero, collections, timeline, craft), ~500 survive on token substitution, ~90 lines of ornament deleted",
+        "Build the flip interaction (the direction's signature)",
+        "Founders page"
+      ]
+    },
+    { "id": "M2", "name": "Storefront (catalogue, product, cart, checkout)", "status": "pending" },
+    { "id": "M3", "name": "Admin panel (orders, catalogue management)", "status": "pending" }
+  ],
+  "hazards": [
+    "next/image is UNUSABLE: worker/index.ts uses env.ASSETS + env.IMAGES but vite.config.ts declares neither, so /_vinext/image 500s. All image sizing must be build-time.",
+    "r2 is null in .openai/hosting.json — admin cannot upload product photos until a control-plane request enables it. Blocks M3.",
+    "Nothing is prerendered and no KV binding is available, so every product page SSRs and hits D1 per request.",
+    "Do NOT copy the appointments route's dual-sink rule for orders — it must be inverted (a webhook-only order with no D1 row is a lost order), and its throttle would silently no-op a customer's legitimate second order.",
+    "gpt-image-bridge: the --size flag is NOT binding; pixel dimensions must be stated in the prompt body or output comes back at the wrong aspect ratio.",
+    "Entire working tree is uncommitted against a single-commit repo. No clean baseline."
+  ],
+  "lastUpdated": "2026-07-27"
+}

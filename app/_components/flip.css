@@ -1,0 +1,136 @@
+/**
+ * The Flip — see app/_components/flip.tsx for the rationale.
+ *
+ * Rules this file must not break:
+ *   - No border on the image. Ever. Structure comes from field colour.
+ *   - The field colour and the crossfade share one curve, so the piece reads as
+ *     a single object turning rather than two images dissolving.
+ *   - Under reduced motion the colour change SURVIVES and only the movement is
+ *     removed, because the colour is information, not decoration.
+ */
+
+.flip {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.flip__frame {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-media);
+  overflow: hidden;
+  background: var(--paper-sunk);
+  cursor: pointer;
+  aspect-ratio: 4 / 5;
+  /* The field travels paper -> meena on the same curve as the crossfade. */
+  transition: background-color var(--motion-flip);
+}
+
+.flip--static .flip__frame {
+  cursor: default;
+}
+
+.flip--reversed .flip__frame {
+  background-color: var(--meena);
+}
+
+.flip__face,
+.flip__back {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition:
+    opacity var(--motion-flip),
+    transform var(--motion-flip);
+}
+
+.flip__back {
+  opacity: 0;
+  transform: scale(1.02);
+}
+
+.flip--reversed .flip__face {
+  opacity: 0;
+  transform: scale(0.98);
+}
+
+.flip--reversed .flip__back {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* The affordance. Present but quiet; it is a hint, not a button in its own
+   right — the whole frame is the control. */
+.flip__hint {
+  position: absolute;
+  right: var(--s-3);
+  bottom: var(--s-3);
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(250, 250, 248, 0.92);
+  color: var(--ink);
+  opacity: 0;
+  transition:
+    opacity var(--motion-fast),
+    color var(--motion-fast),
+    background-color var(--motion-fast);
+}
+
+/* On touch there is no hover, so the hint must always be visible or the
+   interaction is undiscoverable. */
+@media (hover: none) {
+  .flip__hint {
+    opacity: 1;
+  }
+}
+
+@media (hover: hover) {
+  .flip__frame:hover .flip__hint,
+  .flip__frame:focus-visible .flip__hint {
+    opacity: 1;
+  }
+}
+
+.flip--reversed .flip__hint {
+  background: var(--meena-deep);
+  color: var(--paper-raised);
+  opacity: 1;
+}
+
+.flip__frame:focus-visible {
+  outline: 2px solid var(--meena);
+  outline-offset: 3px;
+}
+
+.flip__caption {
+  color: var(--ink-2);
+  font-family: var(--font-body);
+  font-size: var(--t-xs);
+  line-height: var(--leading-body);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Keep the colour, drop the movement. */
+  .flip__frame,
+  .flip__face,
+  .flip__back {
+    transition-duration: 1ms;
+  }
+
+  .flip__back,
+  .flip--reversed .flip__face,
+  .flip--reversed .flip__back {
+    transform: none;
+  }
+}

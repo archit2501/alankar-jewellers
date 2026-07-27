@@ -1,0 +1,466 @@
+/**
+ * /founders — "The people".
+ *
+ * Scoped to `.f-page` so nothing here can leak into the rest of the site, and so
+ * the homepage rewrite happening in globals.css cannot collide with it.
+ *
+ * Rules this file must not break (research/03-uiux.md Part C):
+ *   - Green is the interface colour. --kundan is NEVER text and NEVER a rule; it
+ *     appears only as a filled area ≥16px with --ink on top (.f-tag).
+ *   - No borders on images, ever. Structure comes from the field colour
+ *     changing between sections: paper → sunk → paper → raised → meena.
+ *   - One hairline, one weight, one job: separating rows of data. The only
+ *     hairlines on this page are between the rows of ".What changed". Part E
+ *     also proposed a hairline above the pull quote; that would give the rule a
+ *     second job, so the pull quote is set apart by colour and indent instead.
+ *   - Section padding uses the macro ladder only; component internals use micro.
+ *   - The Flip is the only transform on the page. Nothing fades up on scroll.
+ */
+
+@import "../tokens.css";
+@import "../_components/flip.css";
+
+.f-page {
+  --f-gutter: var(--s-5);
+  --f-measure: 62ch;
+
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--t-md);
+  line-height: var(--leading-body);
+}
+
+.f-page :focus-visible {
+  outline: 2px solid var(--meena);
+  outline-offset: 3px;
+}
+
+.f-shell {
+  max-width: 1180px;
+  margin-inline: auto;
+  padding-inline: var(--f-gutter);
+}
+
+/* ---- Shared type ------------------------------------------------------- */
+
+.f-label {
+  margin: 0 0 var(--s-4);
+  color: var(--ink-2);
+  font-family: var(--font-body);
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  line-height: var(--leading-body);
+  text-transform: uppercase;
+}
+
+.f-page h1,
+.f-page h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  text-wrap: balance;
+}
+
+.f-page h1 {
+  font-size: var(--d-l);
+}
+
+.f-page h2 {
+  font-size: var(--d-m);
+}
+
+.f-page p {
+  margin: 0;
+}
+
+/* The one place gold is allowed: a filled area, ink on top, never a rule. */
+.f-tag {
+  display: inline-block;
+  margin-inline-end: var(--s-2);
+  padding: var(--s-1) var(--s-2);
+  background: var(--kundan);
+  color: var(--ink);
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  line-height: var(--leading-body);
+  text-transform: uppercase;
+  vertical-align: baseline;
+}
+
+/* Unfinished content is stated as unfinished — never styled to pass as copy. */
+.f-pending {
+  color: var(--ink-2);
+  font-size: var(--t-sm);
+}
+
+/* ---- 0. Top bar --------------------------------------------------------- */
+
+.f-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4) var(--s-6);
+  align-items: baseline;
+  justify-content: space-between;
+  padding-block: var(--s-6);
+}
+
+.f-wordmark {
+  display: inline-flex;
+  flex-direction: column;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: var(--t-lg);
+  line-height: var(--leading-tight);
+  text-decoration: none;
+}
+
+.f-wordmark__since {
+  color: var(--ink-2);
+  font-family: var(--font-data);
+  font-size: var(--t-2xs);
+  letter-spacing: var(--tracking-label);
+}
+
+.f-nav {
+  display: flex;
+  gap: var(--s-5);
+}
+
+.f-nav a {
+  color: var(--meena);
+  font-size: var(--t-sm);
+  text-decoration: none;
+  transition: color var(--motion-fast);
+}
+
+.f-nav a:hover {
+  color: var(--meena-deep);
+  text-decoration: underline;
+  text-underline-offset: var(--s-1);
+}
+
+.f-nav a[aria-current="page"] {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: var(--s-1);
+}
+
+/* ---- 1. The opener ------------------------------------------------------ */
+
+.f-opener {
+  padding-block: var(--m-2) var(--m-1);
+}
+
+.f-opener h1 {
+  max-width: 18ch;
+}
+
+.f-notice {
+  max-width: var(--f-measure);
+  margin-top: var(--m-1);
+  padding: var(--s-5);
+  background: var(--paper-sunk);
+  color: var(--ink-2);
+  font-size: var(--t-sm);
+}
+
+/* ---- 2 / 5. The two founders -------------------------------------------- */
+
+.f-founder {
+  display: grid;
+  gap: var(--s-6);
+  padding-block: var(--m-2);
+}
+
+.f-founder__portrait {
+  /* Phone: the portrait breaks the grid and goes edge to edge. It is the one
+     deliberate exception in the whole design — a face at full device width is
+     the most arresting thing a phone screen can do. */
+  margin-inline: calc(var(--f-gutter) * -1);
+}
+
+.f-founder__portrait .flip__frame {
+  border-radius: 0;
+}
+
+/* The portrait's own caption, set in the utility face. When the page goes live
+   this reads "Name — buys the stones": a role as a verb, not a job title. */
+.f-founder__portrait .flip__caption {
+  padding-inline: var(--f-gutter);
+  font-family: var(--font-data);
+}
+
+.f-founder__words {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  max-width: var(--f-measure);
+}
+
+.f-founder__words p {
+  font-size: var(--t-md);
+}
+
+/* Roles as verbs, not job titles. */
+.f-role {
+  color: var(--meena);
+  font-family: var(--font-body);
+  font-size: var(--t-sm);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+/* No quotation marks: the type change already signals speech. */
+.f-quote {
+  margin: var(--s-5) 0 0 var(--s-6);
+  padding: 0;
+  color: var(--meena);
+  font-family: var(--font-display);
+  font-size: var(--d-m);
+  line-height: var(--leading-tight);
+  max-width: 26ch;
+}
+
+/* ---- 3. The hinge: an object strip --------------------------------------- */
+
+.f-strip {
+  background: var(--paper-sunk);
+  padding-block: var(--m-2);
+}
+
+.f-strip__list {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 62%;
+  gap: var(--s-4);
+  margin: var(--s-6) 0 0;
+  padding: 0;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x mandatory;
+  list-style: none;
+}
+
+.f-object {
+  scroll-snap-align: start;
+}
+
+.f-object figure {
+  margin: 0;
+}
+
+.f-object img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--radius-media);
+  background: var(--polki);
+}
+
+.f-object figcaption {
+  margin-top: var(--s-3);
+}
+
+.f-object__name {
+  display: block;
+  font-family: var(--font-body);
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.f-object__note {
+  display: block;
+  margin-top: var(--s-1);
+  color: var(--ink-2);
+  font-size: var(--t-xs);
+}
+
+/* ---- 6. What changed ----------------------------------------------------- */
+
+.f-changed {
+  background: var(--paper-raised);
+  padding-block: var(--m-2);
+}
+
+.f-changed__lede {
+  max-width: var(--f-measure);
+  margin-block: var(--s-5) var(--s-6);
+  color: var(--ink-2);
+  font-size: var(--t-sm);
+}
+
+.f-changed__list {
+  margin: 0;
+  max-width: 78ch;
+}
+
+/* The only hairlines on the page, doing the only job a hairline has here:
+   separating one row of data from the next. */
+.f-row {
+  display: grid;
+  gap: var(--s-2);
+  padding-block: var(--s-5);
+  border-top: 1px solid var(--hairline);
+}
+
+.f-row:last-child {
+  border-bottom: 1px solid var(--hairline);
+}
+
+.f-row dt {
+  color: var(--ink-2);
+  font-family: var(--font-data);
+  font-size: var(--t-xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.f-row dd {
+  margin: 0;
+  font-size: var(--t-md);
+}
+
+/* ---- 8. Close on a named CTA --------------------------------------------- */
+
+.f-close {
+  background: var(--meena);
+  color: var(--paper);
+  padding-block: var(--m-2);
+}
+
+.f-close h2 {
+  font-size: var(--d-l);
+  max-width: 16ch;
+}
+
+.f-close .f-label {
+  color: var(--meena-tint);
+}
+
+.f-close__body {
+  max-width: var(--f-measure);
+  margin-top: var(--s-5);
+  color: var(--meena-tint);
+  font-size: var(--t-md);
+}
+
+.f-cta {
+  display: inline-block;
+  margin-top: var(--s-6);
+  padding: var(--s-3) var(--s-6);
+  border: 0;
+  background: var(--paper-raised);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--t-sm);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast),
+    color var(--motion-fast);
+}
+
+.f-cta:hover {
+  background: var(--meena-tint);
+}
+
+.f-close :focus-visible {
+  outline-color: var(--paper-raised);
+}
+
+.f-colophon {
+  padding-block: var(--m-1);
+  color: var(--ink-2);
+  font-size: var(--t-xs);
+}
+
+.f-colophon a {
+  color: var(--meena);
+}
+
+/* ---- Wider than a phone -------------------------------------------------- */
+
+@media (min-width: 780px) {
+  .f-page {
+    --f-gutter: var(--s-7);
+  }
+
+  .f-opener {
+    padding-block: var(--m-3) var(--m-2);
+  }
+
+  /* The portrait stops breaking the grid and returns to its column. */
+  .f-founder__portrait {
+    margin-inline: 0;
+  }
+
+  .f-founder__portrait .flip__frame {
+    border-radius: var(--radius-media);
+  }
+
+  .f-founder__portrait .flip__caption {
+    padding-inline: 0;
+  }
+
+  .f-founder {
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--s-7);
+    align-items: center;
+    padding-block: var(--m-3);
+  }
+
+  .f-founder__portrait {
+    grid-column: 1 / span 6;
+  }
+
+  .f-founder__words {
+    grid-column: 8 / -1;
+  }
+
+  /* Mirrored, so two portraits read as a pair rather than as a list. */
+  .f-founder--mirrored .f-founder__portrait {
+    grid-column: 7 / -1;
+  }
+
+  .f-founder--mirrored .f-founder__words {
+    grid-column: 1 / span 5;
+  }
+
+  .f-strip,
+  .f-changed,
+  .f-close {
+    padding-block: var(--m-3);
+  }
+
+  .f-strip__list {
+    grid-auto-columns: 1fr;
+    overflow-x: visible;
+  }
+}
+
+/* ---- Motion -------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Nothing on this page moves except the Flip, whose own stylesheet keeps the
+     colour change and drops the movement. This block covers the colour and
+     background transitions above. */
+  .f-page *,
+  .f-page *::before,
+  .f-page *::after {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}

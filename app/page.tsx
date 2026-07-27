@@ -1,399 +1,389 @@
-"use client";
+/* eslint-disable @next/next/no-img-element --
+ * next/image cannot work on this deployment, and this is verified rather than
+ * assumed: worker/index.ts routes /_vinext/image through `env.IMAGES`, but
+ * vite.config.ts's localBindingConfig never declares IMAGES, so the optimizer
+ * throws before its own error handling runs. Sizing is therefore done ahead of
+ * time by scripts/build-images.mjs, and every raw <img> below takes its
+ * intrinsic width/height and srcSet straight from the generated manifest, so
+ * cumulative layout shift stays at zero.
+ */
+import { AppointmentProvider, AppointmentTrigger } from "./_components/appointment";
+import type { Interest } from "./_components/appointment";
+import { BrandMark } from "./_components/brand-mark";
+import { ContactDetails } from "./_components/contact-details";
+import { Flip } from "./_components/flip";
+import { SiteHeader } from "./_components/site-header";
+import { images } from "./_media/images";
+import type { ImageKey } from "./_media/images";
 
-import { FormEvent, useEffect, useState } from "react";
-
-const collections = [
+/**
+ * The catalogue. Every entry has a photographed reverse of its own. If a future
+ * piece does not, give it no `back` and the Flip degrades to a plain figure —
+ * never borrow another piece's back to fill the gap.
+ * Nothing here asserts a weight, a karat, a stone count or a price, because
+ * none of those numbers is known yet and inventing them is the one thing this
+ * category's buyers are best at catching.
+ */
+const pieces: {
+  id: string;
+  name: string;
+  front: ImageKey;
+  back?: ImageKey;
+  alt: string;
+  altBack?: string;
+  caption: string;
+  spec: string;
+  copy: string;
+  interest: Interest;
+}[] = [
   {
-    name: "Jadau",
-    image: "/images/collection-jadau.webp",
-    alt: "Antique jadau necklace with uncut diamonds and emerald beads on green silk",
-    copy:
-      "Uncut diamonds, vivid gemstones and age-old techniques, composed as heirlooms for the next generation.",
+    id: "jadau",
+    name: "Jadau haar",
+    front: "jadau-haar-front",
+    back: "jadau-haar-reverse",
+    alt: "Jadau haar of uncut polki closed-set in gold, hung with carved ruby and emerald drops on a red silk cord",
+    altBack:
+      "The same haar turned over: every plate enamelled on a red ground with a white and green lotus",
+    caption: "Red-ground lotus meena on the reverse",
+    spec: "Uncut polki · carved ruby and emerald drops · silk cord",
+    copy: "Gold and stone on the face. On the back, a lotus fired into every single plate.",
+    interest: "Jadau and Polki",
   },
   {
-    name: "Diamond",
-    image: "/images/collection-diamond.webp",
-    alt: "Contemporary diamond necklace arranged on deep garnet velvet",
-    copy:
-      "Brilliant cuts and measured lines—contemporary diamond jewellery for life’s most luminous moments.",
+    id: "polki",
+    name: "Polki choker",
+    front: "polki-choker-front",
+    back: "polki-choker-reverse",
+    alt: "Polki choker of kundan-set uncut diamonds with a pearl fringe, strung on a red silk cord and tassel",
+    altBack:
+      "The same choker turned over: a green enamel ground carrying one white and red flower per cell",
+    caption: "Green meena, one flower to a cell",
+    spec: "Kundan-set polki · pearl fringe · silk cord and tassel",
+    copy: "Close-set stones sit shoulder to shoulder in front. Behind them, green enamel and thirty small flowers.",
+    interest: "Jadau and Polki",
   },
   {
-    name: "Polki",
-    image: "/images/collection-polki.webp",
-    alt: "Diamond polki necklace with emerald drops on a carved wooden surface",
-    copy:
-      "The quiet fire of uncut diamonds, set in refined silhouettes that carry India’s royal legacy forward.",
+    id: "chandbali",
+    name: "Chandbali earrings",
+    front: "chandbali-earrings-front",
+    back: "chandbali-earrings-reverse",
+    alt: "Pair of crescent chandbali earrings in granulated gold with rose-cut polki and pearl and emerald bead drops",
+    altBack:
+      "The same pair turned over: a green, red and white lotus spread across the whole of each crescent",
+    caption: "A lotus across the whole crescent",
+    spec: "Crescent chandbali · rose-cut polki · pearl and emerald drops",
+    copy: "Worn, the reverse faces the wearer's neck. It is still the more decorated of the two sides.",
+    interest: "Bridal jewellery",
+  },
+  {
+    id: "kada",
+    name: "Kundan kada",
+    front: "kundan-kada-front",
+    back: "kundan-kada-reverse",
+    alt: "Hinged gold kada set with kundan flowerheads, rimmed in seed pearls, with carved emerald terminals",
+    altBack:
+      "The same kada turned over: a red and green flowering vine enamelled around the inner face",
+    caption: "A flowering vine around the inside",
+    spec: "Closed-set kundan · seed-pearl rim · carved emerald terminals",
+    copy: "The inside of a bangle touches only the wrist, which is exactly why this one is enamelled.",
+    interest: "Jadau and Polki",
+  },
+  {
+    id: "tikka",
+    name: "Maang tikka",
+    front: "maang-tikka-front",
+    back: "maang-tikka-reverse",
+    alt: "Round gold maang tikka set with kundan around a ruby centre, a polki drop below and a woven chain above",
+    altBack: "Turn over to see the concentric floral meenakari rosette on the back of the disc",
+    caption: "A rosette on the back of the disc",
+    spec: "Kundan-set polki · ruby centre · woven chain",
+    copy: "The smallest piece here, and the back of it is worked as carefully as the front nobody questions.",
+    interest: "Bridal jewellery",
   },
 ];
 
-const milestones = [
-  {
-    year: "1980",
-    title: "A house is founded",
-    copy: "With a belief that fine jewellery begins with integrity.",
-  },
-  {
-    year: "The 1990s",
-    title: "Trust grows",
-    copy: "One family introduction, one cherished occasion at a time.",
-  },
-  {
-    year: "A new generation",
-    title: "The craft continues",
-    copy: "Heritage techniques meet a more contemporary point of view.",
-  },
-  {
-    year: "Today",
-    title: "Heirlooms, reimagined",
-    copy: "Designer pieces created to be lived in, loved and passed on.",
-  },
+/**
+ * The only date this business can prove, plus three statements that are
+ * checkable on this page rather than asserted about the past. It replaces a
+ * four-entry "timeline" whose axis ran 1980 → The 1990s → A new generation →
+ * Today, i.e. half of it was not a date, and whose copy could not have been
+ * untrue of any jeweller anywhere.
+ */
+const facts = [
+  { label: "Founded", value: "1980" },
+  { label: "Techniques", value: "Jadau, Polki and Kundan, set by hand" },
+  { label: "Every piece", value: "Shown face and reverse, or not shown" },
+  { label: "How to buy", value: "By appointment, in the shop. There is no cart on this site." },
 ];
 
-function BrandMark({ compact = false }: { compact?: boolean }) {
-  return (
-    <a
-      className={`brand-mark${compact ? " brand-mark--compact" : ""}`}
-      href="#top"
-      aria-label="Alankar Jewellers, back to top"
-    >
-      <span className="brand-mark__name">Alankar</span>
-      <span className="brand-mark__category">Jewellers</span>
-      <span className="brand-mark__since">Since 1980</span>
-    </a>
-  );
-}
+const heroImage = images["jadau-haar-front"];
 
-function AppointmentDialog({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
-  const [submitted, setSubmitted] = useState(false);
-
-  useEffect(() => {
-    if (!open) setSubmitted(false);
-    document.body.style.overflow = open ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
-
-  useEffect(() => {
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
-    }
-    window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
-  }, [onClose]);
-
-  if (!open) return null;
-
-  function submitRequest(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSubmitted(true);
-  }
-
-  return (
-    <div className="dialog-backdrop" role="presentation" onMouseDown={onClose}>
-      <section
-        className="appointment-dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="appointment-title"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
-        <button className="dialog-close" onClick={onClose} aria-label="Close">
-          <span />
-        </button>
-        {submitted ? (
-          <div className="dialog-success" aria-live="polite">
-            <span className="dialog-flower" aria-hidden="true">
-              ✦
-            </span>
-            <h2 id="appointment-title">Your private viewing begins here.</h2>
-            <p>
-              Thank you for sharing your preferences. Your appointment request
-              has been prepared for the Alankar team.
-            </p>
-            <button className="button button--dark" onClick={onClose}>
-              Return to the collection
-            </button>
-          </div>
-        ) : (
-          <>
-            <p className="section-label">By appointment</p>
-            <h2 id="appointment-title">Let us curate your private viewing.</h2>
-            <p className="dialog-intro">
-              Tell us what brings you to Alankar. We’ll shape the experience
-              around your occasion and the pieces you hope to discover.
-            </p>
-            <form className="appointment-form" onSubmit={submitRequest}>
-              <label>
-                <span>Your name</span>
-                <input name="name" autoComplete="name" required />
-              </label>
-              <label>
-                <span>Mobile number</span>
-                <input
-                  name="phone"
-                  type="tel"
-                  inputMode="tel"
-                  autoComplete="tel"
-                  required
-                />
-              </label>
-              <label>
-                <span>I’m interested in</span>
-                <select name="interest" defaultValue="Jadau and Polki">
-                  <option>Jadau and Polki</option>
-                  <option>Diamond jewellery</option>
-                  <option>Bridal jewellery</option>
-                  <option>A bespoke piece</option>
-                </select>
-              </label>
-              <label>
-                <span>Preferred time</span>
-                <select name="time" defaultValue="Weekday afternoon">
-                  <option>Weekday afternoon</option>
-                  <option>Weekday evening</option>
-                  <option>Weekend</option>
-                </select>
-              </label>
-              <label className="form-wide">
-                <span>Anything we should know?</span>
-                <textarea
-                  name="note"
-                  rows={3}
-                  placeholder="Your occasion, timeline or a piece you have in mind"
-                />
-              </label>
-              <button className="button button--dark form-wide" type="submit">
-                Prepare my request
-              </button>
-            </form>
-          </>
-        )}
-      </section>
-    </div>
-  );
-}
-
+/**
+ * Server component. Only three things ship to the browser as JavaScript:
+ * `SiteHeader` (menu toggle), `AppointmentTrigger` (the buttons that open the
+ * dialog) and `AppointmentProvider`, which owns the appointment dialog itself
+ * (`role="dialog"`, focus trap, POST to /api/appointments). `Flip` is the
+ * fourth and it is the point of the design. Everything else is rendered on the
+ * server and forwarded through the provider as children.
+ */
 export default function Home() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [appointmentOpen, setAppointmentOpen] = useState(false);
-
-  function openAppointment() {
-    setMenuOpen(false);
-    setAppointmentOpen(true);
-  }
-
   return (
-    <main id="top">
-      <header className="site-header">
-        <BrandMark />
-        <button
-          className="menu-toggle"
-          aria-expanded={menuOpen}
-          aria-controls="site-navigation"
-          onClick={() => setMenuOpen((value) => !value)}
+    <AppointmentProvider>
+      <main id="top">
+        <SiteHeader />
+
+        <section className="hero" aria-labelledby="hero-title">
+          <div className="hero__copy">
+            <p className="label">Jadau · Polki · Kundan — since 1980</p>
+            <h1 id="hero-title">Jewels that become heirlooms.</h1>
+            <p className="hero__lede">
+              Every piece here is shown from both sides. The front is what the
+              room sees. The back is enamelled, and only the person wearing it
+              ever knows it is there.
+            </p>
+            <div className="hero__actions">
+              <a className="button" href="#collections">
+                See the pieces
+              </a>
+              <AppointmentTrigger className="button button--ghost">
+                Book a viewing
+              </AppointmentTrigger>
+            </div>
+          </div>
+          <div className="hero__media">
+            <img
+              className="hero__image"
+              src={heroImage.src}
+              srcSet={heroImage.srcSet}
+              sizes="(max-width: 1100px) 100vw, 50vw"
+              width={heroImage.width}
+              height={heroImage.height}
+              alt="Jadau haar of uncut polki with carved ruby and emerald drops, photographed on a grey sweep"
+              fetchPriority="high"
+              decoding="sync"
+            />
+          </div>
+        </section>
+
+        <section
+          className="section section--raised"
+          id="collections"
+          aria-labelledby="collections-title"
         >
-          {menuOpen ? "Close" : "Menu"}
-        </button>
-        <nav
-          id="site-navigation"
-          className={`site-nav${menuOpen ? " site-nav--open" : ""}`}
-          aria-label="Main navigation"
+          <div className="section-head">
+            <div>
+              <p className="label">The pieces</p>
+              <h2 id="collections-title">Turn one over.</h2>
+            </div>
+            <p className="lede">
+              Each one is photographed twice, face and reverse, on the same grey
+              sweep. Hover on a desktop, tap on a phone.
+            </p>
+          </div>
+
+          <div className="pieces">
+            {pieces.map((piece) => (
+              <article className="piece" id={piece.id} key={piece.id}>
+                <Flip
+                  front={piece.front}
+                  back={piece.back}
+                  alt={piece.alt}
+                  altBack={piece.altBack}
+                  caption={piece.caption}
+                  sizes="(max-width: 1100px) 46vw, 30vw"
+                />
+                <h3>{piece.name}</h3>
+                <p className="piece__spec">{piece.spec}</p>
+                <p className="piece__copy">{piece.copy}</p>
+                <AppointmentTrigger className="text-action" interest={piece.interest}>
+                  Enquire about {piece.name}
+                </AppointmentTrigger>
+              </article>
+            ))}
+
+            {/* Sixth cell of a six-cell grid — a text block, not a card, so the
+                second row does not read as a leftover. */}
+            <div className="pieces__note">
+              <h3>Something else in mind?</h3>
+              <p>
+                Bridal sets and one-off commissions start with a conversation
+                rather than a catalogue. Tell us what the occasion is and we will
+                show you what is possible.
+              </p>
+              <AppointmentTrigger className="text-action" interest="A bespoke piece">
+                Start a commission
+              </AppointmentTrigger>
+            </div>
+          </div>
+        </section>
+
+        <section
+          className="section section--reverse"
+          id="reverse"
+          aria-labelledby="reverse-title"
         >
-          <a href="#collections" onClick={() => setMenuOpen(false)}>
-            Collections
-          </a>
-          <a href="#legacy" onClick={() => setMenuOpen(false)}>
-            Our Legacy
-          </a>
-          <a href="#craft" onClick={() => setMenuOpen(false)}>
-            Craft
-          </a>
-          <a href="#visit" onClick={() => setMenuOpen(false)}>
-            Visit Us
-          </a>
-          <button className="nav-appointment" onClick={openAppointment}>
-            Book an Appointment
-          </button>
-        </nav>
-      </header>
+          <div className="reverse">
+            <div>
+              <p className="label">The reverse</p>
+              <h2 id="reverse-title">The part with no audience.</h2>
+              <p className="prose">
+                In Jadau and Polki work the back of a piece is enamelled —
+                opaque green, red and white meenakari fired into gold that
+                nobody but the wearer will ever see.
+              </p>
+              <p className="prose">
+                It is the half of the craft that cannot be sold on sight, which
+                is exactly why it tells you the most about who made the thing.
+              </p>
+              <p className="reverse__pull">
+                You should not have to take our word for the side you cannot
+                see.
+              </p>
+            </div>
+            <div className="reverse__media">
+              <Flip
+                front="rani-haar-front"
+                back="rani-haar-reverse"
+                alt="Three-strand rani haar of kundan-set polki roundels strung with carved ruby and emerald beads and pearls"
+                altBack="The same haar turned over: every roundel and the pendant enamelled with a green and pink lotus"
+                caption="Lotus meenakari on the reverse of every roundel"
+                sizes="(max-width: 1100px) 90vw, 46vw"
+              />
+            </div>
+          </div>
+        </section>
 
-      <section className="hero" aria-labelledby="hero-title">
-        <img
-          className="hero__image"
-          src="/images/hero-jadau.webp"
-          alt="Antique jadau and polki necklace displayed on a hand-carved wooden thali"
-          fetchPriority="high"
-        />
-        <div className="hero__shade" aria-hidden="true" />
-        <div className="hero__content">
-          <h1 id="hero-title">
-            Jewels that
-            <br />
-            become heirlooms.
-          </h1>
-          <span className="gold-rule" aria-hidden="true" />
-          <p>
-            Antique Jadau, Diamond and Polki. Meticulously handcrafted to be
-            cherished for generations.
-          </p>
-          <a className="button button--light" href="#collections">
-            Explore the Collections
-          </a>
-        </div>
-        <p className="hero__promise">Serving trust since generations</p>
-      </section>
+        <section className="section" id="craft" aria-labelledby="craft-title">
+          <div className="craft">
+            <div>
+              <p className="label">At the bench</p>
+              <h2 id="craft-title">Made slowly. Worn forever.</h2>
+              <p className="prose">
+                A jadau setting is not claw work. The stone is bedded into
+                shellac and the gold is worked up around it in thin foil, one
+                stone at a time, until the metal closes on the girdle by itself.
+              </p>
+              <p className="prose">
+                The enamel goes on before any of that, because it has to be
+                fired hot enough that no stone could survive it. Which is to
+                say: the back of the piece is made first.
+              </p>
+              <AppointmentTrigger className="text-action" interest="A bespoke piece">
+                Begin a bespoke conversation
+              </AppointmentTrigger>
+            </div>
+            <figure className="craft__media">
+              <img
+                src={images["workshop-hands"].src}
+                srcSet={images["workshop-hands"].srcSet}
+                sizes="(max-width: 1100px) 90vw, 40vw"
+                width={images["workshop-hands"].width}
+                height={images["workshop-hands"].height}
+                alt="Two hands at a wooden bench, setting a rose-cut stone into a gold bezel with a steel tool"
+                loading="lazy"
+                decoding="async"
+              />
+              <figcaption>
+                Closing gold around a rose-cut stone, by hand, at the bench.
+              </figcaption>
+            </figure>
+          </div>
+        </section>
 
-      <section className="collections section-shell" id="collections">
-        <div className="section-heading">
-          <p className="section-label">Our collections</p>
-          <h2>Three traditions. One unmistakable signature.</h2>
-          <p>
-            Designer pieces with a sense of history—composed by hand, made for
-            the way you celebrate now.
-          </p>
-        </div>
-        <div className="collection-list">
-          {collections.map((collection, index) => (
-            <article
-              className={`collection collection--${index + 1}`}
-              key={collection.name}
-            >
-              <div className="collection__frame">
-                <img src={collection.image} alt={collection.alt} loading="lazy" />
-              </div>
-              <div className="collection__copy">
-                <span>0{index + 1}</span>
-                <h3>{collection.name}</h3>
-                <p>{collection.copy}</p>
-                <button onClick={openAppointment}>
-                  Discover {collection.name}
-                </button>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
+        <section
+          className="section section--raised"
+          id="legacy"
+          aria-labelledby="legacy-title"
+        >
+          <div className="house">
+            <div>
+              <p className="label">The house</p>
+              <h2 id="legacy-title">One date, and no mythology.</h2>
+              <p className="prose">
+                Alankar has been setting stones by hand since 1980. Everything
+                else a jeweller usually writes on a page like this — heritage,
+                integrity, generations of trust — could be said by anyone and
+                checked by no one, so here is only the part you can check.
+              </p>
+            </div>
+            {/* Tabular, which is the one job a hairline is allowed to do here. */}
+            <dl className="facts">
+              {facts.map((fact) => (
+                <div className="facts__row" key={fact.label}>
+                  <dt>{fact.label}</dt>
+                  <dd>{fact.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </section>
 
-      <section className="legacy" id="legacy" aria-labelledby="legacy-title">
-        <div className="legacy__intro">
-          <h2 id="legacy-title">
-            Four decades.
-            <br />
-            <em>One promise.</em>
-          </h2>
-          <p>
-            Since 1980, Alankar has been shaped by enduring relationships,
-            exacting artistry and a simple belief: trust is the most precious
-            thing we set into every jewel.
-          </p>
-        </div>
-        <div className="timeline" aria-label="Alankar Jewellers legacy">
-          {milestones.map((milestone) => (
-            <article className="timeline__item" key={milestone.year}>
-              <span className="timeline__dot" aria-hidden="true" />
-              <p className="timeline__year">{milestone.year}</p>
-              <h3>{milestone.title}</h3>
-              <p>{milestone.copy}</p>
-            </article>
-          ))}
-        </div>
-      </section>
+        <section
+          className="section visit"
+          id="visit"
+          aria-labelledby="visit-title"
+        >
+          <div className="visit__intro">
+            <figure className="visit__media">
+              <img
+                src={images["workshop-bench"].src}
+                srcSet={images["workshop-bench"].srcSet}
+                sizes="(max-width: 1100px) 90vw, 38vw"
+                width={images["workshop-bench"].width}
+                height={images["workshop-bench"].height}
+                alt="A jeweller's bench with a dish of uncut stones, files, tweezers and a part-finished gold pendant"
+                loading="lazy"
+                decoding="async"
+              />
+            </figure>
+            <div>
+              <p className="label">By appointment</p>
+              <h2 id="visit-title">A private experience, on your own time.</h2>
+              <p className="prose">
+                Pieces are seen in the inner salon, away from the counter, with
+                someone who can tell you where a stone came from and what the
+                back of it looks like before you turn it over.
+              </p>
+              <AppointmentTrigger className="button">
+                Book an Appointment
+              </AppointmentTrigger>
+            </div>
+          </div>
 
-      <section className="craft section-shell" id="craft">
-        <div className="craft__copy">
-          <p className="section-label">Heritage + craft</p>
-          <h2>
-            Made slowly.
-            <br />
-            <em>Worn forever.</em>
-          </h2>
-          <span className="gold-rule gold-rule--dark" aria-hidden="true" />
-          <p>
-            Every Alankar jewel begins at the bench. Stones are studied,
-            selected and set by hand, with the patience that antique Jadau and
-            Polki demand.
-          </p>
-          <p>
-            It is a dialogue between designer and artisan—between an old
-            technique and the life the jewel will enter.
-          </p>
-          <button className="text-action" onClick={openAppointment}>
-            Begin a bespoke conversation
-          </button>
-        </div>
-        <figure className="craft__image">
-          <img
-            src="/images/artisan-setting.webp"
-            alt="Master artisan hand-setting an uncut diamond into a jadau jewel"
-            loading="lazy"
-          />
-          <figcaption>
-            Hand-set in the tradition of India’s great ateliers.
-          </figcaption>
-        </figure>
-      </section>
+          <ContactDetails />
+        </section>
 
-      <section className="appointment" id="visit">
-        <div className="appointment__media">
-          <img
-            src="/images/private-salon.webp"
-            alt="Private jewellery salon in a restored Indian haveli"
-            loading="lazy"
-          />
-        </div>
-        <div className="appointment__copy">
-          <p className="section-label section-label--gold">By appointment</p>
-          <h2>
-            A private experience,
-            <br />
-            crafted around <em>you.</em>
-          </h2>
-          <span className="gold-rule" aria-hidden="true" />
-          <p>
-            Discover the collections at your own pace, guided by someone who
-            understands the jewel, the craft and the occasion it will become a
-            part of.
-          </p>
-          <button className="button button--light" onClick={openAppointment}>
-            Book an Appointment
-          </button>
-        </div>
-      </section>
-
-      <footer className="site-footer">
-        <div className="footer__brand">
-          <BrandMark compact />
-          <p>Serving trust since generations.</p>
-        </div>
-        <div className="footer__column">
-          <p>Collections</p>
-          <a href="#collections">Jadau</a>
-          <a href="#collections">Diamond</a>
-          <a href="#collections">Polki</a>
-        </div>
-        <div className="footer__column">
-          <p>Alankar</p>
-          <a href="#legacy">Our Legacy</a>
-          <a href="#craft">The Art of Craft</a>
-          <button onClick={openAppointment}>Private Appointments</button>
-        </div>
-        <div className="footer__closing">
-          <p>Antique heritage. Timeless craftsmanship.</p>
-          <small>© {new Date().getFullYear()} Alankar Jewellers.</small>
-        </div>
-      </footer>
-
-      <AppointmentDialog
-        open={appointmentOpen}
-        onClose={() => setAppointmentOpen(false)}
-      />
-    </main>
+        <footer className="site-footer">
+          <div className="footer__brand">
+            <BrandMark compact />
+            <p>
+              Antique Jadau, Polki and Kundan. Set by hand, and shown from both
+              sides.
+            </p>
+          </div>
+          <div className="footer__column">
+            <p className="label">The pieces</p>
+            {pieces.map((piece) => (
+              <a href={`#${piece.id}`} key={piece.id}>
+                {piece.name}
+              </a>
+            ))}
+          </div>
+          <div className="footer__column">
+            <p className="label">Alankar</p>
+            <a href="#reverse">The reverse</a>
+            <a href="#craft">Craft</a>
+            <a href="#legacy">The house</a>
+            <a href="/founders">The people</a>
+            <a href="#visit">Visit us</a>
+            <AppointmentTrigger>Private appointments</AppointmentTrigger>
+          </div>
+          <div className="footer__closing">
+            <p>Jewels that become heirlooms.</p>
+            <small>© {new Date().getFullYear()} Alankar Jewellers.</small>
+          </div>
+        </footer>
+      </main>
+    </AppointmentProvider>
   );
 }

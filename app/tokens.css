@@ -1,0 +1,118 @@
+/**
+ * Design tokens — "Meena Reverse".
+ *
+ * The direction comes from a material fact rather than a mood board: in Jadau
+ * and Polki work the BACK of a piece is enamelled in opaque meenakari, so the
+ * wearer knows about a burst of colour the room never sees. The interface is
+ * therefore quiet, cool and contemporary on its face, and saturation only ever
+ * arrives as a physical event — when a piece is turned over.
+ *
+ * Two load-bearing decisions, both deliberate:
+ *
+ * 1. GREEN IS THE INTERFACE COLOUR, GOLD IS NOT. Gold measures ~2.8:1 on any
+ *    light ground, so it can never legally carry text or a 1px rule — which is
+ *    exactly the mistake the previous design made in two places. Meena green
+ *    measures 7.2:1 on this paper, so it can be text, a button, a link, a field.
+ *    Gold is demoted to what it actually is: a material that appears in the
+ *    photographs. Never set --kundan as text or as a rule.
+ *
+ * 2. THE PAPER IS COOL, NOT CREAM. Every Indian jeweller online is warm. A cool
+ *    ground costs nothing, reads contemporary instantly, and makes the
+ *    photography — all gold, red and green — the warmest thing on screen, which
+ *    is where the warmth belongs.
+ *
+ * See research/03-uiux.md Part C for the full rationale.
+ */
+
+:root {
+  /* ---- Colour: field -------------------------------------------------- */
+  --paper: #f1f2ee; /* page ground */
+  --paper-raised: #fafaf8; /* cards, sheets, dialogs */
+  --paper-sunk: #e5e7e1; /* filter bars, table zebra, data blocks */
+
+  /* ---- Colour: ink ---------------------------------------------------- */
+  --ink: #17191a; /* primary text — 15.9:1 on --paper */
+  --ink-2: #55595a; /* secondary text — 7.0:1 */
+  --ink-3: #8b8f8c; /* captions, disabled — 3.2:1, NEVER body text */
+
+  /* ---- Colour: structure ---------------------------------------------- */
+  --hairline: #d3d6cf; /* the ONLY rule colour on the site */
+
+  /* ---- Colour: enamel (the brand) ------------------------------------- */
+  --meena: #0a5c3c; /* PRIMARY — 7.2:1 on paper. Text, buttons, links, fields */
+  --meena-deep: #063e29; /* hover, pressed, dark fields */
+  --meena-tint: #e6efe9; /* selected chips, focus wash, reverse-side field */
+  --sindoor: #a5142b; /* second enamel — urgency and reverse-side moments only */
+
+  /* ---- Colour: material ----------------------------------------------- */
+  --kundan: #b98a3c; /* 2.8:1 — NEVER text, NEVER a rule. Fills ≥16px only */
+  --polki: #c9c7be; /* uncut-stone grey — skeletons, image placeholders */
+
+  /* ---- Type ------------------------------------------------------------ */
+  --font-display: Eczar, Newsreader, "Iowan Old Style", Georgia, serif;
+  --font-body: Mukta, "Helvetica Neue", Arial, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Three display sizes, not seven. Text on a 1.25 ratio. */
+  --d-xl: clamp(3.25rem, 7vw, 6rem); /* hero only, once per page */
+  --d-l: clamp(2.25rem, 4vw, 3.5rem); /* section openers */
+  --d-m: 1.75rem; /* product name, founder name, pull quote */
+  --t-lg: 1.375rem; /* lede paragraphs */
+  --t-md: 1.125rem; /* body */
+  --t-sm: 1rem; /* secondary body */
+  --t-xs: 0.875rem; /* captions, table cells */
+  --t-2xs: 0.75rem; /* utility labels — tracking 0.08em max, never 0.28em */
+
+  --tracking-label: 0.08em; /* the ceiling for uppercase labels */
+  --leading-tight: 1.05;
+  --leading-body: 1.6;
+
+  /* ---- Space: micro (component internals, strict 4px grid) ------------ */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 40px;
+
+  /* ---- Space: macro (section rhythm, ×1.55 ladder) -------------------- */
+  --m-1: 56px;
+  --m-2: 88px;
+  --m-3: 136px;
+  --m-4: 208px;
+
+  /* ---- Edges ----------------------------------------------------------- */
+  /* No borders on images, ever. Structure comes from field colour changing,
+     not from lines. One hairline, one weight, one job: separating rows of data. */
+  --radius-media: 3px; /* removes the "screenshot" feel, stops short of a card */
+  --radius: 0;
+  --shadow-modal: 0 24px 64px rgba(23, 25, 26, 0.18); /* the only shadow */
+
+  /* ---- Motion ---------------------------------------------------------- */
+  /* One orchestrated arrival, then nothing. No scroll-triggered fade-ups. */
+  --motion-fast: 160ms ease-out; /* colour, background-color, opacity only */
+  --motion-flip: 420ms cubic-bezier(0.2, 0.7, 0.2, 1); /* the only transform */
+}
+
+/**
+ * Fallback metric matching. Eczar is a high-contrast display face; without this
+ * the swap from Georgia visibly reflows the hero headline.
+ */
+@font-face {
+  font-family: "Eczar Fallback";
+  src: local("Georgia"), local("Times New Roman");
+  size-adjust: 103%;
+  ascent-override: 92%;
+  descent-override: 24%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Mukta Fallback";
+  src: local("Helvetica Neue"), local("Arial");
+  size-adjust: 96%;
+  ascent-override: 105%;
+  descent-override: 26%;
+  line-gap-override: 0%;
+}

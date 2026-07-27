@@ -1,0 +1,49 @@
+{
+  "feature": "Premium redesign + jewellery e-commerce + admin panel + founders page",
+  "recordedOn": "2026-07-27",
+  "decisions": {
+    "commerceModel": {
+      "choice": "full-checkout-fake-door-first",
+      "detail": "Build the complete cart and checkout experience. Real payment capture stays behind a feature flag until the client's Razorpay KYC clears. Until then the final step captures the order and tells the customer the shop will call to take payment.",
+      "implications": [
+        "Order and line-item tables must snapshot price at order time (gold rate volatility).",
+        "Payment provider integration is designed for but not switched on; the flag must be a single, obvious toggle.",
+        "Nothing may claim a payment succeeded while the flag is off."
+      ]
+    },
+    "adminAuth": {
+      "choice": "password-plus-signed-session",
+      "detail": "Owner-set password, signed cookie session using WebCrypto. No dependency on the shop owner holding a ChatGPT or Google account.",
+      "implications": [
+        "Password must be stored hashed, never in source or site-config.",
+        "Sessions must work on the Workers runtime with no Node built-ins.",
+        "SIWC (app/chatgpt-auth.ts) is NOT used for admin; the README warns it proves identity, not authorisation."
+      ]
+    },
+    "content": {
+      "choice": "generated-placeholder-imagery",
+      "detail": "Product photography and the two founder portraits are generated as placeholders so the site demos convincingly before real assets exist.",
+      "implications": [
+        "Placeholder assets must be clearly marked as such in the repo and swappable in one place.",
+        "No fabricated factual claims (prices, weights, certifications, founder names/bios) presented as real.",
+        "Follows the existing SITE_DETAILS_PENDING precedent."
+      ]
+    },
+    "sequencing": {
+      "choice": "redesign-first",
+      "detail": "Milestone 1: premium visual direction + founders page, delivered for review. Milestone 2: storefront. Milestone 3: admin panel.",
+      "implications": [
+        "Design direction is approved before ~20 commerce screens are built on top of it.",
+        "Storefront and admin inherit the approved design system rather than defining their own."
+      ]
+    }
+  },
+  "brandBrief": "Rich Indian heritage craft, run by modern people. Must read as neither a dusty traditional gold-shop site nor a generic minimal DTC startup.",
+  "openQuestions": [
+    "Production domain (assumed www.alankarjewellers.com)",
+    "Real phone / WhatsApp / address (SITE_DETAILS_PENDING still true)",
+    "Founder and co-founder real names, bios and photos",
+    "Whether the client has an existing Razorpay account or needs onboarding",
+    "Real catalogue: pieces, weights, purity, making charges, pricing"
+  ]
+}
