@@ -120,6 +120,63 @@ const facts = [
 
 const heroImage = images["jadau-haar-front"];
 
+type Piece = (typeof pieces)[number];
+
+/**
+ * ONE ALCOVE in the catalogue wall — see the #collections section below for why
+ * the wall is built the way it is. Four layers, back to front, and every one of
+ * them cut to the SAME cusped arch so the whole thing is one silhouette rather
+ * than a photograph parked on a dark rectangle:
+ *
+ *   .piece__mount   a brass rule a couple of pixels outside the opening, the
+ *                   metal edge of a real shop niche. Ornament, never a letter.
+ *   .piece__recess  the recess itself: teak-deep, cut into the plaster wall,
+ *                   with a cusped shadow falling from it back onto the wall.
+ *   Flip            the piece, already arch-masked by flip.css.
+ *   .piece__lamp    the light in the alcove. The hero's `.hero__lamp`, retuned
+ *                   from oxblood to teak.
+ *
+ * The lamp is a sibling rather than an ancestor wrapper on purpose: a mask
+ * clips everything its element paints, so masking anything above the Flip's
+ * button would delete the keyboard focus ring.
+ */
+function Alcove({ piece, sizes }: { piece: Piece; sizes: string }) {
+  return (
+    <div className="piece__alcove">
+      <span className="piece__mount arch" aria-hidden="true" />
+      <span className="piece__recess arch" aria-hidden="true" />
+      <Flip
+        front={piece.front}
+        back={piece.back}
+        alt={piece.alt}
+        altBack={piece.altBack}
+        sizes={sizes}
+      />
+      <span className="piece__lamp arch" aria-hidden="true" />
+    </div>
+  );
+}
+
+/** The label under an alcove. */
+function PieceBody({ piece }: { piece: Piece }) {
+  return (
+    <div className="piece__body">
+      <h3>{piece.name}</h3>
+      <p className="piece__spec">{piece.spec}</p>
+      <p className="piece__copy">{piece.copy}</p>
+      {/* The visible word is "Enquire" — under a heading that already reads
+          "Jadau haar", a link reading "Enquire about Jadau haar" says the name
+          twice. The accessible name keeps the full phrase, because out of
+          context (a screen-reader link list) "Enquire" five times over is
+          useless. */}
+      <AppointmentTrigger className="text-action" interest={piece.interest}>
+        <span className="visually-hidden">Enquire about {piece.name}</span>
+        <span aria-hidden="true">Enquire</span>
+      </AppointmentTrigger>
+    </div>
+  );
+}
+
 /**
  * Server component. Only three things ship to the browser as JavaScript:
  * `SiteHeader` (menu toggle), `AppointmentTrigger` (the buttons that open the
@@ -228,17 +285,31 @@ export default function Home() {
           <div className="jali-band" />
         </div>
 
-        {/* HAVELI. The family house: lime plaster, brass rather than gold,
-            asymmetric and editorial rather than centred. Each piece stands in a
-            teak-deep niche with illuminated corners, so the grey of the sweep
-            reads at 6.4:1 against the wood — a lit alcove instead of a
-            mismatched rectangle. */}
+        {/* HAVELI, and the one place on the page that is a room rather than a
+            page: a jeweller's shop wall of arched alcoves cut into lime
+            plaster, each holding one piece, each lit.
+
+            The previous version stacked three shapes per piece — a teak
+            RECTANGLE, an arch-masked photograph inside it, and the cold grey
+            studio sweep inside that — which read as a dark box with a sticker
+            on it. Here the RECESS ITSELF is the arch: one silhouette, cut into
+            a sunk-plaster wall, ruled in brass and casting its own cusped
+            shadow back onto the wall. `.piece__lamp` is the same device the
+            hero uses (`.hero__lamp`): a second arch-masked layer that warms
+            the sweep toward the wood, drops the empty crown and the rim into
+            shadow, and lays one pool of light over the stones.
+
+            The wall is one object rather than five: a lead band (the haar,
+            its note, and the commission card stacked in the column beside it)
+            over a shelf of four, all four sills on one line and only their
+            crowns staggering. Nothing floats in a plaster void any more,
+            because the void is now the wall. */}
         <section
           className="section section--haveli grained"
           id="collections"
           aria-labelledby="collections-title"
         >
-          <div className="section-head">
+          <div className="section-head pieces__head">
             <div>
               <p className="label">The pieces</p>
               <h2 id="collections-title">Turn one over.</h2>
@@ -250,59 +321,49 @@ export default function Home() {
             <div className="rule-brass section-head__rule" aria-hidden="true" />
           </div>
 
-          {/* Five pieces at four different sizes rather than five identical
-              cells: the haar runs seven columns wide, the tikka three. Nothing
-              in the middle, and the rows are bottom-aligned so the tops
-              stagger. The commission note takes the last cell as text, which is
-              why there is no sixth, empty one. */}
           <div className="pieces">
-            {pieces.map((piece, index) => (
-              <article className="piece" id={piece.id} key={piece.id}>
-                <div className="piece__niche grained">
-                  <div className="piece__niche-inner illuminated">
-                    <Flip
-                      front={piece.front}
-                      back={piece.back}
-                      alt={piece.alt}
-                      altBack={piece.altBack}
-                      sizes={
-                        index === 0
-                          ? "(max-width: 1100px) 56vw, 52vw"
-                          : "(max-width: 1100px) 46vw, 30vw"
-                      }
-                    />
+            <div className="pieces__wall grained">
+              {/* The lead band: the haar in the deepest alcove, its label at
+                  the crown line and the commission card down at the sill, so
+                  the column beside it is full top to bottom. */}
+              <div className="pieces__band pieces__band--lead">
+                <article className="piece piece--lead" id={pieces[0].id}>
+                  <Alcove piece={pieces[0]} sizes="(max-width: 780px) 78vw, (max-width: 1100px) 44vw, 480px" />
+                  <PieceBody piece={pieces[0]} />
+                </article>
+
+                <div className="pieces__note panel grained">
+                  <div className="pieces__note-inner illuminated illuminated--brass">
+                    <h3>Something else in mind?</h3>
+                    <p>
+                      Bridal sets and one-off commissions start with a
+                      conversation rather than a catalogue. Tell us what the
+                      occasion is and we will show you what is possible.
+                    </p>
+                    <AppointmentTrigger className="text-action" interest="A bespoke piece">
+                      Start a commission
+                    </AppointmentTrigger>
                   </div>
                 </div>
-                <div className="piece__body">
-                  <h3>{piece.name}</h3>
-                  <p className="piece__spec">{piece.spec}</p>
-                  <p className="piece__copy">{piece.copy}</p>
-                  {/* The visible word is "Enquire" — under a heading that
-                      already reads "Jadau haar", a link reading "Enquire about
-                      Jadau haar" says the name twice. The accessible name keeps
-                      the full phrase, because out of context (a screen-reader
-                      link list) "Enquire" five times over is useless. */}
-                  <AppointmentTrigger className="text-action" interest={piece.interest}>
-                    <span className="visually-hidden">Enquire about {piece.name}</span>
-                    <span aria-hidden="true">Enquire</span>
-                  </AppointmentTrigger>
-                </div>
-              </article>
-            ))}
+              </div>
 
-            <div className="pieces__note panel grained">
-              <div className="pieces__note-inner illuminated illuminated--brass">
-                <h3>Something else in mind?</h3>
-                <p>
-                  Bridal sets and one-off commissions start with a conversation
-                  rather than a catalogue. Tell us what the occasion is and we
-                  will show you what is possible.
-                </p>
-                <AppointmentTrigger className="text-action" interest="A bespoke piece">
-                  Start a commission
-                </AppointmentTrigger>
+              {/* The shelf. Four alcoves on one sill line, sized down the row —
+                  the choker widest, the tikka narrowest — so the crowns
+                  stagger and the row still closes flush. */}
+              <div className="pieces__band pieces__band--shelf">
+                {pieces.slice(1).map((piece) => (
+                  <article className="piece" id={piece.id} key={piece.id}>
+                    <Alcove
+                      piece={piece}
+                      sizes="(max-width: 780px) 78vw, (max-width: 1100px) 38vw, 280px"
+                    />
+                    <PieceBody piece={piece} />
+                  </article>
+                ))}
               </div>
             </div>
+
+            <div className="rule-brass pieces__sill" aria-hidden="true" />
           </div>
         </section>
 
