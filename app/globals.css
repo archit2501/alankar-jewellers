@@ -671,9 +671,39 @@ h3 {
 
 /* --- Hero — DARBAR ------------------------------------------------------- */
 
-/* The court. Centred, symmetrical, and it ends on a doorway: the piece is
-   masked into a multifoil arch and ruled in gold, so the studio sweep it was
-   photographed on stops being a grey rectangle and becomes a lit niche. */
+/* THE DOORWAY.
+ *
+ * The court is not a column of centred type any more. It is a wall with one
+ * opening in it, and you are standing outside looking through:
+ *
+ *   ── lintel ──────────────────────────────────────────────────────
+ *   ▒ jali wall ▒        ⌒ arch ⌒        ▒ jali wall ▒
+ *   ▒▒▒▒▒▒▒▒▒▒▒▒        [ the piece ]        ▒▒▒▒▒▒▒▒▒▒▒▒
+ *   ── sill ────────────────────────────────────────────────────────
+ *
+ * Five planes, drawn back to front, because a single flat plane is exactly
+ * what made the old hero read cheaper than the teak niches further down:
+ *
+ *   0  the oxblood field and its grain            (.hero, .grained::after)
+ *   1  the jali wall, running to both screen edges (.hero__flank)
+ *   2  a vignette that pushes the wall into shadow (.hero__vignette)
+ *   3  a warm radial glow inside the opening       (.hero__glow)
+ *   4  the gold-ruled arch, the piece, and a halo drawn from the arch's own
+ *      silhouette by drop-shadow                   (.hero__arch, .hero__image)
+ *
+ * Everything is derived from --arch-w, the width of the opening, so the wall,
+ * the glow and the inscription all resize together and the composition never
+ * loses its proportions. The one thing the whole section is tuned for is that
+ * the piece is above the fold on a laptop: the token ceiling of --d-xl (7.5rem)
+ * put a 400px-tall headline over it and pushed the jewellery entirely off a
+ * 900px screen, so the headline is set locally here instead — two lines, at a
+ * size the opening can stand under rather than one that swallows it.
+ *
+ * The glow is CSS only. Contrast is unaffected by it where it matters: the
+ * brightest part of the gradient sits behind the photograph, and by the time it
+ * reaches the caption it has fallen back to the field, so gold stays at its
+ * measured 6.35:1 on oxblood.
+ */
 .hero {
   --field: var(--oxblood);
   --field-ink: var(--plaster);
@@ -682,57 +712,183 @@ h3 {
   --field-metal: var(--gold);
   --field-focus: var(--gold-leaf);
 
-  padding: var(--m-1) var(--gutter) var(--m-3);
+  /* The opening. Every other measurement in this section is derived from it,
+     which is also the one number the short-screen queries below touch. */
+  --arch-w: min(440px, 76vw);
+
+  /* How far the gold arch stands outside the photograph. Declared on the field
+     rather than on .hero__arch because the wall has to reserve exactly this
+     much at its foot, or the frame hangs over the sill. */
+  --ornament-inset: 8px;
+
+  /* No inline padding: the wall and its two rules run edge to edge. The
+     inscription and the invitation put the gutter back on themselves. */
+  padding: var(--s-4) 0 var(--m-2);
   background: var(--oxblood);
   color: var(--plaster);
   text-align: center;
 }
 
-.hero__inner {
+/* --- The inscription over the opening ----------------------------------- */
+
+.hero__head {
   position: relative;
+  z-index: 3;
   max-width: 62rem;
   margin-inline: auto;
+  padding-inline: var(--gutter);
 }
 
+/* The old hero overrode .deva to --gold-deep, which measures 2.96:1 on this
+   field — under the 3:1 floor for large text even before this section made the
+   mark smaller. Dropping the override hands it back to --field-metal (--gold,
+   6.09:1) and it is now set apart from the eyebrow beneath it by size, script
+   and tracking rather than by being too dim to read. */
 .hero__deva {
-  margin-bottom: var(--s-5);
-  color: var(--gold-deep);
-  font-size: clamp(2rem, 4vw, 3rem);
+  margin-bottom: var(--s-1);
+  font-size: clamp(1.5rem, 2.2vw, 1.9rem);
+  letter-spacing: 0.06em;
+  line-height: 1.25;
 }
 
+.hero__eyebrow {
+  margin-bottom: var(--s-3);
+}
+
+/* Local, not --d-xl. Two lines is the brief: the headline has to leave the
+   opening room to stand under it. text-wrap:balance splits it evenly, and the
+   measure is what forces the break in the first place. */
 .hero h1 {
-  max-width: 22ch;
-  margin: 0 auto var(--s-6);
+  max-width: min(20ch, 34rem);
+  margin: 0 auto;
+  font-size: clamp(2.4rem, 4.4vw, 3.5rem);
   text-wrap: balance;
 }
 
-.hero__lede {
-  max-width: 46ch;
-  margin: 0 auto var(--s-7);
-  color: var(--plaster);
-  font-size: var(--t-lg);
-  line-height: 1.6;
+/* Lintel and sill. Doubled gold, full bleed — running them to the screen edges
+   is what turns the jali between them into a wall rather than two panels of
+   pattern sitting on a field. */
+.hero__rule {
+  position: relative;
+  z-index: 3;
+  margin-top: var(--s-4);
 }
 
-.hero__actions {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--s-5) var(--s-7);
+.hero__rule--sill {
+  margin-top: 0;
 }
 
-.hero__screen {
-  margin: var(--m-1) 0 var(--s-7);
+/* --- The wall ------------------------------------------------------------ */
+
+.hero__stage {
+  position: relative;
+  padding-top: var(--s-4);
+  padding-bottom: calc(var(--ornament-inset) * 1.32);
+  isolation: isolate;
 }
 
-/* The doorway. --ornament-inset is dialled down from the token default so the
-   gold reads as a ruled arch around the piece rather than a slab behind it. */
-.hero__arch {
-  --ornament-inset: 10px;
+/* The jali either side of the opening. .jali-veil already knows how to lay a
+   screen over a field without ever sitting behind text; these two only say how
+   wide the wall is and dissolve it toward the outer edges so it recedes into
+   the vignette instead of stopping at a hard line. */
+.hero__flank {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  bottom: 0;
+  width: calc(50% - var(--arch-w) / 2 + var(--s-2));
+}
 
-  width: min(440px, 78vw);
+.hero__flank::before {
+  background-size: 84px 84px;
+  opacity: 0.19;
+}
+
+.hero__flank--start {
+  left: 0;
+}
+
+.hero__flank--start::before {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 58%);
+  mask-image: linear-gradient(to right, transparent, #000 58%);
+}
+
+.hero__flank--end {
+  right: 0;
+}
+
+.hero__flank--end::before {
+  -webkit-mask-image: linear-gradient(to left, transparent, #000 58%);
+  mask-image: linear-gradient(to left, transparent, #000 58%);
+}
+
+/* The wall is darkest where it is furthest from the opening. This is the layer
+   that does most of the work: without it the jali reads as wallpaper, and with
+   it the corners fall away and the eye has nowhere to go but the arch. */
+.hero__vignette {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: radial-gradient(
+    80% 116% at 50% 56%,
+    rgba(46, 8, 14, 0) 12%,
+    rgba(36, 6, 12, 0.5) 46%,
+    rgba(24, 3, 8, 0.72) 74%,
+    rgba(19, 2, 7, 0.84) 100%
+  );
+  pointer-events: none;
+}
+
+/* --- The opening --------------------------------------------------------- */
+
+.hero__niche {
+  position: relative;
+  z-index: 2;
+  width: var(--arch-w);
   margin-inline: auto;
+}
+
+/* Light inside the alcove. Warmed toward the top, where the haar hangs, and
+   spread wide enough to wash a little of the jali immediately around the
+   opening — which is what makes the wall read as a surface catching light
+   rather than a flat pattern. */
+.hero__glow {
+  position: absolute;
+  z-index: 0;
+  inset: -8% -52% -16%;
+  background: radial-gradient(
+    46% 44% at 50% 44%,
+    rgba(255, 214, 152, 0.22),
+    rgba(233, 183, 96, 0.11) 42%,
+    rgba(201, 162, 39, 0.05) 62%,
+    rgba(201, 162, 39, 0) 78%
+  );
+  pointer-events: none;
+}
+
+/* --ornament-inset is dialled down from the token default so the gold reads as
+   a ruled arch around the piece rather than a slab behind it. The two
+   drop-shadows are drawn from the arch's OWN silhouette — a filter on this
+   element applies to the gold arch and the masked photograph together — so the
+   halo is cusped, not a rectangle of blur. */
+.hero__arch {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  filter: drop-shadow(0 0 46px rgba(226, 179, 96, 0.34))
+    drop-shadow(0 18px 40px rgba(18, 2, 6, 0.55));
+}
+
+/* .arch-frame insets its gold shape by the same number of pixels on all four
+   sides, which at this size stopped being invisible: the mask is stretched from
+   a 100x132 viewBox, so an equal inset scales the outline unevenly and the two
+   arches disagree about where the flat of the apex begins — the crown grew a
+   small step in it. Scaling the vertical inset by the same 132/100 makes the
+   outer box exactly similar to the inner one, so the gold is a true scaled
+   outline and the crown closes cleanly. Hero-scoped: the smaller framed pieces
+   further down the page are nowhere near the size where this shows. */
+.hero__arch.arch-frame::before {
+  inset: calc(var(--ornament-inset) * -1.32) calc(var(--ornament-inset) * -1);
 }
 
 .hero__image {
@@ -744,12 +900,66 @@ h3 {
   object-fit: cover;
 }
 
+/* THE ALCOVE, and the single change that stopped the opening reading as a grey
+   slab. The catalogue sweep is flat, cold and — at this size — the largest area
+   on the screen. Cut to the same arch as the photograph, this overlay lays
+   three coats on it, bottom to top: a warm wash that pulls the neutral toward
+   the field, a rim-and-crown darkening so the sweep recedes like the back of a
+   niche instead of standing forward of the oxblood, and one soft pool of light
+   sitting on the piece. The pool is centred at 62% down, which is where the
+   stones are; the crown, which is only empty sweep inside the loop of the cord,
+   is the part that goes dark. Nothing here touches the stones themselves —
+   their colour is the one thing on this page that has to stay honest. */
+.hero__lamp {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  background:
+    radial-gradient(62% 44% at 50% 62%, rgba(255, 238, 210, 0.16), rgba(255, 238, 210, 0) 66%),
+    radial-gradient(
+      74% 60% at 50% 64%,
+      rgba(44, 8, 14, 0) 32%,
+      rgba(40, 7, 13, 0.32) 74%,
+      rgba(26, 4, 9, 0.6) 100%
+    ),
+    linear-gradient(to bottom, rgba(34, 6, 11, 0.34), rgba(34, 6, 11, 0) 44%),
+    linear-gradient(rgba(126, 44, 32, 0.16), rgba(126, 44, 32, 0.16));
+  pointer-events: none;
+}
+
+/* --- Under the sill ------------------------------------------------------ */
+
+.hero__foot {
+  position: relative;
+  z-index: 3;
+  max-width: 62rem;
+  margin-inline: auto;
+  padding: var(--s-7) var(--gutter) 0;
+}
+
 .hero__caption {
-  max-width: 34ch;
-  margin: var(--s-6) auto 0;
+  max-width: 62ch;
+  margin: 0 auto var(--s-6);
+  text-wrap: balance;
   color: var(--gold);
   font-size: var(--t-xs);
   letter-spacing: 0.02em;
+}
+
+.hero__lede {
+  max-width: 48ch;
+  margin: 0 auto var(--s-6);
+  color: var(--plaster);
+  font-size: var(--t-lg);
+  line-height: 1.6;
+}
+
+.hero__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--s-5) var(--s-7);
 }
 
 /* The one orchestrated arrival on the site: the photograph comes up to colour
@@ -777,24 +987,88 @@ h3 {
   }
 }
 
-.hero__inner > * {
+/* Top down, the way a curtain goes up: inscription, lintel, wall, sill,
+   invitation. Killed wholesale by the reduced-motion block at the foot of this
+   file, which zeroes every duration and delay on the page. */
+.hero__head,
+.hero__rule,
+.hero__stage,
+.hero__foot {
   animation: arrive-copy 320ms ease-out both;
 }
 
-.hero__inner > :nth-child(2) {
-  animation-delay: 60ms;
+.hero__rule {
+  animation-delay: 70ms;
 }
 
-.hero__inner > :nth-child(3) {
-  animation-delay: 110ms;
+.hero__stage {
+  animation-delay: 120ms;
 }
 
-.hero__inner > :nth-child(4) {
-  animation-delay: 160ms;
+.hero__rule--sill {
+  animation-delay: 170ms;
 }
 
-.hero__inner > :nth-child(5) {
-  animation-delay: 210ms;
+.hero__foot {
+  animation-delay: 220ms;
+}
+
+/* Short screens. A 1280x720 or 1440x800 laptop has to show the piece too, so
+   the inscription gives up height in two steps before the opening does — and
+   the opening only narrows once there is nothing left to take from the type. */
+@media (min-width: 781px) and (max-height: 840px) {
+  .hero {
+    --arch-w: min(392px, 76vw);
+
+    padding-top: var(--s-2);
+  }
+
+  .hero__deva {
+    font-size: 1.4rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.1rem, 3.4vw, 2.9rem);
+  }
+
+  .hero__rule {
+    margin-top: var(--s-4);
+  }
+
+  .hero__stage {
+    padding-top: var(--s-4);
+  }
+}
+
+/* 1280x720 is the floor this section is tuned against: the whole haar, drops
+   and all, still has to clear the fold there. The inscription gives up its last
+   height here rather than the opening giving up more width. */
+@media (min-width: 781px) and (max-height: 760px) {
+  .hero {
+    --arch-w: min(356px, 76vw);
+
+    padding-top: 0;
+  }
+
+  .hero__deva {
+    font-size: 1.25rem;
+  }
+
+  .hero__eyebrow {
+    margin-bottom: var(--s-2);
+  }
+
+  .hero h1 {
+    font-size: clamp(1.9rem, 3vw, 2.5rem);
+  }
+
+  .hero__rule {
+    margin-top: var(--s-3);
+  }
+
+  .hero__stage {
+    padding-top: var(--s-3);
+  }
 }
 
 /* --- The pieces — HAVELI ------------------------------------------------- */
@@ -1692,8 +1966,17 @@ a.contact__value:hover {
     padding-block: var(--m-2);
   }
 
+  /* On a phone the wall has almost no room either side of the opening, so the
+     jali narrows to a jamb rather than disappearing — the arch still reads as
+     cut through something. */
   .hero {
-    padding-block: var(--m-1) var(--m-2);
+    --arch-w: min(460px, 74vw);
+
+    padding-block: var(--s-5) var(--m-2);
+  }
+
+  .hero__flank::before {
+    background-size: 60px 60px;
   }
 
   .section-head {

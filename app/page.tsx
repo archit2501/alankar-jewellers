@@ -139,20 +139,74 @@ export default function Home() {
       <main id="top">
         <SiteHeader />
 
-        {/* DARBAR. The court, and the only symmetrical composition above the
-            fold: eyebrow, name, headline, invitation, then a jali screen you
-            pass through to reach the piece itself, which stands in a multifoil
-            arch ruled in gold. The arch is not decoration — every catalogue
-            photograph was shot on an inconsistent grey studio sweep, so cutting
-            each one to the arch turns a rectangle that cannot match any field
-            colour into a mounted miniature that does not have to. */}
+        {/* DARBAR. The court, and the only symmetrical composition on the page.
+            It is built as a DOORWAY YOU ARE LOOKING THROUGH rather than as a
+            column of type: the name and the headline are the inscription over
+            the opening, two doubled gold rules are the lintel and the sill, and
+            between them a jali wall runs to both edges of the screen with one
+            multifoil arch cut through it. The piece stands inside that arch and
+            is the brightest thing on the page, because the field darkens toward
+            the corners while a warm glow sits behind the stone.
+
+            The arch is not decoration — every catalogue photograph was shot on
+            an inconsistent grey studio sweep, so cutting each one to the arch
+            turns a rectangle that cannot match any field colour into a mounted
+            miniature that does not have to. Here it does a second job: it is
+            the hole in the wall, so the grey sweep reads as light coming from
+            inside the alcove.
+
+            Order matters for depth. Field and grain, then the jali wall, then
+            the vignette that pushes the wall back into shadow, then the glow,
+            then the arch and the piece. Five planes, not one. */}
         <section className="hero grained" aria-labelledby="hero-title">
-          <div className="hero__inner">
+          <div className="hero__head">
             <p className="deva hero__deva" aria-hidden="true">
               अलंकार
             </p>
-            <p className="label">Jadau · Polki · Kundan — since 1980</p>
+            <p className="label hero__eyebrow">Jadau · Polki · Kundan — since 1980</p>
             <h1 id="hero-title">Jewels that become heirlooms.</h1>
+          </div>
+
+          <div className="rule-gold hero__rule" aria-hidden="true" />
+
+          <div className="hero__stage">
+            <div className="jali-veil hero__flank hero__flank--start" aria-hidden="true" />
+            <div className="jali-veil hero__flank hero__flank--end" aria-hidden="true" />
+            <div className="hero__vignette" aria-hidden="true" />
+            <div className="hero__niche">
+              <div className="hero__glow" aria-hidden="true" />
+              <div className="hero__arch arch-frame">
+                <img
+                  className="hero__image arch"
+                  src={heroImage.src}
+                  srcSet={heroImage.srcSet}
+                  sizes="(max-width: 780px) 74vw, 440px"
+                  width={heroImage.width}
+                  height={heroImage.height}
+                  alt="Jadau haar of uncut polki with carved ruby and emerald drops, photographed on a grey sweep"
+                  fetchPriority="high"
+                  decoding="sync"
+                />
+                {/* The alcove. Every catalogue photograph was shot on a flat,
+                    cold grey sweep, and at this size that sweep is the largest
+                    single area on the screen — it was reading as a grey slab
+                    dropped on the oxblood. This overlay is cut to the same arch
+                    and does three things to it: warms it toward the field,
+                    darkens it at the crown and the rim so it recedes like the
+                    back of a niche, and lays one soft pool of light over the
+                    piece itself. It never touches the stones' own colour, which
+                    is the one thing on this page that has to stay honest. */}
+                <div className="hero__lamp arch" aria-hidden="true" />
+              </div>
+            </div>
+          </div>
+
+          <div className="rule-gold hero__rule hero__rule--sill" aria-hidden="true" />
+
+          <div className="hero__foot">
+            <p className="hero__caption">
+              The Jadau haar, face up. Like everything below it, it turns over.
+            </p>
             <p className="hero__lede">
               Every piece here is shown from both sides. The front is what the
               room sees. The back is enamelled, and only the person wearing it
@@ -166,23 +220,6 @@ export default function Home() {
                 Book a viewing
               </AppointmentTrigger>
             </div>
-            <div className="jali-band hero__screen" aria-hidden="true" />
-            <div className="hero__arch arch-frame">
-              <img
-                className="hero__image arch"
-                src={heroImage.src}
-                srcSet={heroImage.srcSet}
-                sizes="(max-width: 780px) 78vw, 440px"
-                width={heroImage.width}
-                height={heroImage.height}
-                alt="Jadau haar of uncut polki with carved ruby and emerald drops, photographed on a grey sweep"
-                fetchPriority="high"
-                decoding="sync"
-              />
-            </div>
-            <p className="hero__caption">
-              The Jadau haar, face up. Like everything below it, it turns over.
-            </p>
           </div>
         </section>
 
