@@ -119,12 +119,33 @@ export function AppointmentTrigger({
   );
 }
 
-type Status = "idle" | "pending" | "error" | "success";
+type Status = "idle" | "pending" | "error" | "success" | "preview";
 
 type AppointmentResponse = { ok?: boolean; error?: string };
 
 const GENERIC_ERROR =
   "We could not send your request just now. Please try again in a moment.";
+
+/**
+ * The design preview published to GitHub Pages is a STATIC export: there is no
+ * server behind it, so `POST /api/appointments` does not exist there and a
+ * visitor pressing "Send request" would get a 404 and read a failure message
+ * about a system that is in fact working fine.
+ *
+ * The preview therefore says plainly what it is, rather than pretending to
+ * submit or pretending to fail. Keyed on the Pages hostname, so the real
+ * deployment is completely unaffected and no build flag has to be threaded
+ * through vinext.
+ */
+function isStaticPreview() {
+  return (
+    typeof window !== "undefined" &&
+    window.location.hostname.endsWith(".github.io")
+  );
+}
+
+const PREVIEW_NOTICE =
+  "This is a design preview, so the booking form is not connected here. On the live site this request reaches the shop directly.";
 
 function AppointmentDialog({
   interest,
@@ -153,7 +174,7 @@ function AppointmentDialog({
   // outright), so focus has to be re-homed rather than dropped onto <body>.
   useEffect(() => {
     if (status === "success") successRef.current?.focus();
-    else if (status === "error") errorRef.current?.focus();
+    else if (status === "error" || status === "preview") errorRef.current?.focus();
   }, [status]);
 
   useEffect(() => {
@@ -215,6 +236,11 @@ function AppointmentDialog({
     const data = new FormData(event.currentTarget);
     setStatus("pending");
     setError(null);
+
+    if (isStaticPreview()) {
+      setStatus("preview");
+      return;
+    }
 
     let payload: AppointmentResponse | null = null;
     let ok = false;
@@ -372,6 +398,18 @@ function AppointmentDialog({
                   defaultValue=""
                 />
               </div>
+
+              {status === "preview" ? (
+                <div
+                  className="form-note form-wide"
+                  role="status"
+                  tabIndex={-1}
+                  ref={errorRef}
+                >
+                  <strong>Design preview</strong>
+                  <span>{PREVIEW_NOTICE}</span>
+                </div>
+              ) : null}
 
               {error ? (
                 <div

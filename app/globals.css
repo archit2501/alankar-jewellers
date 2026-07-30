@@ -2001,6 +2001,26 @@ a.contact__value:hover {
   font-weight: 600;
 }
 
+/* The static design preview has no server behind it, so the booking form says
+   so rather than reporting a failure. Informational, not an error: brass rule
+   instead of sindoor, and it never offers the phone fallback, because on a
+   preview the number is a placeholder anyway. */
+.form-note {
+  display: flex;
+  flex-direction: column;
+  padding: var(--s-4);
+  border-left: var(--rule-heavy) solid var(--brass);
+  background: var(--plaster-sunk);
+  color: var(--ink);
+  font-size: var(--t-sm);
+  gap: var(--s-2);
+}
+
+.form-note strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
 .form-error__fallback {
   display: flex;
   align-items: center;

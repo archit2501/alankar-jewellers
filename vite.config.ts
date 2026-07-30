@@ -43,7 +43,15 @@ export default defineConfig(async () => {
   // Wrangler snapshots its log path while the Cloudflare plugin is imported.
   const { cloudflare } = await import("@cloudflare/vite-plugin");
 
+  // Static design preview only. A GitHub Pages project site is served from
+  // /<repo>/, so emitted asset URLs need that prefix. Vite's `base` does this
+  // WITHOUT touching routing — Next's `basePath` also rewrites routes, which
+  // makes vinext classify both pages as dynamic and refuse to prerender them.
+  // Unset for the real Cloudflare deployment, which serves from a domain root.
+  const previewBase = process.env.PREVIEW_BASE_PATH?.trim();
+
   return {
+    base: previewBase ? `${previewBase}/` : "/",
     server: isCodexSeatbeltSandbox
       ? { watch: { useFsEvents: false, usePolling: true } }
       : undefined,
