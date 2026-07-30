@@ -27,9 +27,14 @@ import { images, type ImageKey } from "../_media/images";
  *   keyboard — focus reveals it; Enter/Space pins it so it survives blur
  *   touch    — tap pins it (there is no hover to rely on)
  *
- * The field colour travels from paper to meena on the same curve as the
- * crossfade, so image and field read as one object turning rather than two
- * things animating.
+ * The field colour travels to oxblood on the same curve as the crossfade, so
+ * image and field read as one object turning rather than two things animating.
+ *
+ * The piece is cut to the multifoil arch. The mask lives on `.flip__stage`
+ * rather than on the button, because a mask clips everything an element paints
+ * including its focus outline — masking the control would have deleted the
+ * keyboard ring. `framed` adds the gold arch ruled outside the mask; the
+ * catalogue grid leaves it off because the teak niche already frames the piece.
  *
  * Reduced motion: the crossfade becomes instant and the 2% scale is dropped,
  * but the colour change is KEPT — the information survives, the movement does
@@ -43,6 +48,7 @@ export function Flip({
   sizes = "(max-width: 780px) 90vw, 33vw",
   priority = false,
   caption,
+  framed = false,
 }: {
   front: ImageKey;
   /** Omit when a piece has no reverse photographed yet — the flip disables itself. */
@@ -52,6 +58,8 @@ export function Flip({
   sizes?: string;
   priority?: boolean;
   caption?: string;
+  /** Rule a gold multifoil arch just outside the mask. Darbar sections only. */
+  framed?: boolean;
 }) {
   const [hovered, setHovered] = useState(false);
   const [pinned, setPinned] = useState(false);
@@ -59,13 +67,47 @@ export function Flip({
   const faceImage = images[front];
   const backImage = back ? images[back] : undefined;
   const showBack = Boolean(backImage) && (hovered || pinned);
+  const root = `flip${framed ? " flip--framed" : ""}`;
 
   // Without a reverse there is nothing to turn over, so render a plain figure
   // rather than a control that lies about being interactive.
   if (!backImage) {
     return (
-      <figure className="flip flip--static">
+      <figure className={`${root} flip--static`}>
         <span className="flip__frame">
+          <span className="flip__stage arch">
+            <img
+              className="flip__face"
+              src={faceImage.src}
+              srcSet={faceImage.srcSet}
+              sizes={sizes}
+              width={faceImage.width}
+              height={faceImage.height}
+              alt={alt}
+              loading={priority ? undefined : "lazy"}
+              fetchPriority={priority ? "high" : undefined}
+              decoding={priority ? "sync" : "async"}
+            />
+          </span>
+        </span>
+        {caption ? <figcaption className="flip__caption">{caption}</figcaption> : null}
+      </figure>
+    );
+  }
+
+  return (
+    <figure className={`${root}${showBack ? " flip--reversed" : ""}`}>
+      <button
+        type="button"
+        className="flip__frame"
+        aria-pressed={pinned}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        onFocus={() => setHovered(true)}
+        onBlur={() => setHovered(false)}
+        onClick={() => setPinned((value) => !value)}
+      >
+        <span className="flip__stage arch">
           <img
             className="flip__face"
             src={faceImage.src}
@@ -78,48 +120,19 @@ export function Flip({
             fetchPriority={priority ? "high" : undefined}
             decoding={priority ? "sync" : "async"}
           />
+          <img
+            className="flip__back"
+            src={backImage.src}
+            srcSet={backImage.srcSet}
+            sizes={sizes}
+            width={backImage.width}
+            height={backImage.height}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            decoding="async"
+          />
         </span>
-        {caption ? <figcaption className="flip__caption">{caption}</figcaption> : null}
-      </figure>
-    );
-  }
-
-  return (
-    <figure className={`flip${showBack ? " flip--reversed" : ""}`}>
-      <button
-        type="button"
-        className="flip__frame"
-        aria-pressed={pinned}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        onFocus={() => setHovered(true)}
-        onBlur={() => setHovered(false)}
-        onClick={() => setPinned((value) => !value)}
-      >
-        <img
-          className="flip__face"
-          src={faceImage.src}
-          srcSet={faceImage.srcSet}
-          sizes={sizes}
-          width={faceImage.width}
-          height={faceImage.height}
-          alt={alt}
-          loading={priority ? undefined : "lazy"}
-          fetchPriority={priority ? "high" : undefined}
-          decoding={priority ? "sync" : "async"}
-        />
-        <img
-          className="flip__back"
-          src={backImage.src}
-          srcSet={backImage.srcSet}
-          sizes={sizes}
-          width={backImage.width}
-          height={backImage.height}
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-          decoding="async"
-        />
         <span className="flip__hint" aria-hidden="true">
           <svg viewBox="0 0 16 16" width="16" height="16" focusable="false">
             <path

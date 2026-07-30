@@ -33,7 +33,7 @@ export function ContactDetails() {
         </div>
 
         {detailsPending ? (
-          <p className="contact__notice">
+          <p className="contact__notice grained">
             <span className="contact__tag">Details pending</span>
             Our shop number, WhatsApp line and street address are being
             finalised. The values below are placeholders and are not yet live —

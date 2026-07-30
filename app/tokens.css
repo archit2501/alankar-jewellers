@@ -1,95 +1,110 @@
 /**
- * Design tokens — "Meena Reverse".
+ * BRAND IDENTITY — Alankar Jewellers
+ * "Darbar shell, Haveli soul."
  *
- * The direction comes from a material fact rather than a mood board: in Jadau
- * and Polki work the BACK of a piece is enamelled in opaque meenakari, so the
- * wearer knows about a burst of colour the room never sees. The interface is
- * therefore quiet, cool and contemporary on its face, and saturation only ever
- * arrives as a physical event — when a piece is turned over.
+ * अलंकार (alankāra) means ornament. In Sanskrit poetics it also means the
+ * figures of speech that ornament language. The name is the brief: this is a
+ * house whose subject is adornment, so the site is allowed to be adorned.
  *
- * Two load-bearing decisions, both deliberate:
+ * ---------------------------------------------------------------------------
+ * WHY THIS REPLACED THE PREVIOUS SYSTEM
+ * ---------------------------------------------------------------------------
+ * The first direction was cool paper, a single green accent and heavy white
+ * space. It was designed to avoid looking like a traditional Indian jeweller —
+ * and that was the mistake. Minimal ground + one accent + high-contrast serif
+ * is the register every generative tool produces, so avoiding tradition landed
+ * squarely in generic. This system does the opposite: it commits to the real
+ * material vocabulary of Mughal and Rajput ornament, and earns premium through
+ * precision rather than through absence.
  *
- * 1. GREEN IS THE INTERFACE COLOUR, GOLD IS NOT. Gold measures ~2.8:1 on any
- *    light ground, so it can never legally carry text or a 1px rule — which is
- *    exactly the mistake the previous design made in two places. Meena green
- *    measures 7.2:1 on this paper, so it can be text, a button, a link, a field.
- *    Gold is demoted to what it actually is: a material that appears in the
- *    photographs. Never set --kundan as text or as a rule.
+ * ---------------------------------------------------------------------------
+ * TWO REGISTERS, ONE PALETTE
+ * ---------------------------------------------------------------------------
+ * DARBAR (the court) — hero, the reverse, the closing invitation.
+ *   Deep oxblood, gold used generously, cusped arches. Ceremonial. This is
+ *   where the brand asserts standing.
  *
- * 2. THE PAPER IS COOL, NOT CREAM. Every Indian jeweller online is warm. A cool
- *    ground costs nothing, reads contemporary instantly, and makes the
- *    photography — all gold, red and green — the warmest thing on screen, which
- *    is where the warmth belongs.
+ * HAVELI (the family house) — the pieces, the craft, the founders, the shop.
+ *   Lime-plaster walls, teak, aged brass. Warm, textured, lived-in. This is
+ *   where the brand earns trust: a shop that has served families since 1980.
  *
- * See research/03-uiux.md Part C for the full rationale.
+ * The page is a journey inward and back out: court → workshop → family → court.
+ * Gold is the thread that runs through both registers and is the only token
+ * that appears in every field.
+ *
+ * ---------------------------------------------------------------------------
+ * THE GOLD RULE, INVERTED FROM THE PREVIOUS SYSTEM
+ * ---------------------------------------------------------------------------
+ * The old system banned gold from text because it measured 2.8:1 — but that is
+ * only true on a LIGHT ground. Measured here:
+ *
+ *     --gold on --oxblood        6.35:1   ✔ body text
+ *     --gold on --oxblood-deep   7.50:1   ✔ body text
+ *     --gold-leaf on --oxblood   9.24:1   ✔ anything
+ *     --gold on --plaster        ~2.6:1   ✘ never
+ *
+ * So: GOLD IS TEXT ON DARK FIELDS AND NEVER ON LIGHT ONES. That is exactly why
+ * every traditional Indian jeweller sets gold on deep colour — it is a
+ * legibility fact before it is a taste one. `--brass` is the light-field metal
+ * and is large-text only (3.96:1 on teak).
  */
 
 :root {
-  /* ---- Colour: field -------------------------------------------------- */
-  /* REVISED: the first pass read as plain rather than restrained. Two causes,
-   * both fixed here. (a) The neutral steps were 1.08:1 and 1.11:1 — literally
-   * invisible — so with borders also removed the page had no structural
-   * articulation at all and read as empty. (b) The ground was cool, which on a
-   * jeweller reads clinical rather than expensive. Cold is not the same as
-   * costly. The paper is now warm, and two REAL fields carry the structure. */
-  --paper: #efece4; /* page ground — warm, not cool, not cream */
-  --paper-raised: #fbf9f4; /* cards, sheets, dialogs */
-  --paper-sunk: #ddd8cb; /* data blocks, filter bars — 1.21:1, a real step */
+  /* ===== DARBAR — the court ============================================= */
+  --oxblood: #4a0e17; /* Mughal manuscript border — the ceremonial ground */
+  --oxblood-deep: #2e080e; /* the darkest field on the site */
+  --oxblood-lift: #61151f; /* raised panels within a Darbar field */
 
-  /* The two fields that actually do the structural work. */
-  --field-stone: #8c8f89; /* 2.78:1 — MATCHES THE PHOTOGRAPHIC SWEEP.
-                           * Pieces shot on this ground bleed into the field
-                           * instead of sitting in a visible grey rectangle,
-                           * which is what made the grid read as bordered cards
-                           * despite the no-borders rule. On stone, text must be
-                           * --ink (5.73:1). --paper on stone is 2.78:1 and FAILS. */
-  --field-dark: #141110; /* 15.9:1 — warm near-black for immersive sections.
-                          * Depth is what makes a jeweller look expensive; a
-                          * single flat ground is what makes it look unfinished. */
+  --gold: #c9a227; /* real antique gold. TEXT ONLY ON DARK — 6.35:1 on oxblood */
+  --gold-leaf: #e3c766; /* illumination highlight, hairlines on dark, 9.24:1 */
+  --gold-deep: #8a6b18; /* the shadow side of a gold rule; never text */
 
-  /* ---- Colour: ink ---------------------------------------------------- */
-  --ink: #141110; /* primary text — 15.9:1 on --paper. Warm black, not blue-black */
-  --ink-2: #56514a; /* secondary text */
-  --ink-3: #8a837a; /* captions, disabled — NEVER body text */
+  /* ===== HAVELI — the family house ====================================== */
+  --plaster: #ede3d0; /* old lime-wash wall — the warm content ground */
+  --plaster-lift: #f6efe0; /* raised card on plaster */
+  --plaster-sunk: #dccdb2; /* recess, data blocks — a REAL step, 1.22:1 */
+  --teak: #3b2517; /* carved wood — the warm dark field */
+  --teak-deep: #241409; /* the inside of the vitrine */
+  --brass: #a8802c; /* aged brass. Large text only on light. 3.96:1 on teak */
 
-  /* ---- Colour: structure ---------------------------------------------- */
-  --hairline: #d3d6cf; /* the ONLY rule colour on the site */
+  /* ===== THE JEWEL NOTES ================================================ */
+  /* Each is a real enamel or stone pigment, not a UI accent. Used sparingly. */
+  --emerald: #1b4d3e; /* meenakari green */
+  --lapis: #1f3a6e; /* the second jewel note, block-print blue */
+  --sindoor: #8c2f23; /* the one hot accent — 6.48:1 on plaster */
+  --ivory: #f5efe2; /* handmade paper, text on Darbar fields — 13.41:1 */
 
-  /* ---- Colour: enamel (the brand) ------------------------------------- */
-  --meena: #0a5c3c; /* PRIMARY — 7.2:1 on paper. Text, buttons, links, fields */
-  --meena-deep: #063e29; /* hover, pressed, dark fields */
-  --meena-tint: #e6efe9; /* selected chips, focus wash, reverse-side field */
-  --sindoor: #a5142b; /* second enamel — urgency and reverse-side moments only */
+  /* ===== INK ============================================================ */
+  --ink: #1c1611; /* primary text on light — 14.08:1 on plaster */
+  --ink-2: #4f4034; /* secondary text on light */
+  --ink-3: #7d6c5b; /* captions. NEVER body text */
 
-  /* ---- Colour: material ----------------------------------------------- */
-  --kundan: #b98a3c; /* 2.8:1 — NEVER text, NEVER a rule. Fills ≥16px only */
-  --polki: #c9c7be; /* uncut-stone grey — skeletons, image placeholders */
-
-  /* ---- Type ------------------------------------------------------------ */
-  --font-display: Eczar, Newsreader, "Iowan Old Style", Georgia, serif;
-  --font-body: Mukta, "Helvetica Neue", Arial, sans-serif;
+  /* ===== TYPE =========================================================== */
+  /* Both display and body are Indian Type Foundry faces drawn with Devanagari
+   * alongside Latin, so a Hindi line later sets natively in the same voice.
+   * Deliberately NOT Playfair or Bodoni — those are the luxury-template
+   * defaults and they carry no Indian authorship at all. */
+  --font-display: "Rozha One", "Tiro Devanagari Hindi", Georgia, serif;
+  --font-body: Karma, "Iowan Old Style", Georgia, serif;
   --font-data: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
-  /* Three display sizes, not seven. Text on a 1.25 ratio.
-   * REVISED: the range was too narrow — the biggest thing on the page was only
-   * ~3.4x the body, so nothing read as important and everything felt the same
-   * weight. Luxury reads as expensive through SCALE CONTRAST: one enormous
-   * thing next to one small one. --d-xl now runs to 8rem and the piece name
-   * has its own step so a product is not set at caption scale. */
-  --d-xl: clamp(3.5rem, 9vw, 8rem); /* hero only, once per page */
+  /* Rozha One is very high contrast, so it needs size to survive. Nothing is
+   * set in it below --d-m. The range is wide on purpose: scale contrast is how
+   * a page reads expensive. */
+  --d-xl: clamp(3.5rem, 8.5vw, 7.5rem); /* hero, once per page */
   --d-l: clamp(2.5rem, 5vw, 4.25rem); /* section openers */
-  --d-m: clamp(1.9rem, 2.4vw, 2.5rem); /* product name, founder name, pull quote */
-  --t-lg: 1.375rem; /* lede paragraphs */
-  --t-md: 1.125rem; /* body */
-  --t-sm: 1rem; /* secondary body */
-  --t-xs: 0.875rem; /* captions, table cells */
-  --t-2xs: 0.75rem; /* utility labels — tracking 0.08em max, never 0.28em */
+  --d-m: clamp(1.85rem, 2.4vw, 2.5rem); /* piece name, founder name, pull quote */
+  --t-lg: 1.3rem; /* lede */
+  --t-md: 1.0625rem; /* body — Karma runs small, so this is up from 1rem */
+  --t-sm: 0.95rem;
+  --t-xs: 0.85rem;
+  --t-2xs: 0.76rem; /* utility labels */
 
-  --tracking-label: 0.08em; /* the ceiling for uppercase labels */
-  --leading-tight: 1.05;
-  --leading-body: 1.6;
+  --tracking-label: 0.16em; /* wider than the last system: formality is the point */
+  --leading-tight: 1.08;
+  --leading-body: 1.7; /* Karma needs air */
 
-  /* ---- Space: micro (component internals, strict 4px grid) ------------ */
+  /* ===== SPACE ========================================================== */
   --s-1: 4px;
   --s-2: 8px;
   --s-3: 12px;
@@ -97,44 +112,57 @@
   --s-5: 24px;
   --s-6: 32px;
   --s-7: 40px;
-
-  /* ---- Space: macro (section rhythm, ×1.55 ladder) -------------------- */
   --m-1: 56px;
   --m-2: 88px;
   --m-3: 136px;
   --m-4: 208px;
 
-  /* ---- Edges ----------------------------------------------------------- */
-  /* No borders on images, ever. Structure comes from field colour changing,
-     not from lines. One hairline, one weight, one job: separating rows of data. */
-  --radius-media: 3px; /* removes the "screenshot" feel, stops short of a card */
-  --radius: 0;
-  --shadow-modal: 0 24px 64px rgba(23, 25, 26, 0.18); /* the only shadow */
+  /* ===== ORNAMENT ======================================================= */
+  /* "Rich and generous" was chosen deliberately, so ornament is a system with
+   * tokens rather than decoration applied by hand. Every motif below is a real
+   * object from the tradition, not an invented flourish.
+   *
+   *   --arch-*   the Mughal multifoil (cusped) arch. Frames pieces.
+   *   --jali     the perforated stone screen. Separates sections.
+   *   --rule-*   gold manuscript rules, always doubled: a heavy line and a
+   *              hair line, which is how illuminated borders are actually set.
+   */
+  --arch-radius: 46% 46% 8% 8% / 62% 62% 6% 6%;
+  --rule-heavy: 3px;
+  --rule-hair: 1px;
+  --rule-gap: 4px;
+  --ornament-inset: var(--s-5);
 
-  /* ---- Motion ---------------------------------------------------------- */
-  /* One orchestrated arrival, then nothing. No scroll-triggered fade-ups. */
-  --motion-fast: 160ms ease-out; /* colour, background-color, opacity only */
-  --motion-flip: 420ms cubic-bezier(0.2, 0.7, 0.2, 1); /* the only transform */
+  /* Grain. Real paper and plaster are never flat, and flatness is the single
+   * loudest tell that a page was generated rather than made. Applied as a
+   * low-opacity overlay on every field. */
+  --grain-opacity: 0.055;
+
+  /* ===== MOTION ========================================================= */
+  /* Ceremonial, not bouncy. One slow reveal, one flip, nothing else. */
+  --motion-fast: 200ms ease-out;
+  --motion-flip: 520ms cubic-bezier(0.22, 0.68, 0.24, 1);
+
+  --shadow-modal: 0 32px 90px rgba(28, 22, 17, 0.42);
+  --radius: 0;
+  --radius-media: 2px;
 }
 
-/**
- * Fallback metric matching. Eczar is a high-contrast display face; without this
- * the swap from Georgia visibly reflows the hero headline.
- */
+/* Metric-matched fallbacks so the swap does not reflow the hero. */
 @font-face {
-  font-family: "Eczar Fallback";
+  font-family: "Rozha Fallback";
   src: local("Georgia"), local("Times New Roman");
-  size-adjust: 103%;
-  ascent-override: 92%;
+  size-adjust: 106%;
+  ascent-override: 90%;
   descent-override: 24%;
   line-gap-override: 0%;
 }
 
 @font-face {
-  font-family: "Mukta Fallback";
-  src: local("Helvetica Neue"), local("Arial");
-  size-adjust: 96%;
-  ascent-override: 105%;
+  font-family: "Karma Fallback";
+  src: local("Iowan Old Style"), local("Georgia");
+  size-adjust: 98%;
+  ascent-override: 100%;
   descent-override: 26%;
   line-gap-override: 0%;
 }

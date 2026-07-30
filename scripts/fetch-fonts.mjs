@@ -6,8 +6,13 @@ const OUT = "/Users/architjain/alankar-jewellers/public/fonts";
 const WANTED = new Set(["latin", "latin-ext"]);
 
 const FAMILIES = [
-  { name: "Eczar", spec: "Eczar:wght@400;600;700", slug: "eczar" },
-  { name: "Mukta", spec: "Mukta:wght@300;400;500;600", slug: "mukta" },
+  // Display. Indian Type Foundry, high-contrast, Devanagari-rooted Latin.
+  // Regal without being a Didone, which is the face every luxury template uses.
+  { name: "Rozha One", spec: "Rozha+One", slug: "rozha" },
+  // Body. Also ITF, drawn alongside its own Devanagari, so a Hindi line later
+  // sets natively in the same voice.
+  { name: "Karma", spec: "Karma:wght@300;400;500;600;700", slug: "karma" },
+  // Data only: weights, karat, HUID, rates, order ids.
   { name: "IBM Plex Mono", spec: "IBM+Plex+Mono:wght@400;500", slug: "plex-mono" },
 ];
 

@@ -254,7 +254,7 @@ function AppointmentDialog({
   return (
     <div className="dialog-backdrop" role="presentation" onMouseDown={onClose}>
       <section
-        className="appointment-dialog"
+        className="appointment-dialog grained"
         role="dialog"
         aria-modal="true"
         aria-labelledby="appointment-title"
@@ -281,7 +281,10 @@ function AppointmentDialog({
             />
           </svg>
         </button>
-        {status === "success" ? (
+        {/* The manuscript page: illuminated brass brackets on the panel, and the
+            grain on the sheet behind it. */}
+        <div className="appointment-dialog__inner illuminated illuminated--brass">
+          {status === "success" ? (
           <div className="dialog-success">
             <span className="dialog-mark" aria-hidden="true">
               ✦
@@ -403,7 +406,8 @@ function AppointmentDialog({
               </button>
             </form>
           </>
-        )}
+          )}
+        </div>
       </section>
     </div>
   );

@@ -23,12 +23,6 @@ import type { ImageKey } from "./_media/images";
  * Nothing here asserts a weight, a karat, a stone count or a price, because
  * none of those numbers is known yet and inventing them is the one thing this
  * category's buyers are best at catching.
- *
- * There is no `caption` field any more. It used to print a one-line description
- * of the reverse ABOVE the piece's own name — the footnote before the subject —
- * and it repeated what `copy` already says two lines further down ("Red-ground
- * lotus meena on the reverse" / "On the back, a lotus fired into every single
- * plate."). The Flip still takes a caption; the pieces simply no longer need one.
  */
 const pieces: {
   id: string;
@@ -104,10 +98,8 @@ const pieces: {
 
 /**
  * Three statements that are checkable on this page rather than asserted about
- * the past. It replaces a four-entry "timeline" whose axis ran 1980 → The 1990s
- * → A new generation → Today, i.e. half of it was not a date, and whose copy
- * could not have been untrue of any jeweller anywhere. The founding year is no
- * longer a row here because it is set as the display figure beside the table.
+ * the past. The founding year is not a row here because it is set as the
+ * display figure beside the table.
  *
  * "How to buy" states a CURRENT STATE, not a principle. The previous wording —
  * "There is no cart on this site" — was a promise about the architecture, made
@@ -135,6 +127,11 @@ const heroImage = images["jadau-haar-front"];
  * (`role="dialog"`, focus trap, POST to /api/appointments). `Flip` is the
  * fourth and it is the point of the design. Everything else is rendered on the
  * server and forwarded through the provider as children.
+ *
+ * THE JOURNEY: court → workshop → family → court. The register of each section
+ * is named in its comment, and the field classes in globals.css are what carry
+ * it — .section--darbar / --darbar-deep are the court, .section--haveli is the
+ * family house, .section--vitrine is the bench.
  */
 export default function Home() {
   return (
@@ -142,18 +139,20 @@ export default function Home() {
       <main id="top">
         <SiteHeader />
 
-        {/* The headline runs the full width so it can be set at --d-xl without
-            being broken into five short lines by a half-width column. Below it
-            the lede sits on paper and the piece sits on a stone plane that runs
-            off the right edge of the viewport — the plane is the same value as
-            the studio sweep the piece was shot on, so the photograph has no
-            visible edge at all. */}
-        <section className="hero" aria-labelledby="hero-title">
-          <div className="hero__head">
+        {/* DARBAR. The court, and the only symmetrical composition above the
+            fold: eyebrow, name, headline, invitation, then a jali screen you
+            pass through to reach the piece itself, which stands in a multifoil
+            arch ruled in gold. The arch is not decoration — every catalogue
+            photograph was shot on an inconsistent grey studio sweep, so cutting
+            each one to the arch turns a rectangle that cannot match any field
+            colour into a mounted miniature that does not have to. */}
+        <section className="hero grained" aria-labelledby="hero-title">
+          <div className="hero__inner">
+            <p className="deva hero__deva" aria-hidden="true">
+              अलंकार
+            </p>
             <p className="label">Jadau · Polki · Kundan — since 1980</p>
             <h1 id="hero-title">Jewels that become heirlooms.</h1>
-          </div>
-          <div className="hero__copy">
             <p className="hero__lede">
               Every piece here is shown from both sides. The front is what the
               room sees. The back is enamelled, and only the person wearing it
@@ -167,30 +166,38 @@ export default function Home() {
                 Book a viewing
               </AppointmentTrigger>
             </div>
-          </div>
-          <div className="hero__media plate">
-            <img
-              className="hero__image"
-              src={heroImage.src}
-              srcSet={heroImage.srcSet}
-              sizes="(max-width: 1100px) 100vw, 46vw"
-              width={heroImage.width}
-              height={heroImage.height}
-              alt="Jadau haar of uncut polki with carved ruby and emerald drops, photographed on a grey sweep"
-              fetchPriority="high"
-              decoding="sync"
-            />
+            <div className="jali-band hero__screen" aria-hidden="true" />
+            <div className="hero__arch arch-frame">
+              <img
+                className="hero__image arch"
+                src={heroImage.src}
+                srcSet={heroImage.srcSet}
+                sizes="(max-width: 780px) 78vw, 440px"
+                width={heroImage.width}
+                height={heroImage.height}
+                alt="Jadau haar of uncut polki with carved ruby and emerald drops, photographed on a grey sweep"
+                fetchPriority="high"
+                decoding="sync"
+              />
+            </div>
+            <p className="hero__caption">
+              The Jadau haar, face up. Like everything below it, it turns over.
+            </p>
           </div>
         </section>
 
-        {/* The stone field. Every piece was shot on a #8C8F89-ish studio sweep,
-            so on paper each photograph arrived pre-framed in a grey rectangle —
-            the borders the direction bans, baked into the pixels. On --field-
-            stone the sweep and the page are the same value and the frames
-            disappear. Text here is --ink and only --ink: --ink-2 measures 2.4:1
-            on this field and --meena 2.5:1, so both are illegal. */}
+        {/* The screen between the court and the house. */}
+        <div className="jali-break" aria-hidden="true">
+          <div className="jali-band" />
+        </div>
+
+        {/* HAVELI. The family house: lime plaster, brass rather than gold,
+            asymmetric and editorial rather than centred. Each piece stands in a
+            teak-deep niche with illuminated corners, so the grey of the sweep
+            reads at 6.4:1 against the wood — a lit alcove instead of a
+            mismatched rectangle. */}
         <section
-          className="section section--stone"
+          className="section section--haveli grained"
           id="collections"
           aria-labelledby="collections-title"
         >
@@ -203,27 +210,32 @@ export default function Home() {
               Each one is photographed twice, face and reverse, on the same grey
               sweep. Hover on a desktop, tap on a phone.
             </p>
+            <div className="rule-brass section-head__rule" aria-hidden="true" />
           </div>
 
           {/* Five pieces at four different sizes rather than five identical
               cells: the haar runs seven columns wide, the tikka three. Nothing
               in the middle, and the rows are bottom-aligned so the tops
               stagger. The commission note takes the last cell as text, which is
-              why there is no longer a sixth, empty one. */}
+              why there is no sixth, empty one. */}
           <div className="pieces">
             {pieces.map((piece, index) => (
               <article className="piece" id={piece.id} key={piece.id}>
-                <Flip
-                  front={piece.front}
-                  back={piece.back}
-                  alt={piece.alt}
-                  altBack={piece.altBack}
-                  sizes={
-                    index === 0
-                      ? "(max-width: 1100px) 92vw, 56vw"
-                      : "(max-width: 1100px) 46vw, 32vw"
-                  }
-                />
+                <div className="piece__niche grained">
+                  <div className="piece__niche-inner illuminated">
+                    <Flip
+                      front={piece.front}
+                      back={piece.back}
+                      alt={piece.alt}
+                      altBack={piece.altBack}
+                      sizes={
+                        index === 0
+                          ? "(max-width: 1100px) 56vw, 52vw"
+                          : "(max-width: 1100px) 46vw, 30vw"
+                      }
+                    />
+                  </div>
+                </div>
                 <div className="piece__body">
                   <h3>{piece.name}</h3>
                   <p className="piece__spec">{piece.spec}</p>
@@ -241,39 +253,59 @@ export default function Home() {
               </article>
             ))}
 
-            <div className="pieces__note">
-              <h3>Something else in mind?</h3>
-              <p>
-                Bridal sets and one-off commissions start with a conversation
-                rather than a catalogue. Tell us what the occasion is and we will
-                show you what is possible.
-              </p>
-              <AppointmentTrigger className="text-action" interest="A bespoke piece">
-                Start a commission
-              </AppointmentTrigger>
+            <div className="pieces__note panel grained">
+              <div className="pieces__note-inner illuminated illuminated--brass">
+                <h3>Something else in mind?</h3>
+                <p>
+                  Bridal sets and one-off commissions start with a conversation
+                  rather than a catalogue. Tell us what the occasion is and we
+                  will show you what is possible.
+                </p>
+                <AppointmentTrigger className="text-action" interest="A bespoke piece">
+                  Start a commission
+                </AppointmentTrigger>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Green room, stone wall. The media column carries no block padding, so
-            the stone plane runs the full height of the section and off the
-            right edge: the only boundary left anywhere near the photograph is
-            one vertical line between two fields, which is architecture rather
-            than a frame. */}
+        {/* DARBAR, and the deepest field on the site. This section carries the
+            brand's one real argument, so it is made from the centre the way an
+            argument is made in a court: the piece stands in the middle under a
+            gold arch and the case for it is set in two columns either side. */}
         <section
-          className="section section--reverse section--flush section--bleed-end"
+          className="section section--darbar-deep grained"
           id="reverse"
           aria-labelledby="reverse-title"
         >
+          <div className="opener">
+            <p className="label">The reverse</p>
+            <h2 id="reverse-title">The part with no audience.</h2>
+            <div className="rule-gold rule rule--center" aria-hidden="true" />
+          </div>
+
           <div className="reverse">
-            <div className="reverse__copy">
-              <p className="label">The reverse</p>
-              <h2 id="reverse-title">The part with no audience.</h2>
+            <div className="reverse__aside reverse__aside--start">
               <p className="prose">
                 In Jadau and Polki work the back of a piece is enamelled —
                 opaque green, red and white meenakari fired into gold that
                 nobody but the wearer will ever see.
               </p>
+            </div>
+
+            <div className="reverse__media">
+              <Flip
+                framed
+                front="rani-haar-front"
+                back="rani-haar-reverse"
+                alt="Three-strand rani haar of kundan-set polki roundels strung with carved ruby and emerald beads and pearls"
+                altBack="The same haar turned over: every roundel and the pendant enamelled with a green and pink lotus"
+                caption="Lotus meenakari on the reverse of every roundel"
+                sizes="(max-width: 1100px) 84vw, 420px"
+              />
+            </div>
+
+            <div className="reverse__aside">
               <p className="prose">
                 It is the half of the craft that cannot be sold on sight, which
                 is exactly why it tells you the most about who made the thing.
@@ -283,24 +315,21 @@ export default function Home() {
                 see.
               </p>
             </div>
-            <div className="reverse__media plate">
-              <Flip
-                front="rani-haar-front"
-                back="rani-haar-reverse"
-                alt="Three-strand rani haar of kundan-set polki roundels strung with carved ruby and emerald beads and pearls"
-                altBack="The same haar turned over: every roundel and the pendant enamelled with a green and pink lotus"
-                caption="Lotus meenakari on the reverse of every roundel"
-                sizes="(max-width: 1100px) 90vw, 46vw"
-              />
-            </div>
           </div>
         </section>
 
-        {/* The one near-black field on the page. The bench photograph is the
-            only dark, warm, non-sweep image in the set, so on --field-dark it
-            has no edge either — it simply dissolves into the room. */}
+        {/* The screen between the court and the workshop. */}
+        <div className="jali-break" aria-hidden="true">
+          <div className="jali-band" />
+        </div>
+
+        {/* VITRINE — the inside of the case. Warm dark teak rather than red:
+            this is the workroom, not the showroom. The bench photograph stays a
+            rectangle on purpose. The arch is reserved for the jewellery, and
+            dressing a documentary photograph as a miniature would be the first
+            dishonest thing on the page. */}
         <section
-          className="section section--dark section--bleed-end"
+          className="section section--vitrine section--bleed-end grained"
           id="craft"
           aria-labelledby="craft-title"
         >
@@ -308,6 +337,7 @@ export default function Home() {
             <div className="craft__copy">
               <p className="label">At the bench</p>
               <h2 id="craft-title">Made slowly. Worn forever.</h2>
+              <div className="rule-gold rule" aria-hidden="true" />
               <p className="prose">
                 A jadau setting is not claw work. The stone is bedded into
                 shellac and the gold is worked up around it in thin foil, one
@@ -326,7 +356,7 @@ export default function Home() {
               <img
                 src={images["workshop-hands"].src}
                 srcSet={images["workshop-hands"].srcSet}
-                sizes="(max-width: 1100px) 100vw, 46vw"
+                sizes="(max-width: 1100px) 100vw, 50vw"
                 width={images["workshop-hands"].width}
                 height={images["workshop-hands"].height}
                 alt="Two hands at a wooden bench, setting a rose-cut stone into a gold bezel with a steel tool"
@@ -340,8 +370,17 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Back out of the workshop into the house. Brass on plaster, because
+            the screen belongs to the register it opens onto. */}
+        <div className="jali-break jali-break--haveli" aria-hidden="true">
+          <div className="jali-band jali-band--brass" />
+        </div>
+
+        {/* HAVELI. The family, and the one date the business can evidence, set
+            as the display figure it is on a raised plaster panel with
+            illuminated brass corners. */}
         <section
-          className="section section--raised"
+          className="section section--haveli grained"
           id="legacy"
           aria-labelledby="legacy-title"
         >
@@ -349,41 +388,52 @@ export default function Home() {
             <div className="house__intro">
               <p className="label">The house</p>
               <h2 id="legacy-title">One date, and no mythology.</h2>
+              <div className="rule-brass rule" aria-hidden="true" />
               <p className="prose">
                 Alankar has been setting stones by hand since 1980. Everything
                 else a jeweller usually writes on a page like this — heritage,
                 integrity, generations of trust — could be said by anyone and
                 checked by no one, so here is only the part you can check.
               </p>
+              <p className="prose">
+                The people who have run the counter since then have their own
+                page, because a family business is a list of people before it is
+                a list of claims.
+              </p>
+              <a className="text-action" href="/founders">
+                Meet the people behind the counter
+              </a>
             </div>
 
-            {/* The one date, set as the display figure it is, and the three
-                checkable statements set large enough to be read as the
-                argument of the section rather than as a footer table. */}
-            <div className="house__record">
-              <p className="house__since">Founded</p>
-              <p className="house__year">1980</p>
-              {/* Tabular, which is the one job a hairline is allowed to do here. */}
-              <dl className="facts">
-                {facts.map((fact) => (
-                  <div className="facts__row" key={fact.label}>
-                    <dt>{fact.label}</dt>
-                    <dd>{fact.value}</dd>
-                  </div>
-                ))}
-              </dl>
+            <div className="house__record grained">
+              <div className="house__record-inner illuminated illuminated--brass">
+                <p className="house__since">Founded</p>
+                <p className="house__year">1980</p>
+                {/* Tabular, which is the one job a hairline is allowed to do
+                    anywhere in this design. */}
+                <dl className="facts">
+                  {facts.map((fact) => (
+                    <div className="facts__row" key={fact.label}>
+                      <dt>{fact.label}</dt>
+                      <dd>{fact.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* The page closes in the room it is asking you to come to. Without this
-            the last 1900px — house, visit and contact — were three light
-            sections a tenth of a stop apart, i.e. the flat stretch this
-            redesign exists to remove, reappearing at the end. The bench
-            photograph is dark and warm, so it bleeds into the field the way the
-            craft photograph does. */}
+        {/* The screen back into the court. */}
+        <div className="jali-break" aria-hidden="true">
+          <div className="jali-band" />
+        </div>
+
+        {/* DARBAR. The page closes in the room it is asking you to come to, and
+            it closes ceremonially: this is the invitation, so it is red and
+            gold again rather than a pale contact footer. */}
         <section
-          className="section visit section--dark section--bleed-start"
+          className="section visit section--darbar section--bleed-start grained"
           id="visit"
           aria-labelledby="visit-title"
         >
@@ -392,7 +442,7 @@ export default function Home() {
               <img
                 src={images["workshop-bench"].src}
                 srcSet={images["workshop-bench"].srcSet}
-                sizes="(max-width: 1100px) 100vw, 46vw"
+                sizes="(max-width: 1100px) 100vw, 50vw"
                 width={images["workshop-bench"].width}
                 height={images["workshop-bench"].height}
                 alt="A jeweller's bench with a dish of uncut stones, files, tweezers and a part-finished gold pendant"
@@ -403,6 +453,7 @@ export default function Home() {
             <div className="visit__copy">
               <p className="label">By appointment</p>
               <h2 id="visit-title">A private experience, on your own time.</h2>
+              <div className="rule-gold rule" aria-hidden="true" />
               <p className="prose">
                 Pieces are seen in the inner salon, away from the counter, with
                 someone who can tell you where a stone came from and what the
@@ -414,10 +465,16 @@ export default function Home() {
             </div>
           </div>
 
+          <div className="rule-gold rule rule--full visit__break" aria-hidden="true" />
+
           <ContactDetails />
         </section>
 
-        <footer className="site-footer">
+        <div className="jali-break" aria-hidden="true">
+          <div className="jali-band" />
+        </div>
+
+        <footer className="site-footer grained">
           <div className="footer__brand">
             <BrandMark compact />
             <p>
@@ -442,6 +499,7 @@ export default function Home() {
             <a href="#visit">Visit us</a>
             <AppointmentTrigger>Private appointments</AppointmentTrigger>
           </div>
+          <div className="rule-gold footer__rule" aria-hidden="true" />
           <div className="footer__closing">
             <p>Jewels that become heirlooms.</p>
             <small>© {new Date().getFullYear()} Alankar Jewellers.</small>

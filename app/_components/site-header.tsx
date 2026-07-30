@@ -40,35 +40,41 @@ export function SiteHeader() {
   }, [menuOpen]);
 
   return (
-    <header className="site-header">
-      <BrandMark />
-      <button
-        type="button"
-        className="menu-toggle"
-        aria-expanded={menuOpen}
-        aria-controls="site-navigation"
-        ref={toggleRef}
-        onClick={() => setMenuOpen((value) => !value)}
-      >
-        {menuOpen ? "Close" : "Menu"}
-      </button>
-      <nav
-        id="site-navigation"
-        className={`site-nav${menuOpen ? " site-nav--open" : ""}`}
-        aria-label="Main navigation"
-      >
-        {NAV_LINKS.map((link) => (
-          <a key={link.href} href={link.href} onClick={() => setMenuOpen(false)}>
-            {link.label}
-          </a>
-        ))}
-        <AppointmentTrigger
-          className="nav-appointment"
-          onActivate={() => setMenuOpen(false)}
+    // The court band. It carries a doubled gold rule along its bottom edge
+    // rather than a 1px divider, because a single hairline of gold is the thing
+    // this identity most wants to avoid — it reads as a web border.
+    <header className="site-header grained">
+      <div className="site-header__inner">
+        <BrandMark />
+        <button
+          type="button"
+          className="menu-toggle"
+          aria-expanded={menuOpen}
+          aria-controls="site-navigation"
+          ref={toggleRef}
+          onClick={() => setMenuOpen((value) => !value)}
         >
-          Book an Appointment
-        </AppointmentTrigger>
-      </nav>
+          {menuOpen ? "Close" : "Menu"}
+        </button>
+        <nav
+          id="site-navigation"
+          className={`site-nav${menuOpen ? " site-nav--open" : ""}`}
+          aria-label="Main navigation"
+        >
+          {NAV_LINKS.map((link) => (
+            <a key={link.href} href={link.href} onClick={() => setMenuOpen(false)}>
+              {link.label}
+            </a>
+          ))}
+          <AppointmentTrigger
+            className="nav-appointment"
+            onActivate={() => setMenuOpen(false)}
+          >
+            Book an Appointment
+          </AppointmentTrigger>
+        </nav>
+      </div>
+      <div className="rule-gold" aria-hidden="true" />
     </header>
   );
 }

@@ -1,54 +1,70 @@
 @import "./fonts.css";
 @import "./tokens.css";
+@import "./_ornament.css";
 @import "./_components/flip.css";
 
 /* ------------------------------------------------------------------------- *
- * Alankar Jewellers — "Meena Reverse" (research/03-uiux.md, Part C).
+ * Alankar Jewellers — "Darbar shell, Haveli soul".
  *
- * The thesis, restated so it can be checked against every rule below: in Jadau
- * and Polki work the BACK of a piece is enamelled in opaque meenakari, so the
- * page is quiet, cool and contemporary on its face and saturation only ever
- * arrives when a piece is turned over. That produces four hard rules:
+ * tokens.css holds the identity and _ornament.css holds the motifs. This file
+ * holds only the composition, and it does it through ONE mechanism:
  *
- *   1. --meena green is the interface colour. --kundan gold is NEVER text and
- *      NEVER a rule (it measures 2.8:1). Gold lives in the photographs.
- *   2. No borders on images. Ever. Structure comes from the FIELD colour
- *      changing, not from lines.
- *   3. One hairline colour, one weight, one job — separating a row of data from
- *      the next row of data. There are exactly two such tables on this page.
- *   4. Section padding uses the macro scale (--m-1..--m-4); component internals
- *      use micro (--s-1..--s-7). No raw px, no raw hex below this line.
+ *   every field declares its own contextual variables, and every component
+ *   reads them.
  *
- * Deleted from the previous system and deliberately not replaced: the .legacy
- * corner rings, the .timeline arc, the .craft__image offset frame, the
- * .collection__frame inner border, .hero__promise, .gold-rule, the dead
- * body::selection selector, and the decorative 01/02/03 numbering.
+ * A section says "I am the court" by setting --field / --field-ink /
+ * --field-head / --field-label / --field-metal / --field-focus, and the button,
+ * the link, the label, the rule and the focus ring all follow it. Nothing on
+ * this page hard-codes a text colour against a field it cannot see, which is
+ * how the gold rule below is kept true everywhere at once:
  *
- * No CSS framework: every class here is hand-written BEM. The reset block
- * restates the handful of preflight rules the design actually depends on.
+ *   GOLD IS TEXT ON DARK FIELDS ONLY.
+ *
+ * Measured, on the four fields this page actually uses:
+ *
+ *   FIELD              head          body           label        metal
+ *   --oxblood          gold-leaf 9.24  plaster 12.08  gold 6.35   gold
+ *   --oxblood-deep     gold-leaf 10.91 plaster 14.26  gold 7.50   gold
+ *   --teak-deep        gold-leaf 10.71 plaster 13.99  gold 7.36   gold
+ *   --plaster          ink 14.08       ink-2 7.80     sindoor 6.48 brass*
+ *
+ *   * brass measures 2.85:1 on plaster, so on the light field brass is ORNAMENT
+ *     ONLY — rules, corner brackets, hairlines — and never a letterform. The
+ *     light-field accent for text is --sindoor. (Brass is legal as large text on
+ *     --teak at 3.96:1, which is why the token exists; this page has no large
+ *     brass text on it.)
+ *
+ * REGISTERS
+ *   Darbar (oxblood)   hero · the reverse · the invitation · the footer.
+ *                      Centred, symmetrical, ceremonial, gold used generously.
+ *   Haveli  (plaster)  the pieces · the house. Editorial, asymmetric, warm,
+ *                      metal reduced to brass ornament.
+ *   Vitrine (teak)     the bench. The inside of the case: warm dark, gold.
+ *
+ * Every field is .grained. Every gold rule is doubled (.rule-gold). Jali bands
+ * separate registers. Panels carry illuminated corner brackets. No hairline
+ * appears anywhere except between two rows of tabular data.
  * ------------------------------------------------------------------------- */
 
 :root {
-  /* Page gutter and measure. Both ends of the clamp are scale values. */
   --gutter: clamp(var(--s-5), 5vw, var(--m-2));
-  --content-max: 1320px;
-  --measure: 62ch;
+  --content-max: 1280px;
+  --measure: 60ch;
 
-  /* THE PHOTOGRAPHIC GROUND — the field every catalogue image sits on.
-   *
-   * Measured off the shipped assets rather than assumed: the studio sweep runs
-   * #959595 at the top of the frame to #a2a2a2 at the bottom, and it is
-   * neutral, where --field-stone is both a step darker and slightly green. A
-   * plane at raw --field-stone therefore puts a DARKER rectangle around every
-   * piece, which is the same bug as the grey-on-cream one, inverted. Mixing the
-   * token 82/18 toward --paper lands on the sweep's own value: field and
-   * photograph measure 1.006:1 against each other, i.e. there is no edge to
-   * see. Derived from tokens, never a raw hex, so tokens.css stays the source.
-   *
-   * The contrast rule that travels with it is unchanged in kind: --ink measures
-   * 7.12:1 here and is the ONLY legal text colour. --ink-2 is 2.98:1 and
-   * --meena 3.66:1, so both are illegal on this field at any size. */
-  --field-sweep: color-mix(in srgb, var(--field-stone) 82%, var(--paper));
+  /* Devanagari is a display accent here (the wordmark, one section mark). The
+   * self-hosted subsets are latin + latin-ext only, so the mark deliberately
+   * falls back to a system Devanagari serif rather than pulling a fifth file. */
+  --font-deva: "Tiro Devanagari Hindi", "Kohinoor Devanagari", "Noto Serif Devanagari",
+    "Nirmala UI", Mangal, var(--font-display);
+
+  /* THE DEFAULT FIELD IS HAVELI. Every override below is a section saying which
+     register it belongs to; nothing else re-declares a colour. */
+  --field: var(--plaster);
+  --field-ink: var(--ink-2);
+  --field-head: var(--ink);
+  --field-label: var(--sindoor);
+  --field-metal: var(--brass);
+  --field-focus: var(--oxblood-deep);
 }
 
 *,
@@ -59,18 +75,14 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: var(--m-2);
+  scroll-padding-top: var(--m-1);
   -webkit-text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
-  /* Sections that bleed a photograph off one edge do it by zeroing that side's
-     padding, never with a viewport-width negative margin, so nothing here can
-     overflow. `clip` is the guard rail, and unlike `hidden` it does not turn the
-     body into a scroll container, so the sticky header still sticks. */
   overflow-x: clip;
-  background: var(--paper);
+  background: var(--plaster);
   color: var(--ink);
   font-family: var(--font-body);
   font-size: var(--t-md);
@@ -78,11 +90,9 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* `body::selection` does not cascade to descendants, which is why the previous
- * rule never applied to a single word on the page. */
 ::selection {
-  background: var(--meena-tint);
-  color: var(--ink);
+  background: var(--gold-leaf);
+  color: var(--oxblood-deep);
 }
 
 button,
@@ -145,22 +155,11 @@ ol {
   list-style: none;
 }
 
+/* The ring reads its colour off the field it is standing on, so it inverts
+   automatically the moment a section declares itself dark. */
 :focus-visible {
-  outline: 2px solid var(--meena);
+  outline: 2px solid var(--field-focus);
   outline-offset: 3px;
-}
-
-/* Meena is invisible against the dark fields, so the ring inverts there. */
-.section--reverse :focus-visible,
-.section--dark :focus-visible,
-.site-footer :focus-visible {
-  outline-color: var(--paper);
-}
-
-/* And on the photographic ground meena measures 3.66:1, which is not a focus
-   indicator. Ink is 7.12:1 on the same field. */
-.section--stone :focus-visible {
-  outline-color: var(--ink);
 }
 
 .visually-hidden {
@@ -175,19 +174,18 @@ ol {
   white-space: nowrap;
 }
 
-/* --- Type primitives ----------------------------------------------------- */
+/* --- Type ---------------------------------------------------------------- */
 
 h1,
 h2,
 h3 {
+  color: var(--field-head);
   font-family: var(--font-display);
   font-weight: 400;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.005em;
   line-height: var(--leading-tight);
 }
 
-/* Three display sizes, not seven: --d-xl once per page, --d-l for section
- * openers, --d-m for a piece name or a pull line. Nothing else. */
 h1 {
   font-size: var(--d-xl);
 }
@@ -198,14 +196,14 @@ h2 {
 
 h3 {
   font-size: var(--d-m);
-  line-height: 1.15;
+  line-height: 1.16;
 }
 
-/* The only uppercase treatment on the site. Tracking is capped at 0.08em by
- * --tracking-label; the previous design ran to 0.58em. */
+/* The one uppercase treatment on the site, and the widest tracking: formality
+   is the point. Gold on the dark fields, sindoor on plaster. */
 .label {
   margin: 0 0 var(--s-4);
-  color: var(--meena);
+  color: var(--field-label);
   font-family: var(--font-body);
   font-size: var(--t-2xs);
   font-weight: 600;
@@ -214,103 +212,113 @@ h3 {
   text-transform: uppercase;
 }
 
-.section--reverse .label,
-.section--dark .label,
-.site-footer .label {
-  color: var(--paper-sunk);
-}
-
 .lede {
   max-width: var(--measure);
-  color: var(--ink-2);
+  color: var(--field-ink);
   font-size: var(--t-lg);
-  line-height: 1.5;
-}
-
-.section--reverse .lede,
-.section--dark .lede {
-  color: var(--paper-sunk);
+  line-height: 1.55;
 }
 
 .prose {
   max-width: var(--measure);
-  color: var(--ink-2);
+  color: var(--field-ink);
   font-size: var(--t-md);
 }
 
 .prose + .prose {
-  margin-top: var(--s-4);
+  margin-top: var(--s-5);
 }
 
-.section--reverse .prose,
-.section--dark .prose {
-  color: var(--paper-sunk);
+/* The display accent: अलंकार, alankāra, ornament — the name is the brief. Used
+   three times on the whole page and never to carry information. */
+.deva {
+  color: var(--field-metal);
+  font-family: var(--font-deva);
+  font-weight: 400;
+  line-height: 1.4;
 }
 
-/* THE STONE RULE. On --field-sweep --ink-2 measures 2.98:1 and --meena 3.66:1,
-   so this field has exactly one legal text colour and it is --ink at 7.12:1.
-   Every secondary colour is promoted rather than dimmed. */
-.section--stone .label,
-.section--stone .lede,
-.section--stone .prose,
-.section--stone .flip__caption,
-.section--stone .text-action,
-.section--stone .piece__spec,
-.section--stone .piece__copy,
-.section--stone .pieces__note p {
-  color: var(--ink);
+/* --- Rules and bands ----------------------------------------------------- */
+
+/* .rule-gold / .rule-brass come from _ornament.css and are always doubled. The
+   only thing this file adds is where they sit and how wide they run. */
+.rule {
+  width: min(220px, 40%);
+  margin-block: var(--s-6);
+}
+
+.rule--center {
+  margin-inline: auto;
+}
+
+.rule--full {
+  width: 100%;
+}
+
+/* A jali screen between two registers, run full-bleed as its own element
+   between sections. The ground under the lattice is always the darker of the
+   two fields it separates.
+   .jali-band carries `opacity`, which applies to the WHOLE element — a
+   background-color set on the band itself would be knocked back to 50% and the
+   screen would float over whatever the body colour happens to be. So the ground
+   is a wrapper and the lattice sits inside it. */
+.jali-break {
+  background: var(--oxblood-deep);
+}
+
+.jali-break--haveli {
+  background: var(--plaster-sunk);
 }
 
 /* --- Fields -------------------------------------------------------------- */
-
-/* Structure comes from the field changing, never from a line — but the first
- * pass proved the corollary: if the fields do not actually differ, there is no
- * structure at all. paper -> paper-raised measured 1.08:1, i.e. the page was
- * one flat sheet for its whole length, which is why restraint read as empty.
- *
- * The ladder now moves through real value:
- *
- *   paper (header + hero)   0.84 L
- *   STONE (the pieces)      0.35 L   <- 2.4x darker, and the exact value of the
- *                                       sweep the pieces were photographed on
- *   MEENA-DEEP (the reverse) 0.04 L  <- the only saturated field on the site
- *   paper-raised (the house)
- *   DARK (at the bench)     0.006 L  <- near-black, warm
- *   paper (visit)
- *   ink (footer)
- *
- * Two rules travel with the two new fields:
- *   - on the stone/sweep field the only legal text colour is --ink (7.12:1);
- *   - on --field-dark and --meena-deep, text is --paper / --paper-sunk / --polki
- *     (15.9:1, 13.2:1, 11.1:1 and 10.3:1, 8.5:1, 7.2:1 respectively).
- * --paper-sunk stays reserved for data blocks sitting inside a light field. */
 
 .section {
   padding: var(--m-3) var(--gutter);
 }
 
-.section--raised {
-  background: var(--paper-raised);
+.section--darbar {
+  --field: var(--oxblood);
+  --field-ink: var(--plaster);
+  --field-head: var(--gold-leaf);
+  --field-label: var(--gold);
+  --field-metal: var(--gold);
+  --field-focus: var(--gold-leaf);
+
+  background: var(--oxblood);
+  color: var(--plaster);
 }
 
-.section--stone {
-  background: var(--field-sweep);
+.section--darbar-deep {
+  --field: var(--oxblood-deep);
+  --field-ink: var(--plaster);
+  --field-head: var(--gold-leaf);
+  --field-label: var(--gold);
+  --field-metal: var(--gold);
+  --field-focus: var(--gold-leaf);
+
+  background: var(--oxblood-deep);
+  color: var(--plaster);
+}
+
+.section--vitrine {
+  --field: var(--teak-deep);
+  --field-ink: var(--plaster);
+  --field-head: var(--gold-leaf);
+  --field-label: var(--gold);
+  --field-metal: var(--gold);
+  --field-focus: var(--gold-leaf);
+
+  background: var(--teak-deep);
+  color: var(--plaster);
+}
+
+.section--haveli {
+  background: var(--plaster);
   color: var(--ink);
 }
 
-.section--dark {
-  background: var(--field-dark);
-  color: var(--paper);
-}
-
-.section--reverse {
-  background: var(--meena-deep);
-  color: var(--paper);
-}
-
-/* Bleed. A section drops the padding on one side and its container drops the
- * measure cap, so the media column runs to the edge of the viewport — no
- * negative viewport-width margins, nothing that can overflow. */
+/* A section drops the padding on one side so a photograph can run to the edge
+   of the viewport. No negative viewport-width margins anywhere. */
 .section--bleed-end {
   padding-inline-end: 0;
 }
@@ -319,201 +327,266 @@ h3 {
   padding-inline-start: 0;
 }
 
-/* Only the container that actually holds the bleeding media loses its measure
-   cap; anything else inside the section keeps it. */
-.section--bleed-end > .craft,
-.section--bleed-end > .reverse,
-.section--bleed-start > .visit__intro {
-  max-width: none;
+.wrap {
+  max-width: var(--content-max);
+  margin-inline: auto;
 }
 
-/* Block padding moves onto the copy column so the media can run the full height
- * of the field. */
-.section--flush {
-  padding-block: 0;
+/* A centred opener. Darbar sections are symmetrical; this is the shape that
+   says so. */
+.opener {
+  max-width: 46rem;
+  margin-inline: auto;
+  margin-bottom: var(--m-2);
+  text-align: center;
 }
 
-/* A stone plane holding a photograph. Every catalogue piece was shot on a
- * mid-grey sweep, so a plate is the ground the photograph already has: the
- * image has no visible edge, and the boundary you do see is the plane's, which
- * is a field change rather than a frame. Never put a border on this. */
-.plate {
-  display: grid;
-  align-content: center;
-  padding: var(--m-1);
-  background: var(--field-sweep);
+.opener .lede {
+  margin-inline: auto;
 }
 
-.plate .flip__caption {
-  color: var(--ink);
-}
-
-/* The Flip's own field is the colour behind the crossfade. On stone it has to
-   be stone, or the piece flashes a lighter rectangle mid-turn. */
-.section--stone .flip__frame,
-.plate .flip__frame {
-  background: var(--field-sweep);
-}
-
+/* Haveli sections are looser: the heading and the lede sit side by side and the
+   brass rule runs the full measure under them. */
 .section-head {
   display: grid;
   max-width: var(--content-max);
   align-items: end;
   margin: 0 auto var(--m-2);
   gap: var(--s-5) var(--m-1);
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
 }
 
 .section-head h2 {
   margin: 0;
 }
 
+.section-head__rule {
+  margin: var(--s-6) 0 0;
+  grid-column: 1 / -1;
+}
+
+/* --- Panels -------------------------------------------------------------- */
+
+/* A raised panel on the light field. Illuminated corner brackets in brass, as
+   on a manuscript page. .grained and .illuminated both own ::after, so the
+   grain goes on the panel and the brackets on its inner box. */
+.panel {
+  padding: var(--s-7);
+  background: var(--plaster-lift);
+}
+
+.panel__inner {
+  padding: var(--s-5);
+}
+
+.panel--sunk {
+  background: var(--plaster-sunk);
+}
+
+/* The same object on a Darbar field: an oxblood-lift panel ruled in gold. */
+.panel--lift {
+  --field: var(--oxblood-lift);
+
+  padding: var(--s-7);
+  background: var(--oxblood-lift);
+}
+
 /* --- Controls ------------------------------------------------------------ */
 
+/* One button, two states of the same idea. On the light field it is a court
+   plaque: oxblood block, gold letters. On a dark field it inverts to gold leaf
+   with oxblood letters. Both carry a doubled frame — the button's own 1px edge,
+   a gap in the field colour, then the outer rule — because a single-stroke
+   button is the web default and the default is what we are avoiding. */
 .button {
+  position: relative;
   display: inline-flex;
   min-height: 56px;
   align-items: center;
   justify-content: center;
   padding: var(--s-3) var(--s-7);
-  border: 1px solid var(--meena);
-  background: var(--meena);
-  color: var(--paper-raised);
+  border: var(--rule-hair) solid var(--gold);
+  background: var(--oxblood-deep);
+  box-shadow:
+    0 0 0 var(--rule-gap) var(--field),
+    0 0 0 calc(var(--rule-gap) + var(--rule-hair)) var(--gold-deep);
+  color: var(--gold);
   cursor: pointer;
+  font-family: var(--font-body);
   font-size: var(--t-sm);
   font-weight: 600;
-  letter-spacing: 0;
+  letter-spacing: 0.04em;
   line-height: 1.2;
   text-align: center;
   transition:
     background-color var(--motion-fast),
-    border-color var(--motion-fast),
-    color var(--motion-fast);
+    color var(--motion-fast),
+    box-shadow var(--motion-fast);
 }
 
 .button:hover {
-  border-color: var(--meena-deep);
-  background: var(--meena-deep);
+  background: var(--oxblood-lift);
+  color: var(--gold-leaf);
 }
 
+/* Ghost: the field shows through, the letters are the field's own metal. */
 .button--ghost {
-  border-color: var(--meena);
+  border-color: var(--field-metal);
   background: transparent;
-  color: var(--meena);
+  box-shadow:
+    0 0 0 var(--rule-gap) var(--field),
+    0 0 0 calc(var(--rule-gap) + var(--rule-hair)) var(--field-metal);
+  color: var(--field-label);
 }
 
 .button--ghost:hover {
-  background: var(--meena-tint);
-  color: var(--meena-deep);
+  background: transparent;
+  color: var(--field-head);
 }
 
-/* On the dark fields the fill inverts: paper block, dark green ink. */
-.section--reverse .button,
-.section--dark .button,
+.hero .button,
+.section--darbar .button,
+.section--darbar-deep .button,
+.section--vitrine .button,
 .site-footer .button {
-  border-color: var(--paper-raised);
-  background: var(--paper-raised);
-  color: var(--meena-deep);
+  border-color: var(--gold-leaf);
+  background: var(--gold);
+  box-shadow:
+    0 0 0 var(--rule-gap) var(--field),
+    0 0 0 calc(var(--rule-gap) + var(--rule-hair)) var(--gold-deep);
+  color: var(--oxblood-deep);
 }
 
-.section--reverse .button:hover,
-.section--dark .button:hover,
+.hero .button:hover,
+.section--darbar .button:hover,
+.section--darbar-deep .button:hover,
+.section--vitrine .button:hover,
 .site-footer .button:hover {
-  border-color: var(--paper);
-  background: var(--paper);
+  background: var(--gold-leaf);
+  color: var(--oxblood-deep);
 }
 
-/* 0.7 put the "Sending…" label at 3.8:1 against its own washed-out fill; 0.8
- * measures 4.7:1 and still reads as unavailable. */
+.hero .button--ghost,
+.section--darbar .button--ghost,
+.section--darbar-deep .button--ghost,
+.section--vitrine .button--ghost {
+  border-color: var(--gold);
+  background: transparent;
+  color: var(--gold);
+}
+
+.hero .button--ghost:hover,
+.section--darbar .button--ghost:hover,
+.section--darbar-deep .button--ghost:hover,
+.section--vitrine .button--ghost:hover {
+  background: transparent;
+  color: var(--gold-leaf);
+}
+
+/* The plaque already carries a doubled frame 5px out, so the ring has to clear
+   it or the two read as one thick smudge. */
+.button:focus-visible,
+.nav-appointment:focus-visible {
+  outline-offset: 8px;
+}
+
+/* 0.8 keeps the "Sending…" label above 4.5:1 against its own washed fill. */
 .button[disabled] {
   cursor: progress;
   opacity: 0.8;
 }
 
+/* A text link is the field's label colour with a real underline. It never
+   changes hue on hover, because on three of the four fields there is no second
+   legal value to change to — the underline thickens instead. */
 .text-action {
   display: inline-flex;
   align-items: center;
   padding: var(--s-2) 0;
   border: 0;
   background: transparent;
-  color: var(--meena);
+  color: var(--field-label);
   cursor: pointer;
+  font-family: var(--font-body);
   font-size: var(--t-sm);
   font-weight: 600;
+  letter-spacing: 0.02em;
   text-align: left;
   text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 5px;
-  transition: color var(--motion-fast);
+  text-decoration-thickness: var(--rule-hair);
+  text-underline-offset: 6px;
+  transition:
+    color var(--motion-fast),
+    text-decoration-thickness var(--motion-fast);
 }
 
 .text-action:hover {
-  color: var(--meena-deep);
-}
-
-/* On stone and on the dark fields the link cannot change colour on hover
-   without dropping below 4.5:1, so the underline carries the state instead. */
-.section--stone .text-action,
-.section--dark .text-action,
-.section--reverse .text-action {
-  transition: text-decoration-thickness var(--motion-fast);
-}
-
-.section--dark .text-action,
-.section--reverse .text-action {
-  color: var(--paper);
-}
-
-.section--stone .text-action:hover,
-.section--dark .text-action:hover,
-.section--reverse .text-action:hover {
+  color: var(--field-head);
   text-decoration-thickness: 2px;
-}
-
-.section--stone .text-action:hover {
-  color: var(--ink);
-}
-
-.section--dark .text-action:hover,
-.section--reverse .text-action:hover {
-  color: var(--paper);
 }
 
 /* --- Header -------------------------------------------------------------- */
 
+/* The court band at the top of the page. It never changes colour on scroll, so
+   the site always has a dark lintel over it. */
 .site-header {
+  --field: var(--oxblood-deep);
+  --field-ink: var(--plaster);
+  --field-head: var(--gold-leaf);
+  --field-label: var(--gold);
+  --field-metal: var(--gold);
+  --field-focus: var(--gold-leaf);
+
   position: sticky;
   z-index: 50;
   top: 0;
+  background: var(--oxblood-deep);
+  color: var(--plaster);
+}
+
+.site-header__inner {
   display: flex;
+  max-width: var(--content-max);
   align-items: center;
   justify-content: space-between;
+  margin-inline: auto;
   padding: var(--s-4) var(--gutter);
-  background: var(--paper);
-  color: var(--ink);
   gap: var(--s-5);
 }
 
 .brand-mark {
   position: relative;
   z-index: 2;
-  display: inline-flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: var(--s-1) var(--s-3);
+  display: grid;
+  align-items: center;
+  gap: 0 var(--s-4);
+  grid-template-columns: auto auto;
   color: inherit;
 }
 
+/* अलंकार — the name of the house in the script the house is named in. It is
+   aria-hidden and sits beside the Latin wordmark, never instead of it. */
+.brand-mark__deva {
+  color: var(--gold);
+  font-family: var(--font-deva);
+  font-size: 1.5rem;
+  grid-row: 1 / 3;
+  line-height: 1;
+}
+
 .brand-mark__name {
+  align-self: end;
+  color: var(--plaster);
   font-family: var(--font-display);
-  font-size: var(--t-lg);
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  line-height: 1.1;
+  font-size: 1.45rem;
+  letter-spacing: 0.01em;
+  line-height: 1;
 }
 
 .brand-mark__meta {
-  color: var(--ink-2);
+  align-self: start;
+  margin-top: var(--s-1);
+  color: var(--gold);
   font-size: var(--t-2xs);
   font-weight: 500;
   letter-spacing: var(--tracking-label);
@@ -522,10 +595,20 @@ h3 {
   white-space: nowrap;
 }
 
+ /* In the footer the mark has a column to itself, so the Devanagari sits above
+   the Latin rather than beside it — a stacked colophon rather than a lockup. */
 .brand-mark--compact {
-  align-items: flex-start;
-  flex-direction: column;
   gap: var(--s-2);
+  grid-template-columns: auto;
+  justify-items: start;
+}
+
+.brand-mark--compact .brand-mark__deva {
+  grid-row: auto;
+}
+
+.brand-mark--compact .brand-mark__deva {
+  font-size: 2.1rem;
 }
 
 .brand-mark--compact .brand-mark__name {
@@ -540,32 +623,36 @@ h3 {
 
 .site-nav a {
   padding: var(--s-3) 0;
-  color: var(--ink-2);
+  color: var(--plaster);
   font-size: var(--t-sm);
   transition: color var(--motion-fast);
 }
 
 .site-nav a:hover {
-  color: var(--meena);
+  color: var(--gold-leaf);
 }
 
+/* Small enough to sit in a 56px band, so it gets the plaque treatment without
+   the doubled outer frame. */
 .nav-appointment {
   min-height: 44px;
-  padding: var(--s-2) var(--s-4);
-  border: 1px solid var(--meena);
+  padding: var(--s-2) var(--s-5);
+  border: var(--rule-hair) solid var(--gold);
   background: transparent;
-  color: var(--meena);
+  color: var(--gold);
   cursor: pointer;
+  font-family: var(--font-body);
   font-size: var(--t-sm);
   font-weight: 600;
+  letter-spacing: 0.04em;
   transition:
     background-color var(--motion-fast),
     color var(--motion-fast);
 }
 
 .nav-appointment:hover {
-  background: var(--meena);
-  color: var(--paper-raised);
+  background: var(--gold);
+  color: var(--oxblood-deep);
 }
 
 .menu-toggle {
@@ -574,81 +661,103 @@ h3 {
   display: none;
   min-height: 44px;
   padding: var(--s-2) 0;
-  color: var(--meena);
+  color: var(--gold);
+  font-family: var(--font-body);
   font-size: var(--t-sm);
   font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
 }
 
-/* --- Hero ---------------------------------------------------------------- */
+/* --- Hero — DARBAR ------------------------------------------------------- */
 
-/* One editorial stack in the left column — eyebrow, headline, lede, actions —
- * beside one tall stone plane. The two columns come out within ~50px of each
- * other in height, which is why the hero has no leftover space in it: the
- * emptiness in the first pass was a full-width headline sitting on top of a
- * half-width column of body copy. The column is the wider of the two so that
- * "heirlooms." still fits on one line at --d-xl's 8rem ceiling. */
+/* The court. Centred, symmetrical, and it ends on a doorway: the piece is
+   masked into a multifoil arch and ruled in gold, so the studio sweep it was
+   photographed on stops being a grey rectangle and becomes a lit niche. */
 .hero {
-  display: grid;
-  align-items: center;
-  /* No block padding at the top: the stone plane starts immediately under the
-     header and runs the full height of the hero, so it reads as a wall the
-     piece is hung on rather than a panel floating in the page. The macro step
-     moves onto the copy column instead. */
-  padding: 0 0 var(--m-3) var(--gutter);
-  gap: var(--s-7) var(--m-1);
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  --field: var(--oxblood);
+  --field-ink: var(--plaster);
+  --field-head: var(--gold-leaf);
+  --field-label: var(--gold);
+  --field-metal: var(--gold);
+  --field-focus: var(--gold-leaf);
+
+  padding: var(--m-1) var(--gutter) var(--m-3);
+  background: var(--oxblood);
+  color: var(--plaster);
+  text-align: center;
 }
 
-.hero__head {
-  align-self: end;
-  padding-block-start: var(--m-2);
-  grid-area: 1 / 1;
+.hero__inner {
+  position: relative;
+  max-width: 62rem;
+  margin-inline: auto;
 }
 
-.hero__copy {
-  align-self: start;
-  max-width: 36em;
-  grid-area: 2 / 1;
+.hero__deva {
+  margin-bottom: var(--s-5);
+  color: var(--gold-deep);
+  font-size: clamp(2rem, 4vw, 3rem);
 }
 
 .hero h1 {
-  max-width: 16ch;
-  margin: 0;
+  max-width: 22ch;
+  margin: 0 auto var(--s-6);
   text-wrap: balance;
 }
 
 .hero__lede {
-  margin-bottom: var(--s-7);
-  color: var(--ink-2);
+  max-width: 46ch;
+  margin: 0 auto var(--s-7);
+  color: var(--plaster);
   font-size: var(--t-lg);
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .hero__actions {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: var(--s-3) var(--s-4);
+  justify-content: center;
+  gap: var(--s-5) var(--s-7);
 }
 
-/* A stone plane that runs off the right edge of the viewport with the piece
- * floating inside it. The photograph's own sweep and the plane are the same
- * value, so the image has no edge at all; the plane's left boundary is the only
- * line, and it is a field change, not a frame. */
-.hero__media {
-  align-self: stretch;
-  margin: 0;
-  padding: var(--m-1) var(--m-1) var(--m-1) var(--m-2);
-  grid-area: 1 / 2 / 3 / 3;
+.hero__screen {
+  margin: var(--m-1) 0 var(--s-7);
+}
+
+/* The doorway. --ornament-inset is dialled down from the token default so the
+   gold reads as a ruled arch around the piece rather than a slab behind it. */
+.hero__arch {
+  --ornament-inset: 10px;
+
+  width: min(440px, 78vw);
+  margin-inline: auto;
+}
+
+.hero__image {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  animation: arrive-image 420ms ease-out both;
+  aspect-ratio: 100 / 132;
+  object-fit: cover;
+}
+
+.hero__caption {
+  max-width: 34ch;
+  margin: var(--s-6) auto 0;
+  color: var(--gold);
+  font-size: var(--t-xs);
+  letter-spacing: 0.02em;
 }
 
 /* The one orchestrated arrival on the site: the photograph comes up to colour
- * like a print job while the headline sets in place. Opacity and filter only —
- * nothing slides, and nothing else on the page animates on load or on scroll.
- * There are no scroll-triggered reveals anywhere in this file. */
+   like a print job while the copy sets in place. Opacity and filter only —
+   nothing slides, and nothing anywhere on this page animates on scroll. */
 @keyframes arrive-image {
   from {
-    filter: saturate(0.35);
+    filter: saturate(0.3);
     opacity: 0;
   }
 
@@ -668,45 +777,34 @@ h3 {
   }
 }
 
-.hero__image {
-  width: 100%;
-  animation: arrive-image 320ms ease-out both;
-  aspect-ratio: 4 / 5;
-  border-radius: var(--radius-media);
-  object-fit: cover;
+.hero__inner > * {
+  animation: arrive-copy 320ms ease-out both;
 }
 
-.hero__head > *,
-.hero__copy > * {
-  animation: arrive-copy 260ms ease-out both;
-}
-
-.hero__head > :nth-child(2) {
+.hero__inner > :nth-child(2) {
   animation-delay: 60ms;
 }
 
-.hero__copy > :nth-child(1) {
-  animation-delay: 120ms;
+.hero__inner > :nth-child(3) {
+  animation-delay: 110ms;
 }
 
-.hero__copy > :nth-child(2) {
-  animation-delay: 180ms;
+.hero__inner > :nth-child(4) {
+  animation-delay: 160ms;
 }
 
-/* --- Pieces -------------------------------------------------------------- */
+.hero__inner > :nth-child(5) {
+  animation-delay: 210ms;
+}
 
-/* Five pieces, four sizes. The previous grid was three identical columns of
- * identical 4:5 crops, which is why nothing on it read as important — and it
- * left a literal hole, six cells for five pieces. Here the haar takes seven of
- * twelve columns and the tikka three, with nothing in between, and the rows are
- * bottom-aligned so the tops stagger by themselves. The commission note is the
- * last cell, as text, so the grid ends on content rather than on a gap. */
+/* --- The pieces — HAVELI ------------------------------------------------- */
+
 .pieces {
   display: grid;
   max-width: var(--content-max);
   align-items: end;
   margin-inline: auto;
-  gap: var(--m-3) var(--s-6);
+  gap: var(--m-2) var(--s-6);
   grid-template-columns: repeat(12, minmax(0, 1fr));
 }
 
@@ -716,6 +814,26 @@ h3 {
   gap: var(--s-5);
 }
 
+/* THE NICHE. Every catalogue photograph was shot on an inconsistent grey sweep
+ * (51%–64% luminance), so no field colour on this site can match all of them.
+ * Cutting each one to the arch and standing it in a teak-deep recess turns that
+ * problem into the design: the sweep reads at 6.4:1 against the wood, i.e. as a
+ * lit alcove, and the piece becomes a mounted miniature instead of a rectangle
+ * that does not fit its page. */
+.piece__niche {
+  --field: var(--teak-deep);
+  --field-focus: var(--gold-leaf);
+  --field-label: var(--gold);
+  --field-head: var(--gold-leaf);
+
+  padding: var(--s-4);
+  background: var(--teak-deep);
+}
+
+.piece__niche-inner {
+  padding: var(--s-5);
+}
+
 .piece__body {
   display: flex;
   align-items: flex-start;
@@ -723,49 +841,45 @@ h3 {
   gap: var(--s-3);
 }
 
-/* Name first, then the spec, then the sentence, then the action. The reverse's
- * one-line caption used to sit ABOVE all of it, so the first thing you read
- * about a necklace was a footnote about its back. */
 .piece h3 {
   margin: 0;
   font-size: var(--t-lg);
+  font-family: var(--font-display);
 }
 
 .piece__spec {
   color: var(--ink-2);
   font-family: var(--font-data);
   font-size: var(--t-xs);
-  letter-spacing: 0;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 .piece__copy {
   color: var(--ink-2);
   font-size: var(--t-sm);
-  line-height: 1.55;
+  line-height: 1.6;
 }
 
 .piece .text-action {
   margin-top: var(--s-1);
 }
 
-/* Row 1 — the dominant piece. Seven columns of photograph with its own text
-   set beside it rather than under it, so the image is the largest thing on the
-   page after the headline. */
+/* Five pieces at four sizes rather than five identical cells: the haar runs
+   seven columns and the tikka three, and the rows are bottom-aligned so the
+   tops stagger by themselves. */
 .piece:nth-of-type(1) {
   display: grid;
-  align-items: end;
+  align-items: center;
   gap: 0 var(--s-6);
   grid-column: 1 / -1;
   grid-template-columns: subgrid;
 }
 
-.piece:nth-of-type(1) > .flip {
+.piece:nth-of-type(1) > .piece__niche {
   grid-column: 1 / span 7;
 }
 
 .piece:nth-of-type(1) > .piece__body {
-  align-self: center;
   grid-column: 9 / -1;
 }
 
@@ -773,8 +887,6 @@ h3 {
   font-size: var(--d-m);
 }
 
-/* Row 2 — six columns hard left, four hard right. Row 3 — four, three, and the
-   note, so the row of small things still spans the full measure. */
 .piece:nth-of-type(2) {
   grid-column: 1 / span 6;
 }
@@ -791,12 +903,19 @@ h3 {
   grid-column: 6 / span 3;
 }
 
+/* The commission note takes the last cell as text, so the grid closes on
+   content rather than on a hole. */
 .pieces__note {
+  align-self: end;
+  grid-column: 8 / -1;
+}
+
+.pieces__note-inner {
   display: flex;
   align-items: flex-start;
   flex-direction: column;
   gap: var(--s-4);
-  grid-column: 10 / -1;
+  padding: var(--s-5);
 }
 
 .pieces__note h3 {
@@ -809,55 +928,64 @@ h3 {
   font-size: var(--t-sm);
 }
 
-/* --- The reverse --------------------------------------------------------- */
+/* --- The reverse — DARBAR ------------------------------------------------ */
 
+/* A triptych, because this section is the brand's one argument and an argument
+   made in a court is made from the centre: the piece stands in the middle under
+   a gold arch, and the case for it is set in two columns either side. */
 .reverse {
   display: grid;
-  align-items: stretch;
-  gap: var(--m-1) var(--m-2);
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  max-width: var(--content-max);
+  align-items: center;
+  margin-inline: auto;
+  gap: var(--m-1) var(--m-1);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, 1fr);
 }
 
-.reverse__copy {
-  align-self: center;
-  max-width: 44rem;
-  padding-block: var(--m-3);
+.reverse__aside > * + * {
+  margin-top: var(--s-5);
 }
 
-.reverse h2 {
-  margin: 0 0 var(--s-5);
+.reverse__aside--start {
+  text-align: right;
+}
+
+.reverse__aside .prose {
+  max-width: 32ch;
+  color: var(--plaster);
+}
+
+.reverse__aside--start .prose {
+  margin-left: auto;
+}
+
+.reverse__media {
+  --ornament-inset: 12px;
+
+  margin-inline: auto;
+  width: min(420px, 100%);
 }
 
 .reverse__pull {
-  margin-top: var(--s-6);
-  color: var(--paper);
+  max-width: 22ch;
+  color: var(--gold-leaf);
   font-family: var(--font-display);
   font-size: var(--d-m);
-  line-height: 1.25;
+  line-height: 1.22;
 }
 
-/* The stone plane runs the full height of the green field and off the right
-   edge of the viewport. One vertical boundary between two fields, and the
-   photograph inside it has no edge of its own. */
-.reverse__media {
-  padding: var(--m-2);
-}
-
-.section--reverse .flip__caption {
-  color: var(--paper-sunk);
-}
-
-/* --- Craft --------------------------------------------------------------- */
+/* --- At the bench — VITRINE ---------------------------------------------- */
 
 .craft {
   display: grid;
   align-items: center;
   gap: var(--m-1) var(--m-2);
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
 }
 
 .craft__copy {
   max-width: 40rem;
+  margin-left: auto;
 }
 
 .craft h2 {
@@ -865,12 +993,14 @@ h3 {
 }
 
 .craft .text-action {
-  margin-top: var(--s-5);
+  margin-top: var(--s-6);
 }
 
-/* The bench photograph is the only dark, warm, non-sweep image in the set, so
-   on the near-black field it needs no plane under it — it dissolves into the
-   room. It runs off the right edge of the viewport instead. */
+/* The bench photograph is the only warm, dark, non-sweep image in the set, so
+   on teak it needs no niche at all — it dissolves into the room and runs off
+   the right edge of the viewport. It stays a rectangle on purpose: the arch is
+   reserved for the jewellery, and a documentary photograph should not be
+   dressed as a miniature. */
 .craft__media {
   margin: 0;
 }
@@ -878,37 +1008,51 @@ h3 {
 .craft__media img {
   width: 100%;
   aspect-ratio: 3 / 4;
-  border-radius: var(--radius-media) 0 0 var(--radius-media);
   object-fit: cover;
 }
 
 .craft__media figcaption {
-  margin-top: var(--s-4);
-  color: var(--polki);
+  max-width: 46ch;
+  margin-top: var(--s-5);
+  color: var(--gold);
   font-size: var(--t-xs);
+  letter-spacing: 0.02em;
 }
 
-/* --- The house ----------------------------------------------------------- */
+/* --- The house — HAVELI -------------------------------------------------- */
 
-/* This section used to end in a void: two short columns under macro padding.
- * It now carries the one date the business can evidence at display size and
- * sets the three checkable statements large enough to be read as the argument
- * of the section rather than as a footer table. */
 .house {
   display: grid;
   max-width: var(--content-max);
   align-items: start;
   margin-inline: auto;
   gap: var(--m-1) var(--m-2);
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
 }
 
 .house h2 {
   margin: 0 0 var(--s-5);
 }
 
-.house__since {
+.house__intro .prose {
   color: var(--ink-2);
+}
+
+.house__intro .text-action {
+  margin-top: var(--s-4);
+}
+
+.house__record {
+  padding: var(--s-7) var(--s-7) var(--s-6);
+  background: var(--plaster-lift);
+}
+
+.house__record-inner {
+  padding: var(--s-5);
+}
+
+.house__since {
+  color: var(--sindoor);
   font-family: var(--font-body);
   font-size: var(--t-2xs);
   font-weight: 600;
@@ -916,29 +1060,30 @@ h3 {
   text-transform: uppercase;
 }
 
+/* One date, set as the display figure it is. */
 .house__year {
-  margin-bottom: var(--m-1);
+  margin: var(--s-2) 0 var(--s-5);
+  color: var(--oxblood-deep);
   font-family: var(--font-display);
   font-size: var(--d-l);
   font-variant-numeric: lining-nums;
-  letter-spacing: -0.03em;
-  line-height: var(--leading-tight);
+  letter-spacing: -0.01em;
+  line-height: 1;
 }
 
-/* The ONE legitimate hairline job on the page: separating a row of data from
- * the next row of data. If a hairline ever appears anywhere else in this file,
- * it is a bug. */
+/* The ONE legitimate hairline job on this page: separating a row of data from
+   the next row of data. Brass, because it is a rule and not a letterform. */
 .facts {
-  border-top: 1px solid var(--hairline);
+  border-top: var(--rule-hair) solid var(--brass);
 }
 
 .facts__row {
   display: grid;
   align-items: baseline;
   padding: var(--s-5) 0;
-  border-bottom: 1px solid var(--hairline);
+  border-bottom: var(--rule-hair) solid var(--brass);
   gap: var(--s-2) var(--s-5);
-  grid-template-columns: minmax(0, 0.62fr) minmax(0, 1.38fr);
+  grid-template-columns: minmax(0, 0.6fr) minmax(0, 1.4fr);
 }
 
 .facts dt {
@@ -954,20 +1099,19 @@ h3 {
   color: var(--ink);
   font-family: var(--font-data);
   font-size: var(--t-sm);
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
-/* --- Visit --------------------------------------------------------------- */
+/* --- Visit — DARBAR ------------------------------------------------------ */
 
 .visit__intro {
   display: grid;
   align-items: center;
-  margin: 0 auto var(--m-3);
+  margin: 0 auto var(--m-2);
   gap: var(--m-1) var(--m-2);
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
-/* Runs off the left edge of the viewport. */
 .visit__media {
   margin: 0;
 }
@@ -975,19 +1119,12 @@ h3 {
 .visit__media img {
   width: 100%;
   aspect-ratio: 4 / 5;
-  border-radius: 0 var(--radius-media) var(--radius-media) 0;
   object-fit: cover;
 }
 
 .visit__copy {
-  max-width: 40rem;
+  max-width: 38rem;
   padding-inline-end: var(--gutter);
-}
-
-/* The section bleeds on the inline-start side, so the block that follows the
-   media has to restore its own gutter. */
-.section--bleed-start > .contact {
-  padding-inline-start: var(--gutter);
 }
 
 .visit h2 {
@@ -995,7 +1132,16 @@ h3 {
 }
 
 .visit .button {
-  margin-top: var(--s-6);
+  margin-top: var(--s-7);
+}
+
+.visit__break {
+  margin-bottom: var(--m-2);
+}
+
+.section--bleed-start > .contact,
+.section--bleed-start > .visit__break {
+  padding-inline-start: var(--gutter);
 }
 
 /* --- Contact ------------------------------------------------------------- */
@@ -1010,7 +1156,7 @@ h3 {
   align-items: end;
   margin-bottom: var(--m-1);
   gap: var(--s-5) var(--m-1);
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
 }
 
 .contact h2 {
@@ -1018,24 +1164,27 @@ h3 {
 }
 
 /* Honest, not decorative: while site-config.ts still holds placeholders this
- * block says so in plain language, and no tel:/wa.me/maps link is rendered. */
+   block says so in plain language and renders no tel:/wa.me/maps link at all.
+   It is a light data card standing in a dark field, which is exactly what
+   --plaster-sunk is for — and ink measures 11.45:1 on it. */
 .contact__notice {
+  --field: var(--plaster-sunk);
+  --field-metal: var(--brass);
+  --field-focus: var(--oxblood-deep);
+
   max-width: var(--measure);
   padding: var(--s-5);
-  background: var(--paper-sunk);
-  color: var(--ink-2);
+  background: var(--plaster-sunk);
+  color: var(--ink);
   font-size: var(--t-sm);
 }
 
-/* Gold would have been the obvious colour for this pill and it measures 2.8:1.
- * Meena is a legal fill at any size, which is the entire argument of the
- * direction, stated at 12px. */
 .contact__tag {
   display: inline-block;
-  margin-right: var(--s-2);
-  padding: var(--s-1) var(--s-2);
-  background: var(--meena);
-  color: var(--paper-raised);
+  margin-right: var(--s-3);
+  padding: var(--s-1) var(--s-3);
+  background: var(--oxblood-deep);
+  color: var(--gold);
   font-size: var(--t-2xs);
   font-weight: 600;
   letter-spacing: var(--tracking-label);
@@ -1055,111 +1204,82 @@ h3 {
   gap: var(--s-3);
 }
 
-/* A phone number is data, so it sets in the data face. The address is prose
- * and sets in the body face at the same size. */
+/* A phone number is data and sets in the data face; an address is prose and
+   sets in the body face at the same size. */
 .contact__value {
-  color: var(--ink);
+  color: var(--ivory);
   font-family: var(--font-data);
   font-size: var(--t-lg);
   font-style: normal;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
 a.contact__value {
-  color: var(--meena);
+  color: var(--gold);
   transition: color var(--motion-fast);
 }
 
 a.contact__value:hover {
-  color: var(--meena-deep);
+  color: var(--gold-leaf);
 }
 
 .contact__value--address {
   font-family: var(--font-body);
-  line-height: 1.5;
-}
-
-/* Not a link, so it must not carry a link's affordance. The previous design
- * gave this a dashed underline and people tapped it. */
-.contact__value--pending {
-  color: var(--ink-2);
-  text-decoration: none;
-}
-
-.contact__meta {
-  color: var(--ink-2);
-  font-size: var(--t-sm);
   line-height: 1.55;
 }
 
-/* The contact block closes the page on the near-black field, so every ink value
-   in it inverts. Measured on --field-dark: --paper 15.9:1, --paper-sunk 13.2:1,
-   --polki 11.1:1, --meena-tint 14.7:1. --ink-2 and --meena are illegal here.
-   The pending notice deliberately stays a light card: it is a data block sitting
-   in a field, which is exactly what --paper-sunk is for. */
-.section--dark .contact__value,
-.section--dark a.contact__value,
-.section--dark .contact__hours dd {
-  color: var(--paper);
+/* Not a link, so it carries no link affordance: people tapped the dashed
+   underline the previous design gave it. */
+.contact__value--pending {
+  color: var(--plaster);
+  text-decoration: none;
 }
 
-.section--dark a.contact__value:hover {
-  color: var(--meena-tint);
+.contact__notice .contact__value--pending {
+  color: var(--ink-2);
 }
 
-.section--dark .contact__meta,
-.section--dark .contact__value--pending,
-.section--dark .contact__hours dt {
-  color: var(--polki);
+.contact__meta {
+  color: var(--plaster);
+  font-size: var(--t-sm);
+  line-height: 1.6;
 }
 
 .contact__action {
-  margin-top: var(--s-2);
+  margin-top: var(--s-3);
 }
 
-.contact__action--pending {
-  border-color: var(--hairline);
+/* Unavailable must still read as unavailable, or a dead control gets dressed as
+   the live one beside it. */
+.contact__action--pending,
+.contact__action--pending:hover {
+  border-color: var(--gold-deep);
   background: transparent;
-  color: var(--ink-2);
+  box-shadow: none;
+  color: var(--gold);
   cursor: default;
 }
 
-.contact__action--pending:hover {
-  border-color: var(--hairline);
-  background: transparent;
-  color: var(--ink-2);
-}
-
-/* Unavailable must still read as unavailable on the dark field — the inverted
-   .button fill would otherwise dress a dead control as the live one beside it. */
-.section--dark .contact__action--pending,
-.section--dark .contact__action--pending:hover {
-  border-color: var(--polki);
-  background: transparent;
-  color: var(--polki);
-}
-
-/* Opening hours are tabular, so the hairline is doing its one job again. */
 .contact__hours {
   width: 100%;
-  border-top: 1px solid var(--hairline);
+  border-top: var(--rule-hair) solid var(--gold-deep);
 }
 
 .contact__hours div {
   display: grid;
   padding: var(--s-3) 0;
-  border-bottom: 1px solid var(--hairline);
+  border-bottom: var(--rule-hair) solid var(--gold-deep);
   gap: var(--s-1) var(--s-4);
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
 .contact__hours dt {
-  color: var(--ink-2);
+  color: var(--gold);
   font-size: var(--t-xs);
 }
 
 .contact__hours dd {
-  color: var(--ink);
+  color: var(--ivory);
   font-family: var(--font-data);
   font-size: var(--t-xs);
 }
@@ -1167,28 +1287,27 @@ a.contact__value:hover {
 /* --- Footer -------------------------------------------------------------- */
 
 .site-footer {
+  --field: var(--oxblood-deep);
+  --field-ink: var(--plaster);
+  --field-head: var(--gold-leaf);
+  --field-label: var(--gold);
+  --field-metal: var(--gold);
+  --field-focus: var(--gold-leaf);
+
   display: grid;
   padding: var(--m-2) var(--gutter) var(--m-1);
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--oxblood-deep);
+  color: var(--plaster);
   gap: var(--m-1) var(--s-7);
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
 }
 
-.site-footer .brand-mark {
-  color: var(--paper);
-}
-
-.site-footer .brand-mark__meta {
-  color: var(--polki);
-}
-
 .footer__brand > p {
   max-width: 34ch;
-  margin-top: var(--s-4);
-  color: var(--polki);
+  margin-top: var(--s-5);
+  color: var(--plaster);
   font-size: var(--t-sm);
-  line-height: 1.55;
+  line-height: 1.6;
 }
 
 .footer__column {
@@ -1203,7 +1322,8 @@ a.contact__value:hover {
   padding: var(--s-1) 0;
   border: 0;
   background: transparent;
-  color: var(--polki);
+  color: var(--plaster);
+  font-family: var(--font-body);
   font-size: var(--t-sm);
   text-align: left;
   transition: color var(--motion-fast);
@@ -1211,7 +1331,12 @@ a.contact__value:hover {
 
 .footer__column a:hover,
 .footer__column button:hover {
-  color: var(--paper);
+  color: var(--gold-leaf);
+}
+
+.footer__rule {
+  grid-column: 1 / -1;
+  margin: 0;
 }
 
 .footer__closing {
@@ -1220,15 +1345,18 @@ a.contact__value:hover {
   flex-wrap: wrap;
   grid-column: 1 / -1;
   justify-content: space-between;
+  margin-top: calc(var(--m-1) * -1 + var(--s-6));
   gap: var(--s-3) var(--s-5);
-  color: var(--polki);
+  color: var(--gold);
 }
 
 .footer__closing p {
-  font-size: var(--t-sm);
+  font-family: var(--font-display);
+  font-size: var(--t-lg);
 }
 
 .footer__closing small {
+  color: var(--plaster);
   font-size: var(--t-xs);
 }
 
@@ -1242,21 +1370,33 @@ a.contact__value:hover {
   place-items: center;
   overflow-y: auto;
   padding: var(--s-5);
-  background: color-mix(in srgb, var(--ink) 74%, transparent);
+  background: color-mix(in srgb, var(--oxblood-deep) 86%, transparent);
 }
 
 .appointment-dialog {
+  --field: var(--plaster-lift);
+  --field-ink: var(--ink-2);
+  --field-head: var(--ink);
+  --field-label: var(--sindoor);
+  --field-metal: var(--brass);
+  --field-focus: var(--oxblood-deep);
+
   position: relative;
   width: min(820px, 100%);
-  padding: var(--m-1) var(--m-1) var(--s-7);
-  background: var(--paper-raised);
+  padding: var(--s-5);
+  background: var(--plaster-lift);
   box-shadow: var(--shadow-modal);
+}
+
+.appointment-dialog__inner {
+  padding: var(--m-1) var(--s-7) var(--s-7);
 }
 
 .dialog-close {
   position: absolute;
-  top: var(--s-3);
-  right: var(--s-3);
+  z-index: 3;
+  top: var(--s-4);
+  right: var(--s-4);
   display: grid;
   width: 44px;
   height: 44px;
@@ -1269,12 +1409,13 @@ a.contact__value:hover {
 }
 
 .dialog-close:hover {
-  color: var(--meena);
+  color: var(--sindoor);
 }
 
 .appointment-dialog h2 {
   max-width: 18ch;
   margin-bottom: var(--s-4);
+  font-size: var(--d-m);
 }
 
 .dialog-intro {
@@ -1309,7 +1450,7 @@ a.contact__value:hover {
 .appointment-form textarea {
   width: 100%;
   border: 0;
-  border-bottom: 1px solid var(--hairline);
+  border-bottom: var(--rule-hair) solid var(--brass);
   border-radius: var(--radius);
   background: transparent;
   color: var(--ink);
@@ -1333,7 +1474,8 @@ a.contact__value:hover {
 .appointment-form input:focus,
 .appointment-form select:focus,
 .appointment-form textarea:focus {
-  border-bottom-color: var(--meena);
+  border-bottom-color: var(--sindoor);
+  border-bottom-width: 2px;
 }
 
 .form-wide {
@@ -1341,15 +1483,16 @@ a.contact__value:hover {
 }
 
 .appointment-form .button {
-  margin-top: var(--s-2);
+  margin-top: var(--s-4);
+  justify-self: start;
 }
 
 .form-error {
   display: flex;
   flex-direction: column;
   padding: var(--s-4);
-  border-left: 2px solid var(--sindoor);
-  background: var(--paper-sunk);
+  border-left: var(--rule-heavy) solid var(--sindoor);
+  background: var(--plaster-sunk);
   color: var(--ink);
   font-size: var(--t-sm);
   gap: var(--s-2);
@@ -1364,12 +1507,12 @@ a.contact__value:hover {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: var(--s-2) var(--s-5);
   margin-top: var(--s-1);
+  gap: var(--s-2) var(--s-5);
 }
 
 .form-error__fallback a {
-  color: var(--meena);
+  color: var(--sindoor);
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 4px;
@@ -1395,7 +1538,7 @@ a.contact__value:hover {
 }
 
 .dialog-success .button {
-  margin-top: var(--s-3);
+  margin-top: var(--s-4);
 }
 
 .dialog-success h2:focus-visible {
@@ -1403,16 +1546,16 @@ a.contact__value:hover {
 }
 
 .dialog-mark {
-  color: var(--meena);
-  font-size: var(--t-lg);
+  color: var(--gold-deep);
+  font-size: var(--d-m);
   line-height: 1;
 }
 
 /* --- Breakpoints --------------------------------------------------------- */
 
 @media (max-width: 1100px) {
-  /* The nav collapses into the overlay HERE, not at 780px: previously every
-   * viewport between 781px and 1100px had no navigation at all. */
+  /* The nav collapses HERE and not at 780px: every viewport between the two
+     otherwise had no navigation at all. */
   .menu-toggle {
     display: block;
     margin-left: auto;
@@ -1428,7 +1571,7 @@ a.contact__value:hover {
     flex-direction: column;
     justify-content: center;
     padding: var(--m-2) var(--gutter);
-    background: var(--paper);
+    background: var(--oxblood-deep);
     gap: var(--s-4);
     opacity: 0;
     transition:
@@ -1443,55 +1586,36 @@ a.contact__value:hover {
 
   .site-nav a {
     display: block;
-    color: var(--ink);
+    color: var(--gold-leaf);
     font-family: var(--font-display);
     font-size: var(--d-l);
-    line-height: 1.2;
+    line-height: 1.15;
   }
 
   .nav-appointment {
     width: 100%;
     max-width: 380px;
-    margin-top: var(--s-5);
     min-height: 48px;
+    margin-top: var(--s-6);
   }
 
-  .hero {
+  .reverse {
+    gap: var(--m-1);
     grid-template-columns: minmax(0, 1fr);
-    padding: var(--m-1) 0 var(--m-2);
   }
 
-  .hero__head,
-  .hero__copy {
-    max-width: none;
-    padding-inline: var(--gutter);
+  .reverse__aside--start {
+    text-align: left;
   }
 
-  /* The explicit two-column placement is reset, or the hero keeps an implicit
-     second column and the copy sets one word per line. */
-  .hero__head,
-  .hero__copy,
-  .hero__media {
-    grid-area: auto;
+  .reverse__aside .prose,
+  .reverse__aside--start .prose {
+    max-width: var(--measure);
+    margin-left: 0;
   }
 
-  .hero__media {
-    padding: var(--m-1) 0;
-  }
-
-  /* The 4:5 catalogue crop is kept rather than reflowed to a landscape box — a
-   * necklace shot cropped to 3:2 loses its drops. The cap only bites on wide
-   * tablets, where object-fit centres the crop. */
-  .hero__image {
-    max-height: 68svh;
-    border-radius: var(--radius);
-  }
-
-  /* Two columns, with the lead piece still breaking the grid: image and text
-     side by side across the full width, so scale contrast survives the
-     breakpoint instead of collapsing into five identical cells again. */
   .pieces {
-    gap: var(--m-2) var(--s-5);
+    gap: var(--m-1) var(--s-5);
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1502,54 +1626,43 @@ a.contact__value:hover {
 
   .piece:nth-of-type(1) {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     flex-direction: row;
     gap: var(--s-6);
     grid-column: 1 / -1;
   }
 
-  .piece:nth-of-type(1) > .flip {
-    flex: 1 1 58%;
+  .piece:nth-of-type(1) > .piece__niche {
+    flex: 1 1 56%;
   }
 
   .piece:nth-of-type(1) > .piece__body {
-    flex: 1 1 42%;
+    flex: 1 1 44%;
   }
 
   .pieces__note {
     grid-column: 1 / -1;
   }
 
-  .reverse,
   .craft,
   .house,
   .visit__intro {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  /* The green field runs edge to edge and the stone plane becomes a band, so
-     the photograph is full-bleed on a phone with stone above and below it. */
-  .section--reverse {
-    padding-inline: 0;
-  }
-
-  .reverse__copy {
-    padding: var(--m-2) var(--gutter) 0;
-  }
-
-  .reverse__media {
-    padding: var(--m-1) 0 var(--m-2);
-  }
-
-  .craft__media,
-  .visit__media {
+  /* .section--bleed-start zeroes the inline-start padding for the photograph.
+     Once the columns stack, the copy has to restore it or it sits on the
+     viewport edge. */
+  .visit__copy {
     max-width: none;
+    padding-inline: var(--gutter);
   }
 
-  .section-head {
-    grid-template-columns: minmax(0, 1fr);
+  .craft__copy {
+    margin-left: 0;
   }
 
+  .section-head,
   .contact__intro {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -1565,33 +1678,35 @@ a.contact__value:hover {
   .footer__brand {
     grid-column: 1 / -1;
   }
+
+  .footer__closing {
+    margin-top: 0;
+  }
 }
 
 @media (max-width: 780px) {
-  /* Block only: the inline shorthand here used to re-apply a gutter to the two
-     sections that deliberately zero one, which put a 24px stripe of the field
-     down the side of a photograph meant to bleed. */
+  /* Block only: an inline shorthand here re-applies a gutter to the sections
+     that deliberately zero one, which puts a stripe of field down the side of a
+     photograph meant to bleed. */
   .section {
     padding-block: var(--m-2);
   }
 
-  .section--flush {
-    padding-block: 0;
+  .hero {
+    padding-block: var(--m-1) var(--m-2);
   }
 
   .section-head {
     margin-bottom: var(--m-1);
   }
 
-  /* Two-up survives on phone on purpose: a one-up grid makes browsing a
-   * catalogue feel endless. The piece name steps down instead. */
   .pieces {
     gap: var(--s-7) var(--s-4);
   }
 
-  /* Side by side stops working once the text column is ~150px wide, so the
-     lead piece returns to image-over-text — still full width, so it is still
-     twice the size of everything else on the page. */
+  /* Side by side stops working once the text column is ~150px wide, so the lead
+     piece returns to image-over-text — still full width, so it is still twice
+     the size of everything else. */
   .piece:nth-of-type(1) {
     align-items: stretch;
     flex-direction: column;
@@ -1603,22 +1718,22 @@ a.contact__value:hover {
     font-size: var(--t-lg);
   }
 
-  .pieces__note {
-    grid-column: 1 / -1;
-    padding-block: 0;
+  .house__record,
+  .panel {
+    padding: var(--s-5);
   }
 
   .contact__grid {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .appointment-dialog {
-    padding: var(--m-1) var(--s-5) var(--s-6);
+  .appointment-dialog__inner {
+    padding: var(--m-1) var(--s-4) var(--s-6);
   }
 
   .appointment-form {
-    grid-template-columns: 1fr;
     gap: var(--s-5);
+    grid-template-columns: 1fr;
   }
 
   .form-wide {
@@ -1652,3 +1767,5 @@ a.contact__value:hover {
     animation-iteration-count: 1 !important;
   }
 }
+
+

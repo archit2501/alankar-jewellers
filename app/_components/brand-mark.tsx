@@ -3,12 +3,14 @@
  * a server component inside `app/page.tsx` and is bundled into the client
  * island only where a client component (the header) imports it.
  *
- * Two things went in the rebuild. The three-line stack ("ALANKAR" / "JEWELLERS"
- * at 0.58em tracking / "SINCE 1980" flanked by two rules) spread nine letters
- * across eleven character-widths of air, and the flanking rules were sized
- * against a fixed min-width, so they overhung the name in the compact footer
- * variant. It is now name plus one line of qualifier at the site's single
- * uppercase tracking value.
+ * अलंकार (alankāra) is Sanskrit for ornament — the shop is named after the
+ * thing it makes, so the mark carries the Devanagari beside the Latin rather
+ * than instead of it. The Devanagari is aria-hidden: the accessible name is set
+ * on the link and a screen reader should not read the house name twice.
+ *
+ * The self-hosted subsets are latin + latin-ext only, so the Devanagari falls
+ * back to a system serif (--font-deva). That is deliberate — it is one word at
+ * display size, and it is not worth a fifth font file to a visitor on 3G.
  */
 export function BrandMark({ compact = false }: { compact?: boolean }) {
   return (
@@ -17,6 +19,9 @@ export function BrandMark({ compact = false }: { compact?: boolean }) {
       href="#top"
       aria-label="Alankar Jewellers, back to top"
     >
+      <span className="brand-mark__deva" aria-hidden="true">
+        अलंकार
+      </span>
       <span className="brand-mark__name">Alankar</span>
       <span className="brand-mark__meta">Jewellers · Since 1980</span>
     </a>

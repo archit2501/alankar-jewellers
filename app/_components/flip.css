@@ -1,8 +1,15 @@
 /**
  * The Flip — see app/_components/flip.tsx for the rationale.
  *
+ * What changed for "Darbar shell, Haveli soul": the piece is now cut to the
+ * multifoil arch. The mask goes on `.flip__stage` and NOT on the button, for a
+ * concrete reason — a mask clips everything the element paints, including its
+ * focus outline, so masking the control itself would have made the keyboard
+ * ring invisible. Button keeps the ring, stage takes the arch.
+ *
  * Rules this file must not break:
- *   - No border on the image. Ever. Structure comes from field colour.
+ *   - No rectangular border on the image. Ever. The arch is the silhouette and
+ *     the field is the structure.
  *   - The field colour and the crossfade share one curve, so the piece reads as
  *     a single object turning rather than two images dissolving.
  *   - Under reduced motion the colour change SURVIVES and only the movement is
@@ -10,10 +17,10 @@
  */
 
 .flip {
-  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--s-3);
+  margin: 0;
+  gap: var(--s-4);
 }
 
 .flip__frame {
@@ -22,21 +29,47 @@
   width: 100%;
   padding: 0;
   border: 0;
-  border-radius: var(--radius-media);
-  overflow: hidden;
-  background: var(--paper-sunk);
+  background: transparent;
   cursor: pointer;
-  aspect-ratio: 4 / 5;
-  /* The field travels paper -> meena on the same curve as the crossfade. */
-  transition: background-color var(--motion-flip);
 }
 
 .flip--static .flip__frame {
   cursor: default;
 }
 
-.flip--reversed .flip__frame {
-  background-color: var(--meena);
+/* The gold arch ruled just outside the piece, the way an illuminated panel is
+   bordered. Opt-in, because on the catalogue grid the teak niche is already
+   doing this job and two frames on one object is where rich turns gaudy. */
+.flip--framed .flip__frame::before {
+  position: absolute;
+  z-index: 0;
+  inset: calc(var(--ornament-inset) * -1);
+  background: var(--gold);
+  content: "";
+  -webkit-mask-image: var(--orn-arch);
+  mask-image: var(--orn-arch);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  pointer-events: none;
+}
+
+/* 100/132 is the arch's own drawn proportion. Holding it here means the cusps
+   keep their geometry instead of being stretched by whatever aspect the
+   photograph happens to have; object-fit crops the 4:5 original. */
+.flip__stage {
+  position: relative;
+  z-index: 1;
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 100 / 132;
+  background: var(--field);
+  transition: background-color var(--motion-flip);
+}
+
+.flip--reversed .flip__stage {
+  background-color: var(--oxblood-deep);
 }
 
 .flip__face,
@@ -66,24 +99,23 @@
   transform: scale(1);
 }
 
-/* The affordance. Present but quiet; it is a hint, not a button in its own
-   right — the whole frame is the control. */
+/* The affordance. Present but quiet; it is a hint, not a control in its own
+   right — the whole frame is the control. It sits below the arch's springing
+   line so the mask never clips it. */
 .flip__hint {
   position: absolute;
-  right: var(--s-3);
-  bottom: var(--s-3);
   z-index: 2;
+  right: var(--s-4);
+  bottom: var(--s-4);
   display: grid;
+  width: 34px;
+  height: 34px;
   place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(250, 250, 248, 0.92);
-  color: var(--ink);
+  background: var(--gold);
+  color: var(--oxblood-deep);
   opacity: 0;
   transition:
     opacity var(--motion-fast),
-    color var(--motion-fast),
     background-color var(--motion-fast);
 }
 
@@ -103,26 +135,27 @@
 }
 
 .flip--reversed .flip__hint {
-  background: var(--meena-deep);
-  color: var(--paper-raised);
+  background: var(--gold-leaf);
   opacity: 1;
 }
 
 .flip__frame:focus-visible {
-  outline: 2px solid var(--meena);
-  outline-offset: 3px;
+  outline: 2px solid var(--field-focus);
+  outline-offset: 4px;
 }
 
 .flip__caption {
-  color: var(--ink-2);
+  color: var(--field-label);
   font-family: var(--font-body);
   font-size: var(--t-xs);
-  line-height: var(--leading-body);
+  letter-spacing: 0.02em;
+  line-height: 1.6;
+  text-align: center;
 }
 
 @media (prefers-reduced-motion: reduce) {
   /* Keep the colour, drop the movement. */
-  .flip__frame,
+  .flip__stage,
   .flip__face,
   .flip__back {
     transition-duration: 1ms;
