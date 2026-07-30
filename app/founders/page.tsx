@@ -56,13 +56,13 @@ function publishable(value: string | null | undefined): value is string {
 type Founder = {
   /** Generic scaffolding. Safe to print while the real name is unknown. */
   standIn: string;
-  /** Which of the two mounts this is. Structure, not biography. */
+  /** Which of the two mounts on the wall this is. Structure, not biography. */
   mount: string;
   /** TODO: the proprietor's name, as they want it written. */
   name: string | null;
   /** TODO: the role as a VERB, not a job title — "buys the stones". */
   doing: string | null;
-  /** TODO: where a customer actually finds this person in the shop. */
+  /** TODO: where in the shop a customer actually finds this person. */
   whereabouts: string | null;
   /** TODO: two or three short paragraphs, recorded in the first person. */
   words: string[];
@@ -108,8 +108,8 @@ const founders: Founder[] = [
  * The hinge between the two portraits. Two founder blocks in a row read as a
  * list; something that belongs to neither of them makes them read as a pair.
  * These captions describe the craft, which is checkable, rather than the shop,
- * which is not. Set as five lit niches in a teak wall — the almirah behind the
- * counter, which is where a real shop keeps exactly this row of things.
+ * which is not. Set as five lit niches in the teak almirah behind the counter,
+ * which is exactly where a real shop keeps this row of things.
  */
 const objects: { key: ImageKey; name: string; note: string }[] = [
   {
@@ -163,38 +163,41 @@ export default function FoundersPage() {
     <AppointmentProvider>
       <div className="f-page">
         {/* ---- DARBAR: the lintel ------------------------------------- */}
-        <header className="f-topbar f-dark grained">
-          <div className="f-shell f-topbar__inner">
+        <header className="f-topbar section--darbar-deep grained">
+          <div className="wrap f-topbar__inner">
             <Link className="f-wordmark" href="/">
               <span className="f-wordmark__name">Alankar Jewellers</span>
               <span className="f-wordmark__since">Since {site.foundedYear}</span>
             </Link>
+            {/* The shared SiteHeader navigates by homepage hash anchors, which
+                are dead on this route, so this page carries its own bar. */}
             <nav className="f-nav" aria-label="Alankar Jewellers">
               <Link href="/">The shop</Link>
-              {/* The shared SiteHeader navigates by homepage hash anchors, which
-                  are dead on this route, so this page carries its own bar. */}
               <Link href="/founders" aria-current="page">
                 The people
               </Link>
             </nav>
           </div>
-          <div className="rule-gold f-rule" aria-hidden="true" />
+          <div className="rule-gold" aria-hidden="true" />
         </header>
 
         <main>
           {/* ---- 1. DARBAR: one sentence, no image --------------------- */}
-          <section className="f-opener f-dark grained jali-veil" aria-labelledby="f-opener-title">
-            <div className="f-shell f-opener__grid">
+          <section
+            className="section section--darbar grained jali-veil f-opener"
+            aria-labelledby="f-opener-title"
+          >
+            <div className="wrap f-opener__grid">
               <div className="f-opener__statement">
-                <p className="f-label">The people</p>
+                <p className="label">The people</p>
                 <h1 id="f-opener-title">
                   The techniques are two hundred years old. The people are not.
                 </h1>
               </div>
 
               {detailsPending ? (
-                <aside className="f-notice illuminated">
-                  <p className="f-notice__head">
+                <aside className="panel--lift illuminated f-notice">
+                  <p>
                     <span className="f-tag">Details pending</span>
                   </p>
                   <p>
@@ -211,34 +214,39 @@ export default function FoundersPage() {
                 </aside>
               ) : null}
             </div>
-            <div className="jali-band f-seam" aria-hidden="true" />
           </section>
+
+          <div className="jali-break" aria-hidden="true">
+            <div className="jali-band" />
+          </div>
 
           {/* ---- 2 & 3. HAVELI: portrait one, and their own words ------ */}
           <FounderBlock founder={founders[0]} priority />
 
-          {/* ---- 4. HAVELI: the hinge, five lit niches ----------------- */}
-          <section className="f-strip f-dark grained" aria-labelledby="f-objects-title">
-            <div className="f-shell">
+          {/* ---- 4. VITRINE: the hinge, five lit niches ---------------- */}
+          <section
+            className="section section--vitrine grained f-strip"
+            aria-labelledby="f-objects-title"
+          >
+            <div className="wrap">
               <div className="f-strip__head">
-                <p className="f-label">Between the two of them</p>
+                <p className="label">Between the two of them</p>
                 <h2 id="f-objects-title">
                   Five things that outlast whoever is at the bench.
                 </h2>
               </div>
-              <div className="rule-brass f-rule f-strip__rule" aria-hidden="true" />
+              <div className="rule-gold rule rule--full" aria-hidden="true" />
               <ul className="f-strip__list">
                 {objects.map((object) => {
                   const asset = images[object.key];
                   return (
                     <li className="f-object" key={object.key}>
                       <figure>
-                        <span className="f-object__niche">
+                        <span className="f-object__niche arch">
                           <img
-                            className="arch"
                             src={asset.src}
                             srcSet={asset.srcSet}
-                            sizes="(max-width: 780px) 62vw, 18vw"
+                            sizes="(max-width: 780px) 58vw, 18vw"
                             width={asset.width}
                             height={asset.height}
                             alt=""
@@ -261,14 +269,20 @@ export default function FoundersPage() {
           {/* ---- 5. HAVELI: portrait two, mirrored --------------------- */}
           <FounderBlock founder={founders[1]} mirrored />
 
+          <div className="jali-break jali-break--haveli" aria-hidden="true">
+            <div className="jali-band jali-band--brass" />
+          </div>
+
           {/* ---- 6. HAVELI: the ledger --------------------------------- */}
-          <div className="jali-band jali-band--brass f-seam f-seam--light" aria-hidden="true" />
-          <section className="f-changed grained" aria-labelledby="f-changed-title">
-            <div className="f-shell">
+          <section
+            className="section section--haveli grained f-changed"
+            aria-labelledby="f-changed-title"
+          >
+            <div className="wrap">
               <div className="f-changed__head">
-                <p className="f-label">What changed</p>
+                <p className="label">What changed</p>
                 <h2 id="f-changed-title">Four things you can check.</h2>
-                <div className="rule-brass f-rule" aria-hidden="true" />
+                <div className="rule-brass rule rule--full" aria-hidden="true" />
                 <p className="f-changed__lede">
                   Not a timeline and not a list of adjectives. Each line is meant
                   to be a concrete thing the newer generation changed, stated so
@@ -296,35 +310,39 @@ export default function FoundersPage() {
             </div>
           </section>
 
+          <div className="jali-break" aria-hidden="true">
+            <div className="jali-band" />
+          </div>
+
           {/* ---- 8. DARBAR: close on a named CTA ----------------------- */}
-          <section className="f-close f-dark grained jali-veil" aria-labelledby="f-close-title">
-            <div className="jali-band f-seam" aria-hidden="true" />
-            <div className="f-shell">
-              {/* The illuminated primitive rules two corners; the panel is
-                  turned through 180° a second time so the invitation sits in a
-                  complete manuscript frame rather than two stray brackets. */}
-              <div className="f-close__inner illuminated">
-                <div className="illuminated f-close__corners" aria-hidden="true" />
-                <p className="f-label">Come and see</p>
-                <h2 id="f-close-title">
-                  {askFor ? `Ask for ${askFor}.` : "Ask for someone by name."}
-                </h2>
-                <div className="rule-gold f-rule f-rule--centred" aria-hidden="true" />
-                <p className="f-close__body">
-                  {askFor
-                    ? "Tell us when you would like to come and we will keep the salon free."
-                    : "The name that belongs in that line is still being confirmed, so we are not going to guess at it. Tell us when you would like to come and we will call you back."}
-                </p>
-                <AppointmentTrigger className="f-cta">
-                  Book a viewing
-                </AppointmentTrigger>
-              </div>
+          <section
+            className="section section--darbar grained jali-veil f-close"
+            aria-labelledby="f-close-title"
+          >
+            {/* The illuminated primitive rules two corners; a mirrored copy
+                completes the frame, so the invitation sits in a ruled panel
+                rather than between two stray brackets. */}
+            <div className="opener illuminated f-close__panel">
+              <div className="illuminated f-close__corners" aria-hidden="true" />
+              <p className="label">Come and see</p>
+              <h2 id="f-close-title">
+                {askFor ? `Ask for ${askFor}.` : "Ask for someone by name."}
+              </h2>
+              <div className="rule-gold rule rule--center" aria-hidden="true" />
+              <p className="f-close__body">
+                {askFor
+                  ? "Tell us when you would like to come and we will keep the salon free."
+                  : "The name that belongs in that line is still being confirmed, so we are not going to guess at it. Tell us when you would like to come and we will call you back."}
+              </p>
+              <AppointmentTrigger className="button f-cta">
+                Book a viewing
+              </AppointmentTrigger>
             </div>
           </section>
         </main>
 
-        <footer className="f-colophon f-dark grained">
-          <div className="f-shell">
+        <footer className="f-colophon section--darbar-deep grained">
+          <div className="wrap">
             <p>
               {site.name}, since {site.foundedYear}.{" "}
               <Link href="/">Back to the shop</Link>
@@ -337,15 +355,15 @@ export default function FoundersPage() {
 }
 
 /**
- * A founder block is a framed portrait hung on a plaster wall, with a record
- * card beside it.
+ * A founder block: a portrait hung on a plaster wall, with the shop's own
+ * record card beside it.
  *
- * THE PLACEHOLDER-VOID PROBLEM. With no name, no role and no recorded words,
- * a conventional heading-plus-paragraphs column is three short lines beside a
- * 4:5 portrait — a hole. The fix here is compositional rather than editorial:
- * the column is set as the shop's own record card and a ruled blank page,
- * because a form waiting to be filled in is a *full* object and is honest by
- * its very shape. Nothing in it asserts anything about a person.
+ * THE PLACEHOLDER-VOID PROBLEM. With no name, no role and no recorded words, a
+ * conventional heading-plus-paragraphs column is three short lines beside a tall
+ * portrait — a hole. The fix here is compositional rather than editorial: the
+ * column is set as a record card and a ruled blank page, because a form waiting
+ * to be filled in is a *full* object and is honest by its very shape. Nothing
+ * in it asserts anything about a person.
  */
 function FounderBlock({
   founder,
@@ -374,36 +392,35 @@ function FounderBlock({
 
   return (
     <section
-      className={`f-founder grained${mirrored ? " f-founder--mirrored" : ""}`}
+      className={`section section--haveli grained f-founder${
+        mirrored ? " f-founder--mirrored" : ""
+      }`}
       aria-labelledby={`f-${founder.portrait}`}
     >
-      <div className="f-shell f-founder__grid">
+      <div className="wrap f-founder__grid">
         <div className="f-portrait">
-          <div className="f-portrait__hang">
-            <div className="f-portrait__mount">
-              <Flip
-                front={founder.portrait}
-                back={founder.reverse}
-                alt={alt}
-                altBack={founder.reverseAlt}
-                sizes="(max-width: 780px) 92vw, 42vw"
-                priority={priority}
-              />
-            </div>
-          </div>
-          <p className="f-portrait__caption">
-            {name && doing
-              ? `${name} — ${doing}`
-              : "Placeholder image — not a photograph of a real person. Turn it over for the workshop."}
-          </p>
+          <Flip
+            front={founder.portrait}
+            back={founder.reverse}
+            alt={alt}
+            altBack={founder.reverseAlt}
+            sizes="(max-width: 780px) 88vw, 40vw"
+            priority={priority}
+            framed
+            caption={
+              name && doing
+                ? `${name} — ${doing}`
+                : "Placeholder image. Not a photograph of a real person — turn it over for the workshop."
+            }
+          />
         </div>
 
         <div className="f-founder__words">
-          <p className="f-label">{founder.mount}</p>
+          <p className="label">{founder.mount}</p>
           <h2 id={`f-${founder.portrait}`}>{name ?? founder.standIn}</h2>
-          <div className="rule-brass f-rule" aria-hidden="true" />
+          <div className="rule-brass rule rule--full" aria-hidden="true" />
 
-          <dl className="f-record illuminated illuminated--brass">
+          <dl className="panel illuminated illuminated--brass f-record">
             {record.map((row) => (
               <div className="f-record__row" key={row.label}>
                 <dt>{row.label}</dt>
@@ -420,17 +437,17 @@ function FounderBlock({
           </dl>
 
           <div className="f-said">
-            <p className="f-label">In their own words</p>
+            <p className="label">In their own words</p>
             {words.length > 0 ? (
               words.map((paragraph) => (
-                <p className="f-said__body" key={paragraph}>
+                <p className="prose f-said__body" key={paragraph}>
                   {paragraph}
                 </p>
               ))
             ) : (
               <>
-                {/* A ruled blank page. It is unmistakably empty on purpose, and
-                    it holds the column open until the recording is made. */}
+                {/* A ruled blank page. Unmistakably empty on purpose, and it
+                    holds the column open until the recording is made. */}
                 <div className="f-ruled" aria-hidden="true">
                   <span />
                   <span />

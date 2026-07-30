@@ -7,32 +7,35 @@
  * but everything between the two doors is domestic, warm and textured.
  *
  * Field order, top to bottom:
- *   lintel      --oxblood-deep   DARBAR   the bar, ruled in gold
- *   opener      --oxblood        DARBAR   one sentence, jali-veiled, no image
- *   founder 1   --plaster        HAVELI   a portrait hung on a plaster wall
- *   the niches  --teak-deep      HAVELI   five lit arches in the almirah
- *   founder 2   --plaster        HAVELI   mirrored
- *   what changed --plaster-sunk  HAVELI   a recess, ruled like a bahi-khata
- *   close       --oxblood        DARBAR   the invitation, centred
- *   colophon    --oxblood-deep   DARBAR   the threshold out
+ *   lintel       darbar-deep   the bar, ruled in gold
+ *   opener       darbar        one sentence, jali-veiled, no image
+ *   founder 1    haveli        a portrait hung on a plaster wall
+ *   the niches   vitrine       five lit arches in the teak almirah
+ *   founder 2    haveli        mirrored
+ *   what changed haveli, sunk  a recess, ruled like a bahi-khata
+ *   close        darbar        the invitation, centred
+ *   colophon     darbar-deep   the threshold out
+ *
+ * This file styles composition only. Colour comes from the field variables that
+ * globals.css declares (--field, --field-ink, --field-head, --field-label,
+ * --field-metal, --field-focus): .section--darbar, --darbar-deep, --vitrine and
+ * --haveli are the site's own classes, and reusing them is what makes this page
+ * the same building as the homepage rather than a lookalike. The shared <Flip>,
+ * .button, .label, .panel, .rule and .jali-break all read those variables, so
+ * nothing here hard-codes a colour against a field it cannot see.
  *
  * THE COLOUR RULE, obeyed line by line below:
- *   gold is text ONLY on oxblood / teak fields (6.35–10.91:1)
- *   brass on plaster is 2.85:1 and is therefore NEVER text here — it is rules,
- *   corners, mounts and ruled blank lines only
- *   text on plaster is --ink 14.08, --ink-2 7.80 or --sindoor 6.48
+ *   gold is text ONLY on the oxblood and teak fields (6.35–10.91:1)
+ *   brass on plaster is 2.85:1 and is therefore NEVER a letterform here — it is
+ *   rules, corner brackets, mounts and ruled blank lines only
+ *   text on plaster is --ink 14.08, --ink-2 7.80, --sindoor 6.48
  *
- * Ornament is taken from app/_ornament.css and nothing new is invented:
- *   .arch       both portraits and all five objects are cut to the cusped arch
- *   .jali-veil  over both Darbar fields; .jali-band at the two seams
- *   .rule-gold / .rule-brass  doubled manuscript rules, never a lone hairline
- *   .illuminated  corner brackets on the notice, the record card, the close
- *   .grained    every field
- *
- * Scoped to `.f-page` so nothing here can leak, and so the concurrent homepage
- * rewrite in globals.css cannot collide with it. The Flip's own stylesheet was
- * written for the retired palette, so every colour it sets is overridden here at
- * higher specificity rather than edited in place.
+ * Ornament is taken from app/_ornament.css and nothing is invented:
+ *   .arch        the two portraits (via <Flip framed>) and all five objects
+ *   .jali-veil   over both Darbar fields; .jali-band at three seams
+ *   .rule-gold / .rule-brass   doubled manuscript rules, never a lone hairline
+ *   .illuminated corner brackets on the notice, the record card, the close
+ *   .grained     every field
  */
 
 @import "../tokens.css";
@@ -40,12 +43,10 @@
 @import "../_components/flip.css";
 
 .f-page {
-  --f-gutter: var(--s-5);
   --f-measure: 60ch;
-  --f-focus: var(--sindoor);
   /* Lime wash is coarser than the manuscript grounds elsewhere on the site, and
-     this page is the one that has to feel like a room. */
-  --grain-opacity: 0.075;
+     this is the page that has to feel like a room you have walked into. */
+  --grain-opacity: 0.08;
 
   background: var(--plaster);
   color: var(--ink);
@@ -54,43 +55,21 @@
   line-height: var(--leading-body);
 }
 
-.f-page :focus-visible,
-.f-page .flip__frame:focus-visible {
-  outline: 2px solid var(--f-focus);
+.f-page p {
+  margin: 0;
+}
+
+/* globals.css already rings :focus-visible from --field-focus. This restates it
+   at page scope so the ring cannot go missing on this route, and so it inverts
+   with the field: gold-leaf on the Darbar and Vitrine fields, oxblood-deep on
+   plaster. */
+.f-page :focus-visible {
+  outline: 2px solid var(--field-focus, var(--oxblood-deep));
   outline-offset: 3px;
 }
 
-/* Every dark field inverts the ring, or it disappears into the oxblood. */
-.f-dark {
-  --f-focus: var(--gold-leaf);
-}
-
-.f-shell {
-  position: relative;
-  max-width: 1180px;
-  margin-inline: auto;
-  padding-inline: var(--f-gutter);
-}
-
-/* ---- Shared type -------------------------------------------------------- */
-
-.f-page h1,
-.f-page h2 {
-  margin: 0;
-  /* Explicit: globals.css owns a heading colour and this page must not inherit
-     it, in either direction, while that file is being rewritten. */
-  color: var(--ink);
-  font-family: var(--font-display);
-  font-weight: 400;
-  line-height: var(--leading-tight);
-  text-wrap: balance;
-}
-
-.f-dark h1,
-.f-dark h2 {
-  color: var(--ivory); /* 13.41:1 on oxblood, 15.54:1 on teak-deep */
-}
-
+/* Rozha One at --d-xl would put the opening sentence on six lines: this page's
+   h1 is a paragraph of an argument, not a wordmark. */
 .f-page h1 {
   font-size: var(--d-l);
 }
@@ -99,55 +78,22 @@
   font-size: var(--d-m);
 }
 
-.f-page p {
-  margin: 0;
-}
-
-.f-label {
-  margin: 0 0 var(--s-4);
-  color: var(--sindoor); /* 6.48:1 on plaster, 5.27:1 on plaster-sunk */
-  font-family: var(--font-body);
-  font-size: var(--t-2xs);
-  font-weight: 600;
-  letter-spacing: var(--tracking-label);
-  line-height: var(--leading-body);
-  text-transform: uppercase;
-}
-
-.f-dark .f-label {
-  color: var(--gold); /* 6.35:1 on oxblood, 7.50:1 on oxblood-deep */
-}
-
-/* The stone screen is set back a little on this page: the founders' fields
-   carry more type than the homepage's, and at the primitive's own weight the
-   lattice competes with the headline instead of veiling the wall behind it. */
+/* The screen is set back a little here. These Darbar fields carry more type
+   than the homepage's, and at the primitive's own weight the lattice competes
+   with the sentence instead of veiling the wall behind it. */
 .f-page .jali-veil::before {
   background-size: 132px 132px;
   opacity: 0.075;
 }
 
-/* Doubled manuscript rules. Never a lone hairline. */
-.f-rule {
-  margin-block: var(--s-4);
-}
-
-.f-rule--centred {
-  width: 8rem;
-  margin-inline: auto;
-}
-
 /* Unfinished content is stated as unfinished — never styled to pass as copy. */
 .f-pending {
-  color: var(--ink-2); /* 7.80:1 on plaster, 6.34:1 on plaster-sunk */
+  color: var(--field-ink);
   font-size: var(--t-sm);
 }
 
-.f-dark .f-pending {
-  color: var(--plaster-sunk);
-}
-
-/* A filled chip, never a coloured word: teak with plaster on it is 11.28:1;
-   on the Darbar fields it becomes a gilded chip, teak-deep on gold at 7.36:1. */
+/* A filled chip, never a coloured word: --teak carrying --plaster is 11.28:1,
+   and on the Darbar and Vitrine fields it becomes a gilded chip at 7.36:1. */
 .f-tag {
   display: inline-block;
   margin-inline-end: var(--s-2);
@@ -163,7 +109,9 @@
   vertical-align: baseline;
 }
 
-.f-dark .f-tag {
+.section--darbar .f-tag,
+.section--darbar-deep .f-tag,
+.section--vitrine .f-tag {
   background: var(--gold);
   color: var(--teak-deep);
 }
@@ -171,8 +119,7 @@
 /* ---- 0. DARBAR — the lintel --------------------------------------------- */
 
 .f-topbar {
-  background: var(--oxblood-deep);
-  color: var(--ivory);
+  padding-inline: var(--gutter);
 }
 
 .f-topbar__inner {
@@ -186,16 +133,15 @@
 
 .f-wordmark {
   display: inline-flex;
+  min-width: 0;
   flex-direction: column;
   gap: 2px;
   color: var(--gold-leaf); /* 10.91:1 on oxblood-deep */
-  text-decoration: none;
 }
 
 .f-wordmark__name {
   font-family: var(--font-display);
   font-size: var(--t-lg);
-  letter-spacing: 0.01em;
   line-height: var(--leading-tight);
 }
 
@@ -209,182 +155,115 @@
 
 .f-nav {
   display: flex;
-  gap: var(--s-5);
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--s-3) var(--s-5);
 }
 
 .f-nav a {
   color: var(--gold-leaf);
   font-size: var(--t-sm);
-  text-decoration: none;
   transition: color var(--motion-fast);
 }
 
 .f-nav a:hover {
-  color: var(--ivory);
+  color: var(--plaster);
   text-decoration: underline;
   text-underline-offset: var(--s-1);
 }
 
 .f-nav a[aria-current="page"] {
-  color: var(--ivory); /* 15.84:1 */
+  color: var(--plaster); /* 14.26:1 on oxblood-deep */
   text-decoration: underline;
   text-decoration-thickness: 2px;
   text-underline-offset: var(--s-1);
 }
 
-.f-topbar .f-rule {
-  margin: 0;
-}
-
 /* ---- 1. DARBAR — the opener --------------------------------------------- */
-
-.f-opener {
-  padding-block: var(--m-2) 0;
-  background: var(--oxblood);
-  color: var(--ivory);
-}
 
 .f-opener__grid {
   display: grid;
-  gap: var(--m-1) var(--s-7);
-  padding-bottom: var(--m-2);
+  gap: var(--m-1) var(--m-2);
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .f-opener h1 {
   max-width: 17ch;
-  font-size: var(--d-l);
 }
 
-/* The right half of a Darbar field cannot simply be empty, so the disclosure
-   that has to be on this page anyway is set there as a ruled panel. */
+/* A Darbar field cannot simply be half empty, so the disclosure this page has
+   to carry anyway is set beside the sentence as a ruled panel — the one piece
+   of copy that is certain to exist while everything else is pending. */
 .f-notice {
   display: flex;
+  min-width: 0;
+  max-width: 46ch;
   flex-direction: column;
   gap: var(--s-4);
-  max-width: 46ch;
-  padding: var(--s-6);
-  background: var(--oxblood-lift);
   color: var(--plaster-sunk); /* 8.21:1 on oxblood-lift */
   font-size: var(--t-sm);
 }
 
-.f-notice__head {
-  margin: 0;
-}
-
-/* The seam between court and house: a stone screen at the foot of the wall. */
-.f-seam {
-  height: 44px;
-  opacity: 0.34;
-}
-
-/* The same screen on the light side, marking the step down from the wall of the
-   house into the recess that holds the ledger — a boundary --plaster to
-   --plaster-sunk cannot make on its own at 1.22:1. */
-.f-seam--light {
-  height: 30px;
-  background-color: var(--plaster);
-  opacity: 0.4;
-}
-
 /* ---- 2 / 5. HAVELI — the two founders ----------------------------------- */
-
-.f-founder {
-  padding-block: var(--m-2);
-  background: var(--plaster);
-}
-
-.f-founder--mirrored {
-  background: var(--plaster);
-}
 
 .f-founder__grid {
   display: grid;
-  gap: var(--m-1) var(--s-7);
+  gap: var(--m-1) var(--m-2);
+  grid-template-columns: minmax(0, 1fr);
 }
 
 /* --- the hung portrait --- */
 
-/* The drop shadow has to sit on an ancestor of the masked box: CSS applies
-   filters before masks, so a shadow on the mount itself would be cut away with
-   the corners. This wrapper exists for that one reason. */
-.f-portrait__hang {
-  filter: drop-shadow(0 18px 26px rgba(36, 20, 9, 0.28));
+/* <Flip framed> rules a multifoil arch just outside the masked photograph, the
+   way a print is set on a mount board. On the light field that metal has to be
+   brass rather than gold, and the inset is tightened: at the ornament's default
+   24px the mount out-weighs the face inside it. */
+.f-portrait {
+  --ornament-inset: 10px;
+
+  min-width: 0;
 }
 
-/* The mount board. Brass shows through as a ~3px ring because the frame inside
-   carries the same arch mask at a slightly smaller size — which is how a
-   photograph is actually mounted, and it is ornament rather than a border on
-   the image itself. */
-.f-portrait__mount {
-  padding: 3px;
-  background: var(--brass);
-  -webkit-mask-image: var(--orn-arch);
-  mask-image: var(--orn-arch);
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
+.f-portrait .flip--framed .flip__frame::before {
+  background: var(--field-metal);
 }
 
-.f-portrait .flip {
-  gap: 0;
-}
-
+/* A photograph hangs off a wall. The shadow follows the arch silhouette rather
+   than a rectangle, because the thing casting it is itself masked. */
 .f-portrait .flip__frame {
-  border-radius: 0;
-  background: var(--teak-deep);
-  -webkit-mask-image: var(--orn-arch);
-  mask-image: var(--orn-arch);
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
+  filter: drop-shadow(0 16px 22px rgba(36, 20, 9, 0.24));
 }
 
-/* Turning the portrait over travels plaster-side to court-side. */
-.f-portrait .flip--reversed .flip__frame {
-  background-color: var(--oxblood);
-}
-
-.f-portrait .flip__hint {
-  border-radius: 0;
-  background: var(--plaster-lift);
-  color: var(--teak); /* 12.54:1 */
-}
-
-.f-portrait .flip--reversed .flip__hint {
-  background: var(--gold);
-  color: var(--teak-deep); /* 7.36:1 */
-}
-
-.f-portrait__caption {
-  margin-top: var(--s-5);
+.f-portrait .flip__caption {
+  max-width: 46ch;
+  margin-inline: auto;
   color: var(--ink-2); /* 7.80:1 on plaster */
   font-family: var(--font-data);
-  font-size: var(--t-xs);
-  line-height: var(--leading-body);
+  letter-spacing: 0;
 }
 
 /* --- the column beside it --- */
 
 .f-founder__words {
   display: flex;
-  flex-direction: column;
+  min-width: 0;
   max-width: var(--f-measure);
+  flex-direction: column;
 }
 
 .f-founder__words h2 {
-  margin-top: var(--s-2);
+  margin: 0;
+}
+
+.f-founder__words .rule {
+  margin-block: var(--s-5);
 }
 
 /* The record card. With no name and no recorded words, a heading and two
-   paragraphs leave a hole beside a 4:5 portrait; the shop's own record card is
+   paragraphs leave a hole beside a tall portrait; the shop's own record card is
    a full object, and a form waiting to be filled in is honest by its shape. */
 .f-record {
-  margin: var(--s-5) 0 0;
-  padding: var(--s-6);
-  background: var(--plaster-lift);
+  margin: 0;
 }
 
 .f-record__row {
@@ -422,16 +301,16 @@
   margin-top: var(--m-1);
 }
 
-.f-said .f-label {
-  margin-bottom: var(--s-3);
+.f-said .label {
+  margin-bottom: var(--s-4);
 }
 
-.f-said__body {
-  margin-top: var(--s-4);
+.f-said__body + .f-said__body {
+  margin-top: var(--s-5);
 }
 
-/* Ruled lines on an empty page. Brass at low opacity: this is ornament, it is
-   never text, and it says "not written yet" by being visibly blank. */
+/* Ruled lines on an empty page: ornament, never text. It says "not written yet"
+   by being visibly blank rather than by being filled with our prose. */
 .f-ruled {
   display: flex;
   flex-direction: column;
@@ -443,7 +322,7 @@
   display: block;
   height: var(--rule-hair);
   background: var(--brass);
-  opacity: 0.5;
+  opacity: 0.55;
 }
 
 .f-ruled span:last-child {
@@ -454,44 +333,28 @@
 .f-quote {
   max-width: 24ch;
   margin: var(--s-6) 0 0;
-  color: var(--sindoor);
+  color: var(--sindoor); /* 6.48:1 on plaster */
   font-family: var(--font-display);
   font-size: var(--d-m);
   line-height: var(--leading-tight);
 }
 
-/* ---- 4. HAVELI — five lit niches in the almirah -------------------------- */
-
-.f-strip {
-  padding-block: var(--m-2);
-  background: var(--teak-deep);
-  color: var(--plaster); /* 13.99:1 */
-}
-
-.f-strip .f-label {
-  color: var(--gold-leaf); /* 10.71:1 on teak-deep */
-}
+/* ---- 4. VITRINE — five lit niches in the almirah ------------------------ */
 
 .f-strip__head {
   max-width: 34ch;
 }
 
-.f-strip__head h2 {
-  color: var(--ivory); /* 15.54:1 */
-}
-
-/* Ties the statement to the row of niches and gives the wide teak field a
-   horizontal it otherwise lacks. Brass on --teak-deep is 4.91:1 as a rule. */
-.f-strip__rule {
-  margin-block: var(--s-7) 0;
+.f-strip .rule {
+  margin-block: var(--s-7) var(--m-1);
 }
 
 .f-strip__list {
   display: grid;
-  grid-auto-flow: column;
   grid-auto-columns: 58%;
+  grid-auto-flow: column;
   gap: var(--s-5);
-  margin: var(--s-7) 0 0;
+  margin: 0;
   padding: 0;
   overflow-x: auto;
   overscroll-behavior-inline: contain;
@@ -500,6 +363,7 @@
 }
 
 .f-object {
+  min-width: 0;
   scroll-snap-align: start;
 }
 
@@ -507,31 +371,23 @@
   margin: 0;
 }
 
-/* The same mount as the portraits, at a smaller size: the grey studio sweep the
-   catalogue was shot on stops being a mismatched rectangle and becomes the lit
-   back of a niche. The warm filter is art direction, not retouching — it pulls
-   a neutral sweep into the same light as the teak around it. */
+/* The niche: the same arch as the portraits at a smaller size, on a dark-gold
+   ground so a 2px reveal rules the opening. The catalogue was shot on a cold
+   neutral sweep that matches no field in this palette, so the photograph is
+   warmed — art direction, not retouching. It puts the sweep in the same light
+   as the teak around it, and the arch then reads as a plastered alcove instead
+   of a grey card. The metal reveal is deliberately outside the filter. */
 .f-object__niche {
   display: block;
   padding: 2px;
-  background: var(--brass);
-  -webkit-mask-image: var(--orn-arch);
-  mask-image: var(--orn-arch);
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
+  background: var(--gold-deep);
 }
 
-/* The catalogue was shot on a cold neutral sweep that matches no field in this
-   palette. Warming it is art direction, not retouching: it puts the sweep in
-   the same light as the teak around it, so the arch reads as a plastered niche
-   rather than a grey card. The brass mount is deliberately outside the filter. */
 .f-object img {
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 100 / 132;
   object-fit: cover;
   filter: sepia(0.34) saturate(1.22) brightness(0.95);
 }
@@ -559,18 +415,19 @@
 /* ---- 6. HAVELI — the ledger --------------------------------------------- */
 
 /* A recess in the plaster wall, ruled in red the way a bahi-khata is ruled.
-   --plaster-sunk is a real step down from --plaster, so the section boundary
-   exists without a line being drawn to make it. */
+   --plaster-sunk is a real step down from --plaster, but at 1.22:1 it is a
+   boundary you feel rather than read; the brass jali band above it does the
+   reading. */
 .f-changed {
-  padding-block: var(--m-2);
+  --field: var(--plaster-sunk);
+
   background: var(--plaster-sunk);
 }
 
-/* The heading runs full width and the four rows sit in two columns beneath it.
-   Heading-left / list-right left the whole lower half of the recess empty,
-   which is the void this section had before: two columns of rows fill the
-   field, and a ruled table across a page is what a ledger actually looks
-   like. */
+/* The heading runs across the top and the four rows sit in two columns beneath
+   it. Heading-left / list-right left the whole lower half of the recess empty —
+   which was this section's void — and a ruled table across a page is what a
+   ledger actually looks like. */
 .f-changed__head {
   max-width: 46ch;
   margin-bottom: var(--m-1);
@@ -591,6 +448,7 @@
 /* One hairline, one job: separating a row of data from the next row. */
 .f-row {
   display: grid;
+  min-width: 0;
   gap: var(--s-2);
   padding-block: var(--s-5);
   border-top: var(--rule-hair) solid var(--sindoor);
@@ -615,23 +473,23 @@
 
 /* ---- 8. DARBAR — the invitation ----------------------------------------- */
 
-.f-close {
-  padding-bottom: var(--m-2);
-  background: var(--oxblood);
-  color: var(--ivory); /* 13.41:1 */
-  text-align: center;
+.f-close__panel {
+  position: relative;
+  margin-bottom: 0;
+  padding: var(--m-1) var(--s-7);
 }
 
-.f-close__inner {
-  position: relative;
-  max-width: 46rem;
+/* The invitation is the one place on this page that speaks at the volume the
+   homepage's headings do. */
+.f-close__panel h2 {
+  max-width: 15ch;
   margin-inline: auto;
-  padding: var(--m-1) var(--s-6);
+  font-size: var(--d-l);
 }
 
 /* The second pair of brackets, so the invitation is fully ruled. Mirrored
    rather than rotated: a 180° turn maps the primitive's top-left bracket onto
-   its own bottom-right one, which draws the same two corners twice. */
+   its own bottom-right one and draws the same two corners twice. */
 .f-close__corners {
   position: absolute;
   inset: 0;
@@ -639,45 +497,20 @@
   pointer-events: none;
 }
 
-.f-close h2 {
-  max-width: 15ch;
-  margin-inline: auto;
-  font-size: var(--d-l);
-}
-
 .f-close__body {
   max-width: 52ch;
-  margin: var(--s-5) auto 0;
+  margin: var(--s-6) auto 0;
   color: var(--plaster-sunk); /* 9.82:1 on oxblood */
   font-size: var(--t-md);
 }
 
 .f-cta {
-  display: inline-block;
   margin-top: var(--m-1);
-  padding: var(--s-4) var(--s-7);
-  border: 0;
-  background: var(--gold);
-  color: var(--oxblood-deep); /* 7.50:1 */
-  font-family: var(--font-body);
-  font-size: var(--t-sm);
-  font-weight: 600;
-  letter-spacing: var(--tracking-label);
-  text-transform: uppercase;
-  cursor: pointer;
-  transition:
-    background-color var(--motion-fast),
-    color var(--motion-fast);
-}
-
-.f-cta:hover {
-  background: var(--gold-leaf); /* oxblood-deep on gold-leaf is 10.91:1 */
 }
 
 .f-colophon {
-  padding-block: var(--m-1);
-  background: var(--oxblood-deep);
-  color: var(--plaster-sunk); /* 11.60:1 */
+  padding: var(--m-1) var(--gutter);
+  color: var(--plaster-sunk); /* 11.60:1 on oxblood-deep */
   font-size: var(--t-xs);
 }
 
@@ -690,33 +523,19 @@
 /* ---- Wider than a phone -------------------------------------------------- */
 
 @media (min-width: 780px) {
-  .f-page {
-    --f-gutter: var(--s-7);
-  }
-
-  .f-opener {
-    padding-top: var(--m-3);
-  }
-
   .f-opener__grid {
     align-items: start;
     grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
-    gap: var(--m-2);
-    padding-bottom: var(--m-3);
   }
 
   .f-notice {
     margin-top: var(--s-6);
   }
 
-  .f-founder {
-    padding-block: var(--m-3);
-  }
-
   .f-founder__grid {
     align-items: center;
-    grid-template-columns: repeat(12, 1fr);
     gap: var(--s-7);
+    grid-template-columns: repeat(12, minmax(0, 1fr));
   }
 
   .f-portrait {
@@ -727,7 +546,7 @@
     grid-column: 7 / -1;
   }
 
-  /* Mirrored, so two portraits read as a pair rather than as a list. */
+  /* Mirrored, so the two portraits read as a pair rather than as a list. */
   .f-founder--mirrored .f-portrait {
     grid-column: 8 / -1;
     grid-row: 1;
@@ -738,22 +557,12 @@
     grid-row: 1;
   }
 
-  .f-strip,
-  .f-changed {
-    padding-block: var(--m-3);
-  }
-
-  .f-strip__list {
-    grid-auto-columns: 1fr;
-    overflow-x: visible;
-  }
-
   .f-changed__list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  /* In two columns the closing rule belongs under the last row of each
-     column, not under the last row of the list. */
+  /* In two columns the closing rule belongs under the last row of each column,
+     not under the last row of the list. */
   .f-row:last-child {
     border-bottom: 0;
   }
@@ -762,8 +571,17 @@
     border-bottom: var(--rule-hair) solid var(--sindoor);
   }
 
-  .f-close__inner {
+  .f-close__panel {
     padding: var(--m-2) var(--m-1);
+  }
+}
+
+/* Five niches only stop scrolling when there is room for five of them to be
+   worth looking at; below this the row keeps swiping. */
+@media (min-width: 980px) {
+  .f-strip__list {
+    grid-auto-columns: minmax(0, 1fr);
+    overflow-x: visible;
   }
 }
 
