@@ -67,7 +67,7 @@
                 "quality",
                 "test"
               ],
-              "status": "todo",
+              "status": "done",
               "criticalPath": true
             },
             {
@@ -91,7 +91,7 @@
                 "quality",
                 "test"
               ],
-              "status": "todo",
+              "status": "done",
               "criticalPath": true
             }
           ]

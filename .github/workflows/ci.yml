@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "22.18"
           cache: npm
       - run: npm ci
       # The project's gate is 0 errors AND 0 warnings. eslint exits 0 on
@@ -37,7 +37,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "22.18"
           cache: npm
       - run: npm ci
       # `npm test` builds first, then runs node:test against the built Worker
@@ -53,7 +53,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "22.18"
           cache: npm
       - run: npm ci
       # D1 migrations here are forward-only and applied by hand, so a schema
@@ -80,7 +80,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "22.18"
           cache: npm
       - run: npm ci
       # app/_media/images.ts is generated. If a master is added without
