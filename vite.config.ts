@@ -21,7 +21,7 @@ const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
  */
 const D1_DATABASE_NAME = process.env.CF_D1_NAME ?? "alankar-jewellers";
 const D1_DATABASE_ID =
-  process.env.CF_D1_ID ?? SITE_CREATOR_PLACEHOLDER_DATABASE_ID;
+  process.env.CF_D1_ID ?? "f32f8f79-4bc7-4741-b860-121eda943779";
 const R2_BUCKET_NAME = process.env.CF_R2_BUCKET ?? "alankar-jewellers-media";
 
 const { d1, r2 } = hostingConfig;
