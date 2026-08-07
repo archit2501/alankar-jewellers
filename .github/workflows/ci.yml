@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "redesign/**", "feature/**"]
+  pull_request:
+    branches: [main]
+
+# A second push supersedes the first; no point burning minutes on a stale commit.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint and types
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      # The project's gate is 0 errors AND 0 warnings. eslint exits 0 on
+      # warnings by default, so --max-warnings 0 is what actually enforces it.
+      - name: Lint
+        run: npx eslint . --ignore-pattern dist --ignore-pattern .next --max-warnings 0
+      - name: Type check
+        run: npm run type-check
+
+  test:
+    name: Tests
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      # `npm test` builds first, then runs node:test against the built Worker
+      # through the cloudflare:workers stub in tests/setup.mjs. No Cloudflare
+      # account or credentials are involved.
+      - run: npm test
+
+  migrations:
+    name: Migrations are current
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      # D1 migrations here are forward-only and applied by hand, so a schema
+      # edit that never had `db:generate` run against it is a silent trap: the
+      # code expects a column production does not have. This fails the build
+      # instead.
+      - name: Regenerate and check for drift
+        run: |
+          npm run db:generate
+          if [ -n "$(git status --porcelain drizzle/)" ]; then
+            echo "::error::db/schema.ts has changes that were never migrated."
+            echo "Run 'npm run db:generate' and commit the result."
+            git status --porcelain drizzle/
+            git diff drizzle/
+            exit 1
+          fi
+          echo "drizzle/ is in sync with db/schema.ts"
+
+  images:
+    name: Image manifest is current
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      # app/_media/images.ts is generated. If a master is added without
+      # rebuilding, markup silently references an asset that was never
+      # published — and next/image cannot rescue it on this stack.
+      - name: Rebuild derivatives and check for drift
+        run: |
+          node scripts/build-images.mjs
+          if [ -n "$(git status --porcelain app/_media/images.ts)" ]; then
+            echo "::error::app/_media/images.ts is stale."
+            echo "Run 'node scripts/build-images.mjs' and commit the result."
+            git diff app/_media/images.ts
+            exit 1
+          fi
+          echo "image manifest is in sync with design/generated/"
