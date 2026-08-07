@@ -6,6 +6,24 @@ import { sites } from "./build/sites-vite-plugin";
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
   "00000000-0000-4000-8000-000000000000";
 
+/**
+ * Real Cloudflare resource identity, for deploying to our own account.
+ *
+ * Local development does not need any of this: Miniflare simulates D1 and R2
+ * from the binding NAMES alone, and the placeholder database id above is fine
+ * because nothing is talking to Cloudflare. A real `vinext deploy` is different
+ * -- it needs the actual database id, or the Worker binds to nothing and every
+ * enquiry is lost at runtime rather than at build time.
+ *
+ * These are identifiers, not secrets (a D1 id is useless without an account
+ * token), so they are committed rather than hidden in a .env that would be
+ * missing on someone else's machine and fail silently.
+ */
+const D1_DATABASE_NAME = process.env.CF_D1_NAME ?? "alankar-jewellers";
+const D1_DATABASE_ID =
+  process.env.CF_D1_ID ?? SITE_CREATOR_PLACEHOLDER_DATABASE_ID;
+const R2_BUCKET_NAME = process.env.CF_R2_BUCKET ?? "alankar-jewellers-media";
+
 const { d1, r2 } = hostingConfig;
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
@@ -18,8 +36,8 @@ const localBindingConfig = {
     ? [
         {
           binding: d1,
-          database_name: "site-creator-d1",
-          database_id: SITE_CREATOR_PLACEHOLDER_DATABASE_ID,
+          database_name: D1_DATABASE_NAME,
+          database_id: D1_DATABASE_ID,
         },
       ]
     : [],
@@ -27,7 +45,7 @@ const localBindingConfig = {
     ? [
         {
           binding: r2,
-          bucket_name: "site-creator-r2",
+          bucket_name: R2_BUCKET_NAME,
         },
       ]
     : [],
