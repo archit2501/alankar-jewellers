@@ -128,7 +128,7 @@
                 "test",
                 "build"
               ],
-              "status": "todo",
+              "status": "done",
               "criticalPath": true
             },
             {
@@ -154,7 +154,7 @@
                 "test",
                 "build"
               ],
-              "status": "todo",
+              "status": "done",
               "criticalPath": true
             }
           ]

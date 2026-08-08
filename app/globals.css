@@ -2413,3 +2413,1117 @@ a.contact__value:hover {
     animation-iteration-count: 1 !important;
   }
 }
+
+/* ------------------------------------------------------------------------- *
+ * THE PRODUCT PAGE — app/shop/[slug]/page.tsx
+ *
+ * HAVELI register with a DARBAR moment for the piece itself, which is the same
+ * shape as the homepage: the court states, the house explains. Nothing new is
+ * invented here — every colour comes through the field-variable contract, the
+ * arch and the rules are the ornament primitives, and the only hairlines on the
+ * page separate two rows of tabular data.
+ *
+ * THE DIPTYCH is the one structure this page adds. Two plates, identical size,
+ * side by side, on the deepest field: the face and the enamelled reverse, with
+ * a doubled gold seam between them. The reverse is not a thumbnail, is not
+ * behind a hover, and does not get a smaller box — see the header comment in
+ * the page component for why that is an editorial rule and not a layout taste.
+ *
+ * Contrast, measured on the two fields this page uses:
+ *   --oxblood-deep   gold-leaf 10.91 · plaster 14.26 · gold 7.50
+ *   --plaster        ink 14.08 · ink-2 7.80 · sindoor 6.48 · brass = ORNAMENT
+ * Brass is never a letterform here. Gold never appears on the light field.
+ *
+ * No animation is declared anywhere below, so there is nothing for
+ * prefers-reduced-motion to switch off beyond the global clamp already in this
+ * file; the two colour transitions are on hover only and are covered by it.
+ * ------------------------------------------------------------------------- */
+
+.pdp {
+  background: var(--plaster);
+}
+
+/* --- The lintel ---------------------------------------------------------- */
+
+.pdp-topbar {
+  padding-inline: var(--gutter);
+}
+
+.pdp-topbar__inner {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding-block: var(--s-5);
+  gap: var(--s-4) var(--s-6);
+}
+
+.pdp-wordmark {
+  display: inline-flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+.pdp-wordmark__name {
+  color: var(--plaster);
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.pdp-wordmark__since {
+  color: var(--gold);
+  font-size: var(--t-2xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.pdp-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-5);
+}
+
+.pdp-nav a {
+  padding-block: var(--s-2);
+  color: var(--plaster);
+  font-size: var(--t-sm);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: var(--rule-hair);
+  text-underline-offset: 6px;
+  transition:
+    color var(--motion-fast),
+    text-decoration-color var(--motion-fast);
+}
+
+.pdp-nav a:hover {
+  color: var(--gold-leaf);
+  text-decoration-color: currentcolor;
+}
+
+/* --- DARBAR: the stage --------------------------------------------------- */
+
+.pdp-stage {
+  --ornament-inset: 8px;
+
+  padding-block: var(--m-1) var(--m-2);
+  text-align: center;
+}
+
+.pdp-crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--s-2) var(--s-3);
+}
+
+.pdp-crumbs li {
+  color: var(--plaster);
+  font-size: var(--t-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.pdp-crumbs li + li::before {
+  margin-right: var(--s-3);
+  color: var(--gold-deep);
+  content: "\002022";
+}
+
+.pdp-crumbs a {
+  color: var(--gold);
+  text-decoration: underline;
+  text-decoration-thickness: var(--rule-hair);
+  text-underline-offset: 5px;
+}
+
+.pdp-crumbs a:hover {
+  color: var(--gold-leaf);
+}
+
+.pdp-stage__head {
+  max-width: 46rem;
+  margin: var(--m-1) auto var(--m-1);
+}
+
+.pdp-stage__head h1 {
+  /* --d-xl is drawn for the homepage's one-line hero. A piece name is longer
+     and sits over two large photographs, so it is set at the opener size
+     instead of swallowing the thing it names. */
+  margin: 0;
+  font-size: var(--d-l);
+  text-wrap: balance;
+}
+
+.pdp-subtitle {
+  margin-top: var(--s-4);
+  color: var(--plaster);
+  font-size: var(--t-lg);
+  line-height: 1.5;
+}
+
+.pdp-spec {
+  max-width: 52ch;
+  margin-inline: auto;
+  color: var(--gold);
+  font-family: var(--font-data);
+  font-size: var(--t-xs);
+  line-height: 1.7;
+}
+
+/* --- THE DIPTYCH --------------------------------------------------------- */
+
+.pdp-diptych {
+  display: grid;
+  max-width: var(--content-max);
+  align-items: start;
+  margin-inline: auto;
+  gap: var(--m-1);
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+}
+
+/* The seam: a doubled gold rule stood on its end, which is the same object the
+   horizontal rules are. Never a single hairline. */
+.pdp-diptych__seam {
+  /* `align-self` and not `height: 100%`: the grid is `align-items: start`, so a
+     percentage height would resolve against an indefinite row and collapse the
+     rule to nothing. */
+  width: calc(var(--rule-heavy) + var(--rule-gap) + var(--rule-hair));
+  align-self: stretch;
+  border-right: var(--rule-hair) solid var(--gold);
+  border-left: var(--rule-heavy) solid var(--gold);
+  opacity: 0.55;
+}
+
+.pdp-plate {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  margin: 0;
+  gap: var(--s-5);
+}
+
+.pdp-plate__mount {
+  position: relative;
+  width: 100%;
+  filter: drop-shadow(0 0 46px rgba(226, 179, 96, 0.22))
+    drop-shadow(0 18px 40px rgba(18, 2, 6, 0.5));
+}
+
+/* The gold outline is a mask stretched from a 100x132 viewBox, so an equal
+   inset on all four sides scales it unevenly and the crown grows a step in it.
+   Scaling the vertical inset by the same 132/100 keeps the outer arch exactly
+   similar to the inner one. Same correction the hero carries, same reason. */
+.pdp-plate__mount.arch-frame::before {
+  inset: calc(var(--ornament-inset) * -1.32) calc(var(--ornament-inset) * -1);
+}
+
+.pdp-plate__image {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  aspect-ratio: 100 / 132;
+  object-fit: cover;
+}
+
+/* The alcove lamp, oxblood-tuned: a warm wash that pulls the cold studio sweep
+   toward the field, a rim-and-crown darkening so it recedes like the back of a
+   niche, and one pool of light where the stones are. It never touches the
+   stones' own colour. */
+.pdp-plate__lamp {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  background:
+    radial-gradient(62% 44% at 50% 60%, rgba(255, 238, 210, 0.16), rgba(255, 238, 210, 0) 66%),
+    radial-gradient(
+      74% 60% at 50% 62%,
+      rgba(44, 8, 14, 0) 32%,
+      rgba(40, 7, 13, 0.3) 74%,
+      rgba(26, 4, 9, 0.58) 100%
+    ),
+    linear-gradient(to bottom, rgba(34, 6, 11, 0.32), rgba(34, 6, 11, 0) 44%),
+    linear-gradient(rgba(126, 44, 32, 0.14), rgba(126, 44, 32, 0.14));
+  pointer-events: none;
+}
+
+.pdp-plate__caption {
+  display: grid;
+  gap: var(--s-2);
+}
+
+.pdp-plate__side {
+  color: var(--gold);
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.pdp-plate__note {
+  color: var(--plaster);
+  font-size: var(--t-sm);
+  line-height: 1.6;
+}
+
+/* An unphotographed reverse holds exactly the footprint the photograph would
+   have held. It is a stated absence, not a gap in the grid. */
+.pdp-plate--absent {
+  justify-content: stretch;
+}
+
+.pdp-absent {
+  display: grid;
+  align-content: center;
+  padding: var(--s-7);
+  border: var(--rule-hair) dashed var(--gold-deep);
+  aspect-ratio: 100 / 132;
+  background: var(--oxblood-lift);
+  gap: var(--s-4);
+  text-align: left;
+}
+
+.pdp-absent__tag {
+  color: var(--gold);
+  font-family: var(--font-data);
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.pdp-absent__body {
+  max-width: 34ch;
+  color: var(--plaster);
+  font-size: var(--t-sm);
+  line-height: 1.7;
+}
+
+/* --- HAVELI: the record and the price ------------------------------------ */
+
+.pdp-record__grid {
+  display: grid;
+  align-items: start;
+  gap: var(--m-1) var(--m-2);
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+}
+
+.pdp-record__spec h2 {
+  margin: 0;
+  font-size: var(--d-m);
+}
+
+/* The ONE legitimate hairline job in this design system: separating a row of
+   data from the next row of data. Brass, because it is a rule and not a
+   letterform. */
+.pdp-facts {
+  margin-top: var(--s-6);
+  border-top: var(--rule-hair) solid var(--brass);
+}
+
+.pdp-facts__row {
+  display: grid;
+  align-items: baseline;
+  padding: var(--s-5) 0;
+  border-bottom: var(--rule-hair) solid var(--brass);
+  gap: var(--s-2) var(--s-5);
+  grid-template-columns: minmax(0, 0.55fr) minmax(0, 1.45fr);
+}
+
+.pdp-facts dt {
+  color: var(--ink-2);
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.pdp-facts dd {
+  color: var(--ink);
+  font-family: var(--font-data);
+  font-size: var(--t-sm);
+  line-height: 1.55;
+}
+
+/* A missing value is a sentence, never a blank and never a dash. It sets in the
+   body face so it reads as prose rather than as data that happens to be text. */
+.pdp-pending {
+  display: block;
+  color: var(--ink-2);
+  font-family: var(--font-body);
+  font-size: var(--t-sm);
+  line-height: 1.6;
+}
+
+/* A filled chip, never a coloured word: --teak carrying --plaster is 11.28:1. */
+.pdp-tag {
+  display: inline-block;
+  margin-inline-end: var(--s-2);
+  padding: 2px var(--s-2);
+  background: var(--teak);
+  color: var(--plaster);
+  font-family: var(--font-data);
+  font-size: var(--t-2xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-label);
+  line-height: 1.7;
+  text-transform: uppercase;
+  vertical-align: baseline;
+}
+
+.pdp-tag--block {
+  margin-inline-end: 0;
+  margin-bottom: var(--s-4);
+}
+
+.pdp-footnote {
+  max-width: 52ch;
+  margin-top: var(--s-6);
+  color: var(--ink-2);
+  font-size: var(--t-xs);
+  line-height: 1.65;
+}
+
+/* --- The price panel ----------------------------------------------------- */
+
+.pdp-price {
+  align-self: start;
+}
+
+.pdp-price__inner {
+  display: grid;
+  padding: var(--s-5);
+  gap: var(--s-4);
+}
+
+.pdp-price__inner > .label {
+  margin: 0;
+}
+
+.pdp-price__total {
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: var(--d-m);
+  line-height: 1.05;
+}
+
+.pdp-price__headline {
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: var(--t-lg);
+  line-height: 1.25;
+}
+
+.pdp-price__body {
+  color: var(--ink-2);
+  font-size: var(--t-sm);
+  line-height: 1.65;
+}
+
+.pdp-price__none {
+  display: grid;
+  gap: var(--s-3);
+}
+
+/* The itemisation. Rate x weight, making, stones, hallmarking, GST — the
+   document a buyer is entitled to see before the total, not after it. */
+.pdp-breakup {
+  margin-top: var(--s-2);
+  border-top: var(--rule-hair) solid var(--brass);
+}
+
+.pdp-breakup__row {
+  display: grid;
+  align-items: baseline;
+  padding: var(--s-3) 0;
+  border-bottom: var(--rule-hair) solid var(--brass);
+  gap: var(--s-4);
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.pdp-breakup dt {
+  color: var(--ink-2);
+  font-size: var(--t-xs);
+  line-height: 1.5;
+}
+
+.pdp-breakup dd {
+  color: var(--ink);
+  font-family: var(--font-data);
+  font-size: var(--t-sm);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.pdp-breakup__row--total {
+  border-bottom: 0;
+}
+
+.pdp-breakup__row--total dt {
+  color: var(--ink);
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.pdp-breakup__row--total dd {
+  font-size: var(--t-md);
+  font-weight: 600;
+}
+
+.pdp-price__stock {
+  color: var(--sindoor);
+  font-size: var(--t-xs);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.pdp-price__cta {
+  justify-self: start;
+  margin-top: var(--s-3);
+}
+
+.pdp-price__aside {
+  color: var(--ink-2);
+  font-size: var(--t-xs);
+  line-height: 1.6;
+}
+
+/* --- VITRINE: the piece in its own words --------------------------------- */
+
+.pdp-story__inner {
+  max-width: 46rem;
+}
+
+.pdp-story__inner h2 {
+  margin: 0;
+  font-size: var(--d-m);
+}
+
+/* --- DARBAR: the invitation ---------------------------------------------- */
+
+.pdp-close__panel {
+  margin-bottom: 0;
+  padding: var(--m-1) var(--s-7);
+}
+
+.pdp-close__panel h2 {
+  max-width: 16ch;
+  margin-inline: auto;
+  font-size: var(--d-l);
+}
+
+.pdp-close__body {
+  max-width: 46ch;
+  margin: 0 auto var(--s-7);
+  color: var(--plaster);
+  font-size: var(--t-md);
+  line-height: var(--leading-body);
+}
+
+/* --- The colophon -------------------------------------------------------- */
+
+.pdp-colophon {
+  padding: var(--m-1) var(--gutter);
+  color: var(--plaster);
+}
+
+.pdp-colophon__inner {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--s-4) var(--s-6);
+  font-size: var(--t-sm);
+}
+
+@media (max-width: 1100px) {
+  .pdp-record__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pdp-diptych {
+    gap: var(--s-7);
+  }
+}
+
+@media (max-width: 780px) {
+  /* The plates stack, and they stay the same size AS EACH OTHER. The reverse
+     never becomes the smaller of the two. */
+  .pdp-diptych {
+    gap: var(--m-1);
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pdp-diptych__seam {
+    width: 100%;
+    height: calc(var(--rule-heavy) + var(--rule-gap) + var(--rule-hair));
+    border-right: 0;
+    border-bottom: var(--rule-hair) solid var(--gold);
+    border-left: 0;
+    border-top: var(--rule-heavy) solid var(--gold);
+  }
+
+  .pdp-stage__head h2,
+  .pdp-close__panel h2 {
+    font-size: var(--d-m);
+  }
+
+  .pdp-facts__row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pdp-close__panel {
+    padding: var(--s-7) var(--s-5);
+  }
+}
+
+/* --- The catalogue — /shop ----------------------------------------------- */
+/*
+ * ONE ROOM, NOT A NEW LOOK. /shop is the same wall of lit alcoves as the
+ * homepage's "Turn one over." section, and it is built from the same primitives:
+ * `.piece__alcove`, `.piece__mount`, `.piece__recess` and `.piece__lamp` above
+ * are reused UNCHANGED, and nothing below alters them. What is new here is only
+ * the grid around them — a filterable catalogue needs a uniform wall where the
+ * homepage needs one lead piece and a shelf of four.
+ *
+ *   ┌ shop-wall — sunk plaster, grained, one surface ─────────────────────┐
+ *   │  ╭──╮       ╭──╮       ╭──╮       ╭──╮                              │
+ *   │  │▓ │       │▓ │       │▓ │       │▓ │      ← one sill line per row │
+ *   │  ╰──╯       ╰──╯       ╰──╯       ╰──╯                              │
+ *   │  title      title      title      title                             │
+ *   │  spec       spec       spec       spec                              │
+ *   │  price      price      price      price                             │
+ *   └─────────────────────────────────────────────────────────────────────┘
+ *                          ══════════════════  brass sill rule
+ *
+ * COLOUR, obeyed line by line:
+ *   the wall is --plaster-sunk, so text on it is --ink (11.5:1) and --ink-2
+ *   (6.4:1); the light-field accent is --sindoor (5.3:1). --brass measures
+ *   2.85:1 on plaster and is therefore NEVER a letterform here — it is the arch
+ *   mount, the rules and the field hairlines only. Gold appears exclusively on
+ *   the two Darbar bands, where it measures 6.35–10.91:1.
+ *
+ * MOTION: nothing here animates except the two hover transitions on links, and
+ * the global `prefers-reduced-motion` block above already collapses those.
+ */
+
+.shop-page {
+  /* Lime wash, coarser than the manuscript grounds — same as /founders. */
+  --grain-opacity: 0.08;
+
+  background: var(--plaster);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--t-md);
+  line-height: var(--leading-body);
+}
+
+/* Restated at page scope so the ring cannot go missing on this route, and so it
+   inverts with the field: gold-leaf on Darbar, oxblood-deep on plaster. */
+.shop-page :focus-visible {
+  outline: 2px solid var(--field-focus, var(--oxblood-deep));
+  outline-offset: 3px;
+}
+
+.shop-page h1 {
+  font-size: var(--d-l);
+}
+
+.shop-page h2 {
+  font-size: var(--d-m);
+}
+
+.shop-page .jali-veil::before {
+  background-size: 132px 132px;
+  opacity: 0.075;
+}
+
+/* --- The lintel ---------------------------------------------------------- */
+
+.shop-topbar {
+  padding-inline: var(--gutter);
+}
+
+.shop-topbar__inner {
+  display: flex;
+  max-width: var(--content-max);
+  align-items: baseline;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-inline: auto;
+  padding-block: var(--s-5);
+  gap: var(--s-4) var(--s-6);
+}
+
+.shop-wordmark {
+  display: inline-flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--gold-leaf); /* 10.91:1 on oxblood-deep */
+}
+
+.shop-wordmark__name {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  line-height: 1.1;
+}
+
+.shop-wordmark__since {
+  color: var(--gold); /* 7.50:1 on oxblood-deep */
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.shop-nav {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--s-5) var(--s-6);
+}
+
+.shop-nav a {
+  padding-block: var(--s-2);
+  color: var(--plaster); /* 14.26:1 on oxblood-deep */
+  font-size: var(--t-sm);
+  transition: color var(--motion-fast);
+}
+
+.shop-nav a:hover,
+.shop-nav a[aria-current="page"] {
+  color: var(--gold-leaf);
+}
+
+.shop-nav a[aria-current="page"] {
+  text-decoration: underline;
+  text-decoration-thickness: var(--rule-hair);
+  text-underline-offset: 6px;
+}
+
+/* --- The opener — DARBAR ------------------------------------------------- */
+
+.shop-opener__grid {
+  display: grid;
+  max-width: var(--content-max);
+  align-items: start;
+  margin-inline: auto;
+  gap: var(--m-1) var(--m-2);
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+}
+
+.shop-opener__lede {
+  margin-top: var(--s-6);
+}
+
+/* The honesty notice. Same object as /founders' pending panel: an oxblood-lift
+   panel ruled in gold, saying plainly what has not been recorded yet. */
+.shop-notice {
+  display: flex;
+  min-width: 0;
+  max-width: 46ch;
+  flex-direction: column;
+  gap: var(--s-4);
+  color: var(--plaster-sunk); /* 8.21:1 on oxblood-lift */
+  font-size: var(--t-sm);
+}
+
+/* A filled chip, never a coloured word. Gold ground carrying teak-deep letters
+   is 7.36:1 the other way round, which is why the pairing inverts on Darbar. */
+.shop-tag {
+  display: inline-block;
+  padding: 2px var(--s-2);
+  background: var(--gold);
+  color: var(--teak-deep);
+  font-family: var(--font-data);
+  font-size: var(--t-2xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-label);
+  line-height: 1.7;
+  text-transform: uppercase;
+}
+
+/* --- The wall — HAVELI --------------------------------------------------- */
+
+.shop-section__head {
+  display: grid;
+  max-width: var(--content-max);
+  align-items: end;
+  margin: 0 auto var(--s-7);
+  gap: var(--s-5) var(--m-1);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+}
+
+.shop-section__head h2 {
+  margin: 0;
+}
+
+/* --- Filters. A GET form: no JavaScript is involved at any point. --------- */
+
+.shop-filters {
+  position: relative;
+  max-width: var(--content-max);
+  margin: 0 auto var(--s-7);
+  padding: calc(var(--s-6) + var(--rule-heavy) + var(--rule-gap) + var(--rule-hair))
+    var(--s-7) var(--s-6);
+  background: var(--plaster-lift);
+}
+
+/* Ruled, not bordered: heavy + gap + hair in brass, which is how every rule on
+   this site is set. A lone 1px line is the web default, and the default is what
+   this identity most wants to avoid. */
+.shop-filters::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: calc(var(--rule-heavy) + var(--rule-gap) + var(--rule-hair));
+  border-top: var(--rule-heavy) solid var(--brass);
+  border-bottom: var(--rule-hair) solid var(--brass);
+  content: "";
+  pointer-events: none;
+}
+
+.shop-filters__head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--s-3) var(--s-5);
+}
+
+.shop-filters__head .label {
+  margin: 0;
+}
+
+.shop-filters__count {
+  color: var(--ink-2); /* 7.34:1 on plaster-lift */
+  font-family: var(--font-data);
+  font-size: var(--t-xs);
+}
+
+.shop-filters__form {
+  display: grid;
+  align-items: end;
+  margin-top: var(--s-5);
+  gap: var(--s-5) var(--s-6);
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.shop-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.shop-field label {
+  color: var(--ink-2);
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+/* Same control language as the appointment form: a transparent field closed by
+   a brass hairline, turning sindoor when it takes focus. */
+.shop-field select {
+  width: 100%;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-bottom: var(--rule-hair) solid var(--brass);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--t-md);
+}
+
+.shop-field select:focus {
+  border-bottom-color: var(--sindoor);
+  border-bottom-width: 2px;
+}
+
+/* Not a styling flourish: a purity control with nothing to offer is disabled
+   because no piece has been assayed, and it has to LOOK unavailable. */
+.shop-field select[disabled] {
+  color: var(--ink-2);
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.shop-field__note {
+  color: var(--ink-2);
+  font-size: var(--t-xs);
+  line-height: 1.5;
+}
+
+.shop-filters__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--s-5);
+}
+
+.shop-chips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: var(--s-5);
+  gap: var(--s-3);
+}
+
+/* Each chip is a LINK to the same page minus one filter, so a filter can be
+   removed with the keyboard and with scripting switched off. */
+.shop-chip {
+  display: inline-flex;
+  align-items: baseline;
+  padding: var(--s-2) var(--s-4);
+  border: var(--rule-hair) solid var(--brass);
+  background: var(--plaster-sunk);
+  color: var(--ink); /* 11.5:1 on plaster-sunk */
+  font-size: var(--t-xs);
+  gap: var(--s-2);
+  transition: background-color var(--motion-fast);
+}
+
+.shop-chip:hover {
+  background: var(--plaster);
+}
+
+.shop-chip__label {
+  color: var(--sindoor); /* 5.3:1 on plaster-sunk */
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.shop-chip__x {
+  font-family: var(--font-data);
+  font-size: var(--t-sm);
+  line-height: 1;
+}
+
+/* --- The wall itself ----------------------------------------------------- */
+
+.shop-wall {
+  max-width: var(--content-max);
+  margin-inline: auto;
+  /* The jambs. Each recess stands --reveal proud of its own cell, so the wall
+     needs a pier of plaster between the outermost alcove and its own edge. */
+  padding: var(--m-1);
+  background: var(--plaster-sunk);
+  box-shadow:
+    inset 0 3px 7px rgba(60, 40, 20, 0.13),
+    inset 0 -1px 0 rgba(255, 250, 240, 0.45);
+}
+
+.shop-grid {
+  display: grid;
+  align-items: start;
+  /* --m-1 clears the horizontal overhang of two neighbouring recesses
+     (--reveal + --mount, up to 17px each) with a real pier left over. */
+  gap: var(--m-1);
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+}
+
+.shop-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.shop-card__body {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.shop-card__kind {
+  color: var(--sindoor);
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.shop-card__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--t-lg);
+  line-height: 1.2;
+}
+
+.shop-card__link {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--sindoor);
+  text-decoration-thickness: var(--rule-hair);
+  text-underline-offset: 6px;
+  transition: text-decoration-thickness var(--motion-fast);
+}
+
+.shop-card__link:hover {
+  text-decoration-thickness: 2px;
+}
+
+.shop-card__spec {
+  color: var(--ink-2);
+  font-family: var(--font-data);
+  font-size: var(--t-xs);
+  line-height: 1.55;
+}
+
+.shop-card__price {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--s-2);
+  gap: var(--s-1);
+}
+
+.shop-card__figure {
+  color: var(--ink);
+  font-family: var(--font-data);
+  font-size: var(--t-md);
+  letter-spacing: 0.01em;
+}
+
+/* "Price on request" is a statement, not a missing value, so it is set in the
+   light field's accent rather than greyed out. It is never a zero. */
+.shop-card__figure--request {
+  color: var(--sindoor);
+}
+
+.shop-card__pricenote,
+.shop-card__stock {
+  color: var(--ink-2);
+  font-size: var(--t-xs);
+  line-height: 1.5;
+}
+
+/* The lamp lies over the photograph, so the turn-over hint has to sit over the
+   lamp or it is tinted by it. Scoped here rather than changed in flip.css, for
+   the same reason `.pieces` scopes its own copy of this rule. */
+.shop-card__alcove .flip__hint {
+  z-index: 3;
+}
+
+/* THE FOCUS RING on an arch-shaped recess. The ring is a rectangle and the
+   opening is not, so its top corners fall onto the plaster where --gold-leaf
+   measures 1.05:1. Doubling it — gold between two bands of oxblood-deep — keeps
+   one of the two in contrast with whatever is behind it: gold-leaf reads 10.6:1
+   on the teak inside the opening, oxblood-deep 11.5:1 on the plaster outside. */
+.shop-card__alcove .flip__frame:focus-visible {
+  outline-offset: 3px;
+  box-shadow: 0 0 0 7px var(--oxblood-deep);
+}
+
+/* --- Nothing matched ----------------------------------------------------- */
+
+.shop-empty {
+  display: flex;
+  max-width: 52ch;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+
+.shop-empty h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--d-m);
+}
+
+.shop-empty p {
+  color: var(--ink-2);
+}
+
+.shop-sill {
+  max-width: var(--content-max);
+  margin: var(--s-7) auto 0;
+}
+
+/* --- The close and the threshold out ------------------------------------- */
+
+.shop-close__panel {
+  position: relative;
+  margin-bottom: 0;
+  padding: var(--m-1) var(--s-7);
+}
+
+.shop-close__panel h2 {
+  max-width: 16ch;
+  margin-inline: auto;
+  font-size: var(--d-l);
+}
+
+.shop-close__body {
+  max-width: 52ch;
+  margin: var(--s-6) auto var(--s-7);
+  color: var(--plaster-sunk); /* 9.82:1 on oxblood */
+  font-size: var(--t-md);
+}
+
+.shop-colophon {
+  padding: var(--s-7) var(--gutter);
+  color: var(--plaster);
+  font-size: var(--t-sm);
+}
+
+.shop-colophon p {
+  max-width: var(--content-max);
+  margin-inline: auto;
+}
+
+.shop-colophon a {
+  color: var(--gold); /* 7.50:1 on oxblood-deep */
+  text-decoration: underline;
+  text-decoration-thickness: var(--rule-hair);
+  text-underline-offset: 6px;
+}
+
+@media (max-width: 1100px) {
+  .shop-opener__grid,
+  .shop-section__head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .shop-wall {
+    padding: var(--s-7);
+  }
+
+  .shop-grid {
+    gap: var(--m-1) var(--s-7);
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  }
+}
+
+@media (max-width: 780px) {
+  .shop-filters {
+    padding: var(--s-5);
+  }
+
+  .shop-wall {
+    padding: var(--s-6);
+  }
+
+  /* One alcove per row. Side by side stops working once a card is narrower than
+     its own spec line, and a squeezed recess loses the cusps. */
+  .shop-grid {
+    gap: var(--s-7);
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .shop-close__panel {
+    padding: var(--s-7) var(--s-5);
+  }
+}
