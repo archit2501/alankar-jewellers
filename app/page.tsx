@@ -593,6 +593,7 @@ export default function Home() {
             <a href="#reverse">The reverse</a>
             <a href="#craft">Craft</a>
             <a href="#legacy">The house</a>
+            <a href="/shop">The shop</a>
             <a href="/founders">The people</a>
             <a href="#visit">Visit us</a>
             <AppointmentTrigger>Private appointments</AppointmentTrigger>

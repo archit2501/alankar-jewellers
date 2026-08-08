@@ -466,6 +466,24 @@ export default async function ProductPage({
                     Online ordering is not open yet. An enquiry reaches a person,
                     who will quote you and hold the piece.
                   </p>
+
+                  {/* ADD TO CART. A plain form: no JavaScript and no client
+                      island, answered with a 303 to /cart. It records intent
+                      and claims the piece — it does not price it and it does
+                      not charge for it. See app/_data/cart.ts. */}
+                  <form className="cart-add cart-add--pdp" method="post" action="/api/cart">
+                    <input type="hidden" name="action" value="add" />
+                    <input type="hidden" name="slug" value={piece.slug} />
+                    <button className="button button--ghost cart-add__button" type="submit">
+                      Add to cart
+                      <span className="visually-hidden"> — {piece.title}</span>
+                    </button>
+                  </form>
+                  <p className="pdp-price__aside">
+                    A cart holds a one-of-a-kind piece for you while we quote it.
+                    Nothing is charged, and no price is fixed until we quote it
+                    against the rate at that moment.
+                  </p>
                 </div>
               </div>
             </div>

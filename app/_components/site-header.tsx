@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { href: "#reverse", label: "The reverse" },
   { href: "#craft", label: "Craft" },
   { href: "#visit", label: "Visit" },
+  { href: "/shop", label: "The shop" },
   { href: "/founders", label: "The people" },
 ];
 

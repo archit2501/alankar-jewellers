@@ -153,6 +153,19 @@ function ShopCard({ piece }: { piece: PricedPiece }) {
         {piece.isUniquePiece ? (
           <p className="shop-card__stock">One of a kind — there is only this one.</p>
         ) : null}
+        {/* ADD TO CART. A plain form, like the filters above it: no JavaScript,
+            no client island, and it works with scripting switched off.
+            /api/cart answers a form with a 303 to /cart. Adding does not price
+            anything — the cart stores intent, and the figure is resolved when
+            the cart renders. See app/_data/cart.ts. */}
+        <form className="cart-add" method="post" action="/api/cart">
+          <input type="hidden" name="action" value="add" />
+          <input type="hidden" name="slug" value={piece.slug} />
+          <button className="button cart-add__button" type="submit">
+            Add to cart
+            <span className="visually-hidden"> — {piece.title}</span>
+          </button>
+        </form>
       </div>
     </article>
   );

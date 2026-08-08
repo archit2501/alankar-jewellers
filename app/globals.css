@@ -3527,3 +3527,483 @@ a.contact__value:hover {
     padding: var(--s-7) var(--s-5);
   }
 }
+
+/* --- The cart — /cart ---------------------------------------------------- */
+/*
+ * THE SAME ROOM AS /shop, ONE STEP FURTHER IN. The register is HAVELI, and the
+ * alcoves are the site's existing `.piece__alcove` / `.piece__mount` /
+ * `.piece__recess` / `.piece__lamp` reused UNCHANGED — nothing below alters
+ * them. What is new here is only the two-column arrangement a cart needs: a
+ * column of pieces and, beside it, the figure that is honestly absent.
+ *
+ *   ┌ cart-wall — sunk plaster, grained, one surface ──────────────────────┐
+ *   │  ╭──╮  Jadau haar                        │  THE TOTAL               │
+ *   │  │▓ │  Uncut polki · ruby drops          │  Not quoted              │
+ *   │  ╰──╯  Price on request                  │  nothing here carries a  │
+ *   │        Held for you until 4:35 pm IST    │  price yet, and a zero   │
+ *   │        Remove                            │  would be a lie          │
+ *   └──────────────────────────────────────────────────────────────────────┘
+ *                          ══════════════════  brass sill rule
+ *
+ * COLOUR, obeyed line by line: the wall is --plaster-sunk, so text on it is
+ * --ink (11.5:1) and --ink-2 (6.4:1), and the light-field accent is --sindoor
+ * (5.3:1). --brass measures 2.85:1 on plaster and is therefore NEVER a
+ * letterform here — it is the alcove mount, the rules and the notice edge only.
+ * Gold appears exclusively on the two Darbar bands, where it measures
+ * 7.50–10.91:1.
+ *
+ * MOTION: nothing here animates except the hover transitions on links and the
+ * button, and the global `prefers-reduced-motion` block above collapses those.
+ */
+
+.cart-page {
+  /* Lime wash, coarser than the manuscript grounds — same as /shop. */
+  --grain-opacity: 0.08;
+
+  background: var(--plaster);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--t-md);
+  line-height: var(--leading-body);
+}
+
+/* Restated at page scope so the ring cannot go missing on this route, and so
+   it inverts with the field: gold-leaf on Darbar, oxblood-deep on plaster. */
+.cart-page :focus-visible {
+  outline: 2px solid var(--field-focus, var(--oxblood-deep));
+  outline-offset: 3px;
+}
+
+.cart-page h1 {
+  font-size: var(--d-l);
+}
+
+.cart-page h2 {
+  font-size: var(--d-m);
+}
+
+/* --- The lintel ---------------------------------------------------------- */
+
+.cart-topbar {
+  padding-inline: var(--gutter);
+}
+
+.cart-topbar__inner {
+  display: flex;
+  max-width: var(--content-max);
+  align-items: baseline;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-inline: auto;
+  padding-block: var(--s-5);
+  gap: var(--s-4) var(--s-6);
+}
+
+.cart-wordmark {
+  display: inline-flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--gold-leaf); /* 10.91:1 on oxblood-deep */
+}
+
+.cart-wordmark__name {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  line-height: 1.1;
+}
+
+.cart-wordmark__since {
+  color: var(--gold); /* 7.50:1 on oxblood-deep */
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.cart-nav {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--s-5) var(--s-6);
+}
+
+.cart-nav a {
+  padding-block: var(--s-2);
+  color: var(--plaster); /* 14.26:1 on oxblood-deep */
+  font-size: var(--t-sm);
+  transition: color var(--motion-fast);
+}
+
+.cart-nav a:hover,
+.cart-nav a[aria-current="page"] {
+  color: var(--gold-leaf);
+}
+
+.cart-nav a[aria-current="page"] {
+  text-decoration: underline;
+  text-decoration-thickness: var(--rule-hair);
+  text-underline-offset: 6px;
+}
+
+/* --- The head ------------------------------------------------------------ */
+
+.cart-head {
+  max-width: var(--content-max);
+  margin: 0 auto var(--s-7);
+}
+
+.cart-head h1 {
+  margin: 0;
+}
+
+.cart-head__lede {
+  margin-top: var(--s-5);
+}
+
+.cart-head__rule {
+  max-width: var(--content-max);
+  margin: var(--s-7) 0 0;
+}
+
+/*
+ * THE NOTICE. `/api/cart` answers a browser form with a 303, which throws the
+ * response body away, so the outcome of the POST arrives here as one of a
+ * closed set of codes. This is the only feedback a no-JavaScript flow has, and
+ * it must be able to say "that failed" — never only "that worked".
+ *
+ * Deliberately NOT a live region: it is present in the HTML the navigation
+ * returned, not something that appears later, so `role="status"` would promise
+ * dynamic behaviour this page does not have.
+ */
+.cart-notice {
+  max-width: var(--content-max);
+  margin: 0 auto var(--s-6);
+  padding: var(--s-4) var(--s-5);
+  border-left: var(--rule-heavy) solid var(--brass);
+  background: var(--plaster-lift);
+  color: var(--ink); /* 15.65:1 on plaster-lift */
+  font-size: var(--t-sm);
+}
+
+/* A failure is marked in the light field's accent, which is sindoor — brass is
+   ornament here and gold is not legible on plaster at all. */
+.cart-notice--problem {
+  border-left-color: var(--sindoor);
+  color: var(--ink);
+}
+
+/* --- The wall ------------------------------------------------------------ */
+
+.cart-wall {
+  max-width: var(--content-max);
+  margin-inline: auto;
+  /* The jambs. Each recess stands --reveal proud of its own cell, so the wall
+     needs a pier of plaster between the outermost alcove and its own edge. */
+  padding: var(--m-1);
+  background: var(--plaster-sunk);
+  box-shadow:
+    inset 0 3px 7px rgba(60, 40, 20, 0.13),
+    inset 0 -1px 0 rgba(255, 250, 240, 0.45);
+}
+
+.cart-layout {
+  display: grid;
+  align-items: start;
+  gap: var(--m-1);
+  grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr);
+}
+
+.cart-list {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--m-1);
+}
+
+.cart-item {
+  display: grid;
+  min-width: 0;
+  align-items: start;
+  gap: var(--s-7);
+  grid-template-columns: minmax(0, 200px) minmax(0, 1fr);
+}
+
+/* A line whose piece has been withdrawn from the catalogue has no photograph
+   to show and does not borrow one, so it gives its whole width to the sentence
+   that says so. */
+.cart-item--withdrawn {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.cart-item + .cart-item {
+  padding-top: var(--m-1);
+  /* The one hairline this page allows itself, and it separates rows of
+     tabular-shaped data, which is the exception the system already carries. */
+  border-top: var(--rule-hair) solid rgba(168, 128, 44, 0.42);
+}
+
+/* The photograph, cut to the same cusped arch as its recess and its mount, so
+   the four layers read as one opening rather than a picture on a dark box. */
+.cart-item__image {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  aspect-ratio: 100 / 132;
+  object-fit: cover;
+}
+
+.cart-item__body {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.cart-item__kind {
+  color: var(--sindoor); /* 5.3:1 on plaster-sunk */
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.cart-item__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--t-lg);
+  line-height: 1.2;
+}
+
+.cart-item__link {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--sindoor);
+  text-decoration-thickness: var(--rule-hair);
+  text-underline-offset: 6px;
+  transition: text-decoration-thickness var(--motion-fast);
+}
+
+.cart-item__link:hover {
+  text-decoration-thickness: 2px;
+}
+
+.cart-item__spec {
+  color: var(--ink-2); /* 6.4:1 on plaster-sunk */
+  font-family: var(--font-data);
+  font-size: var(--t-xs);
+  line-height: 1.55;
+}
+
+.cart-item__price {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--s-2);
+  gap: var(--s-1);
+}
+
+.cart-item__figure {
+  color: var(--ink);
+  font-family: var(--font-data);
+  font-size: var(--t-md);
+  letter-spacing: 0.01em;
+}
+
+/* "Price on request" is a statement, not a missing value, so it is set in the
+   light field's accent rather than greyed out. It is never a zero. */
+.cart-item__figure--request {
+  color: var(--sindoor);
+}
+
+.cart-item__pricenote,
+.cart-item__stock,
+.cart-item__hold {
+  color: var(--ink-2);
+  font-size: var(--t-xs);
+  line-height: 1.5;
+}
+
+/* The reservation, stated. A held piece is the shop's promise; an unheld one
+   must not look like a held one, so the two are marked differently rather than
+   left to the sentence alone. */
+.cart-item__hold {
+  margin-top: var(--s-2);
+  padding-left: var(--s-4);
+  border-left: var(--rule-heavy) solid var(--brass);
+  color: var(--ink);
+}
+
+.cart-item__hold--yours {
+  border-left-color: var(--emerald);
+}
+
+.cart-item__hold--elsewhere {
+  border-left-color: var(--sindoor);
+}
+
+.cart-item__remove {
+  margin-top: var(--s-3);
+}
+
+.cart-item__removebutton {
+  color: var(--sindoor); /* 5.3:1 on plaster-sunk */
+}
+
+/* --- The total ----------------------------------------------------------- */
+
+.cart-total {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding: var(--s-7);
+  background: var(--plaster-lift);
+  gap: var(--s-4);
+}
+
+.cart-total .label {
+  margin: 0;
+}
+
+.cart-total__figure {
+  color: var(--ink); /* 15.65:1 on plaster-lift */
+  font-family: var(--font-data);
+  font-size: var(--d-m);
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+}
+
+/* An absent total is a sentence, not a dash and never a ₹0. It is set in the
+   accent so it reads as a statement the shop is making. */
+.cart-total__figure--absent {
+  color: var(--sindoor); /* 7.20:1 on plaster-lift */
+  font-family: var(--font-display);
+  font-size: var(--t-lg);
+}
+
+.cart-total__note {
+  color: var(--ink-2); /* 8.67:1 on plaster-lift */
+  font-size: var(--t-xs);
+  line-height: 1.6;
+}
+
+/* --- Nothing set aside yet ----------------------------------------------- */
+
+.cart-empty {
+  display: flex;
+  max-width: 56ch;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+
+.cart-empty__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--d-m);
+}
+
+.cart-empty__body {
+  color: var(--ink-2);
+}
+
+.cart-empty__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--s-5);
+}
+
+.cart-sill {
+  max-width: var(--content-max);
+  margin: var(--s-7) auto 0;
+}
+
+/* --- Add to cart, on /shop and on a product page -------------------------- */
+
+/* A plain form, so the control is a real submit button with a real accessible
+   name and no client JavaScript behind it. */
+.cart-add {
+  margin-top: var(--s-4);
+}
+
+.cart-add__button {
+  min-height: 48px;
+  padding-inline: var(--s-6);
+  font-size: var(--t-xs);
+}
+
+.cart-add--pdp {
+  margin-top: var(--s-5);
+}
+
+/* --- The close and the threshold out ------------------------------------- */
+
+.cart-close__panel {
+  position: relative;
+  margin-bottom: 0;
+  padding: var(--m-1) var(--s-7);
+}
+
+.cart-close__panel h2 {
+  max-width: 16ch;
+  margin-inline: auto;
+  font-size: var(--d-l);
+}
+
+.cart-close__body {
+  max-width: 52ch;
+  margin: var(--s-6) auto var(--s-7);
+  color: var(--plaster-sunk); /* 9.82:1 on oxblood */
+  font-size: var(--t-md);
+}
+
+.cart-colophon {
+  padding: var(--s-7) var(--gutter);
+  color: var(--plaster);
+  font-size: var(--t-sm);
+}
+
+.cart-colophon p {
+  max-width: var(--content-max);
+  margin-inline: auto;
+}
+
+.cart-colophon a {
+  color: var(--gold); /* 7.50:1 on oxblood-deep */
+  text-decoration: underline;
+  text-decoration-thickness: var(--rule-hair);
+  text-underline-offset: 6px;
+}
+
+@media (max-width: 1100px) {
+  .cart-layout {
+    gap: var(--s-7);
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cart-wall {
+    padding: var(--s-7);
+  }
+}
+
+@media (max-width: 720px) {
+  .cart-wall {
+    padding: var(--s-6);
+  }
+
+  /* One column. Side by side stops working once the alcove is narrower than
+     the spec line beside it, and a squeezed recess loses its cusps. */
+  .cart-item {
+    gap: var(--s-6);
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cart-item__alcove {
+    max-width: 260px;
+  }
+
+  .cart-close__panel {
+    padding: var(--s-7) var(--s-5);
+  }
+}
