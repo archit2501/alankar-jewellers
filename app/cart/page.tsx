@@ -273,6 +273,13 @@ function Total({ rows }: { rows: readonly CartRow[] }) {
           The rate moves twice every business day, so this figure is confirmed
           when we quote you and not before.
         </p>
+        {/* PROCEED TO CHECKOUT. A plain link, because going to a page is a
+            navigation and not a state change. It appears in this branch only:
+            every piece here carries a figure, so the control leads somewhere
+            that works. */}
+        <Link className="button checkout-proceed" href="/checkout">
+          Go to checkout
+        </Link>
       </aside>
     );
   }
@@ -293,6 +300,13 @@ function Total({ rows }: { rows: readonly CartRow[] }) {
         metal, making, stones and GST, the same way every piece on this site is
         broken up.
       </p>
+      {/* The same control, told the truth. Checkout refuses to create an order
+          for a piece it cannot price, so this is not offered as a button that
+          would fail: it is offered as the page that explains, piece by piece,
+          why it cannot and what to do instead. */}
+      <Link className="text-action checkout-proceed" href="/checkout">
+        Why these cannot be ordered yet
+      </Link>
     </aside>
   );
 }

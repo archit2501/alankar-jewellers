@@ -7,6 +7,8 @@
  * intrinsic width/height and srcSet straight from the generated manifest, so
  * cumulative layout shift stays at zero.
  */
+import Link from "next/link";
+
 import { AppointmentProvider, AppointmentTrigger } from "./_components/appointment";
 import type { Interest } from "./_components/appointment";
 import { BrandMark } from "./_components/brand-mark";
@@ -108,13 +110,29 @@ const pieces: {
  * false line on the page. What is written below stays true the day ordering
  * opens, because it describes what is open today rather than what will never
  * exist.
+ *
+ * It was rewritten again when /checkout landed, for the same reason. "Online
+ * ordering is not open yet" had become half false: checkout exists, it creates
+ * real orders, and it takes no money. What it will not do is create an order
+ * for a piece with no resolvable price, and every piece in this catalogue is
+ * still quoted by hand — so the line now names the thing a visitor can check
+ * for themselves in two clicks (the cart says "Not quoted"; checkout says why),
+ * rather than a blanket claim about the software. Every clause below is
+ * verifiable from this site as it stands today:
+ *
+ *   "by appointment"     the dialog below books one.
+ *   "by enquiry here"    the same dialog, from any product page.
+ *   "takes no payment"   PAYMENT_CAPTURE_ENABLED is false in _data/orders.ts,
+ *                        and /checkout says so before it asks for a name.
+ *   "no piece is priced" every seeded variant is pricing_mode 'on_request'.
  */
 const facts = [
   { label: "Techniques", value: "Jadau, Polki and Kundan, set by hand" },
   { label: "Every piece", value: "Shown face and reverse, or not shown" },
   {
     label: "How to buy",
-    value: "In the shop by appointment, or by enquiry here. Online ordering is not open yet.",
+    value:
+      "In the shop by appointment, or by enquiry here. Checkout takes no payment, and no piece is priced yet, so nothing can be ordered today.",
   },
 ];
 
@@ -593,8 +611,8 @@ export default function Home() {
             <a href="#reverse">The reverse</a>
             <a href="#craft">Craft</a>
             <a href="#legacy">The house</a>
-            <a href="/shop">The shop</a>
-            <a href="/founders">The people</a>
+            <Link href="/shop">The shop</Link>
+            <Link href="/founders">The people</Link>
             <a href="#visit">Visit us</a>
             <AppointmentTrigger>Private appointments</AppointmentTrigger>
           </div>

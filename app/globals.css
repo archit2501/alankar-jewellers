@@ -4007,3 +4007,708 @@ a.contact__value:hover {
     padding: var(--s-7) var(--s-5);
   }
 }
+
+/* --- Checkout — /checkout ------------------------------------------------- */
+/*
+ * THE SAME ROOM AS /cart, ONE STEP FURTHER IN AGAIN. Register HAVELI: the wall
+ * is sunk plaster, the panels are raised plaster, brass is ornament and never a
+ * letterform, and gold appears only on the two Darbar bands at the top and the
+ * foot of the page.
+ *
+ *   ┌ checkout-wall — sunk plaster, grained, one surface ───────────────────┐
+ *   │  AWAITING PAYMENT                        │  WHAT IT COMES TO         │
+ *   │  No payment has been taken               │  ₹4,12,660                │
+ *   │  Nothing has been charged and nothing…   │  Metal value    ₹3,10,000 │
+ *   │                                          │  Making charges   ₹37,200 │
+ *   │  ┌ checkout-form — raised plaster ─────┐ │  GST              ₹12,018 │
+ *   │  │ Your name  ______________________   │ │  ─────────────────────────│
+ *   │  │ Mobile     ______________________   │ │  Total          ₹4,12,660 │
+ *   │  └─────────────────────────────────────┘ │                           │
+ *   └───────────────────────────────────────────────────────────────────────┘
+ *                          ══════════════════  brass sill rule
+ *
+ * COLOUR, obeyed line by line and measured:
+ *   on --plaster-sunk   --ink 11.5:1 · --ink-2 6.4:1 · --sindoor 5.3:1
+ *   on --plaster-lift   --ink 15.65:1 · --ink-2 8.67:1 · --sindoor 7.20:1
+ *   on --oxblood-deep   --plaster 14.26:1 · --gold 7.50:1 · --gold-leaf 10.91:1
+ * --brass is 2.85:1 on plaster, so it appears below only as a rule, an edge or
+ * an input's underline — never as text.
+ *
+ * THE ONE COLOUR DECISION THAT IS NOT AESTHETIC: the payment standing is set in
+ * --sindoor, the accent this site uses for a statement the shop is making, and
+ * NOT in --emerald, which /cart uses for a reservation that really is held.
+ * Nothing on this page may read as settled while capture is off, and a green
+ * mark reads as settled from across a room.
+ *
+ * MOTION: nothing here animates except the hover transitions inherited from
+ * .button and .text-action, and the global `prefers-reduced-motion` block
+ * collapses those.
+ */
+
+.checkout-page {
+  /* Lime wash, coarser than the manuscript grounds — same as /cart and /shop. */
+  --grain-opacity: 0.08;
+
+  background: var(--plaster);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--t-md);
+  line-height: var(--leading-body);
+}
+
+/* Restated at page scope so the ring cannot go missing on this route, and so it
+   inverts with the field. Checkout is the one page here that is mostly form
+   controls, so a visible focus ring is not a nicety on it. */
+.checkout-page :focus-visible {
+  outline: 2px solid var(--field-focus, var(--oxblood-deep));
+  outline-offset: 3px;
+}
+
+.checkout-page h1 {
+  font-size: var(--d-l);
+}
+
+.checkout-page h2 {
+  font-size: var(--d-m);
+}
+
+/* --- The lintel ---------------------------------------------------------- */
+
+.checkout-topbar {
+  padding-inline: var(--gutter);
+}
+
+.checkout-topbar__inner {
+  display: flex;
+  max-width: var(--content-max);
+  align-items: baseline;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-inline: auto;
+  padding-block: var(--s-5);
+  gap: var(--s-4) var(--s-6);
+}
+
+.checkout-wordmark {
+  display: inline-flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--gold-leaf); /* 10.91:1 on oxblood-deep */
+}
+
+.checkout-wordmark__name {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  line-height: 1.1;
+}
+
+.checkout-wordmark__since {
+  color: var(--gold); /* 7.50:1 on oxblood-deep */
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.checkout-nav {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--s-5) var(--s-6);
+}
+
+.checkout-nav a {
+  padding-block: var(--s-2);
+  color: var(--plaster); /* 14.26:1 on oxblood-deep */
+  font-size: var(--t-sm);
+  transition: color var(--motion-fast);
+}
+
+.checkout-nav a:hover,
+.checkout-nav a[aria-current="page"] {
+  color: var(--gold-leaf);
+}
+
+.checkout-nav a[aria-current="page"] {
+  text-decoration: underline;
+  text-decoration-thickness: var(--rule-hair);
+  text-underline-offset: 6px;
+}
+
+/* --- The head ------------------------------------------------------------ */
+
+.checkout-head {
+  max-width: var(--content-max);
+  margin: 0 auto var(--s-7);
+}
+
+.checkout-head h1 {
+  margin: 0;
+}
+
+.checkout-head__lede {
+  margin-top: var(--s-5);
+}
+
+.checkout-head__rule {
+  max-width: var(--content-max);
+  margin: var(--s-7) 0 0;
+}
+
+/* The notice, identical in construction to the cart's: the only feedback a
+   no-JavaScript flow has after a 303, and it must be able to say "that failed". */
+.checkout-notice {
+  max-width: var(--content-max);
+  margin: 0 auto var(--s-6);
+  padding: var(--s-4) var(--s-5);
+  border-left: var(--rule-heavy) solid var(--brass);
+  background: var(--plaster-lift);
+  color: var(--ink); /* 15.65:1 on plaster-lift */
+  font-size: var(--t-sm);
+}
+
+.checkout-notice--problem {
+  border-left-color: var(--sindoor);
+}
+
+/* --- The wall ------------------------------------------------------------ */
+
+.checkout-wall {
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding: var(--m-1);
+  background: var(--plaster-sunk);
+  box-shadow:
+    inset 0 3px 7px rgba(60, 40, 20, 0.13),
+    inset 0 -1px 0 rgba(255, 250, 240, 0.45);
+}
+
+.checkout-layout {
+  display: grid;
+  align-items: start;
+  gap: var(--m-1);
+  grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr);
+}
+
+.checkout-main {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--s-7);
+}
+
+/* --- The payment standing ------------------------------------------------ */
+
+/*
+ * The first thing on the page, before a single field is asked for. Sindoor
+ * edge, not emerald: see the note at the top of this block.
+ */
+.order-standing {
+  display: flex;
+  flex-direction: column;
+  padding: var(--s-5) var(--s-6);
+  border-left: var(--rule-heavy) solid var(--sindoor);
+  background: var(--plaster-lift);
+  gap: var(--s-2);
+}
+
+.order-standing__badge {
+  color: var(--sindoor); /* 7.20:1 on plaster-lift */
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.checkout-page .order-standing__heading {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: var(--t-lg);
+  line-height: 1.2;
+}
+
+.order-standing__body {
+  max-width: var(--measure);
+  color: var(--ink-2); /* 8.67:1 on plaster-lift */
+  font-size: var(--t-sm);
+  line-height: 1.6;
+}
+
+/* --- Blocked: the refusal, and the path that works ----------------------- */
+
+.checkout-blocked {
+  display: flex;
+  max-width: 62ch;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+
+.checkout-page .checkout-blocked__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--d-m);
+}
+
+.checkout-blocked__list {
+  display: flex;
+  flex-direction: column;
+  padding-left: var(--s-4);
+  border-left: var(--rule-heavy) solid var(--brass);
+  gap: var(--s-3);
+}
+
+.checkout-blocked__item {
+  color: var(--ink); /* 11.5:1 on plaster-sunk */
+  font-size: var(--t-sm);
+  line-height: 1.6;
+}
+
+.checkout-blocked__link {
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--sindoor);
+  text-decoration-thickness: var(--rule-hair);
+  text-underline-offset: 5px;
+  transition: text-decoration-thickness var(--motion-fast);
+}
+
+.checkout-blocked__link:hover {
+  text-decoration-thickness: 2px;
+}
+
+.checkout-blocked__body {
+  max-width: var(--measure);
+  color: var(--ink-2); /* 6.4:1 on plaster-sunk */
+}
+
+.checkout-blocked__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--s-5);
+}
+
+/* --- The form ------------------------------------------------------------ */
+
+.checkout-form {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding: var(--s-7);
+  background: var(--plaster-lift);
+  gap: var(--s-7);
+}
+
+.checkout-fieldset {
+  display: grid;
+  min-width: 0;
+  border: 0;
+  border-top: var(--rule-hair) solid rgba(168, 128, 44, 0.5);
+  padding: var(--s-5) 0 0;
+  gap: var(--s-5) var(--s-6);
+  grid-template-columns: 1fr 1fr;
+}
+
+.checkout-legend {
+  padding: 0 var(--s-3) 0 0;
+  color: var(--sindoor); /* 7.20:1 on plaster-lift */
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.checkout-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.checkout-field--wide {
+  grid-column: 1 / -1;
+}
+
+.checkout-field > span {
+  color: var(--ink-2); /* 8.67:1 on plaster-lift */
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.checkout-field input,
+.checkout-field select,
+.checkout-field textarea {
+  width: 100%;
+  border: 0;
+  border-bottom: var(--rule-hair) solid var(--brass);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--t-md);
+}
+
+.checkout-field input,
+.checkout-field select {
+  height: 48px;
+  padding: 0;
+}
+
+.checkout-field textarea {
+  min-height: 84px;
+  padding: var(--s-3) 0;
+  resize: vertical;
+}
+
+.checkout-field input:focus,
+.checkout-field select:focus,
+.checkout-field textarea:focus {
+  border-bottom-color: var(--sindoor);
+  border-bottom-width: 2px;
+}
+
+/* --- Choices, and consent ------------------------------------------------ */
+
+.checkout-choices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.checkout-choice,
+.checkout-consent {
+  display: flex;
+  align-items: flex-start;
+  padding: var(--s-3) var(--s-4);
+  background: var(--plaster);
+  color: var(--ink-2); /* 7.80:1 on plaster */
+  font-size: var(--t-sm);
+  gap: var(--s-4);
+  line-height: 1.6;
+}
+
+.checkout-choice input,
+.checkout-consent input {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  margin-top: 3px;
+  accent-color: var(--oxblood);
+}
+
+.checkout-choice strong,
+.checkout-consent strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.checkout-note {
+  max-width: var(--measure);
+  color: var(--ink-2); /* 8.67:1 on plaster-lift */
+  font-size: var(--t-xs);
+  line-height: 1.6;
+}
+
+/*
+ * What the server sent back. NOT a live region and NOT an alert: the page was
+ * navigated to, so this is present in the document from the first byte rather
+ * than appearing later.
+ */
+.checkout-problems {
+  padding: var(--s-4) var(--s-5);
+  border-left: var(--rule-heavy) solid var(--sindoor);
+  background: var(--plaster);
+  color: var(--ink); /* 14.08:1 on plaster */
+  font-size: var(--t-sm);
+}
+
+.checkout-problems__title {
+  margin-bottom: var(--s-3);
+  font-weight: 600;
+}
+
+.checkout-problems ul {
+  display: flex;
+  flex-direction: column;
+  padding-left: var(--s-5);
+  gap: var(--s-2);
+  list-style: disc;
+}
+
+.checkout-submit {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+/* The control /cart carries. It is a plain link, so it inherits .button or
+   .text-action wholesale and adds only its own placement. */
+.checkout-proceed {
+  margin-top: var(--s-3);
+  align-self: flex-start;
+}
+
+/* --- The order, itemised ------------------------------------------------- */
+
+.order-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.checkout-page .order-block__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--t-lg);
+  line-height: 1.2;
+}
+
+.order-block__body {
+  max-width: var(--measure);
+  color: var(--ink-2);
+  font-size: var(--t-sm);
+  line-height: 1.6;
+}
+
+.order-ticket {
+  color: var(--ink);
+  font-family: var(--font-data);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.order-lines {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-6);
+}
+
+.order-line {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding: var(--s-5);
+  background: var(--plaster-lift);
+  gap: var(--s-3);
+}
+
+.order-line__head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--s-3) var(--s-5);
+}
+
+.checkout-page .order-line__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--t-lg);
+  line-height: 1.2;
+}
+
+.order-line__link {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--sindoor);
+  text-decoration-thickness: var(--rule-hair);
+  text-underline-offset: 6px;
+  transition: text-decoration-thickness var(--motion-fast);
+}
+
+.order-line__link:hover {
+  text-decoration-thickness: 2px;
+}
+
+.order-line__figure {
+  color: var(--ink);
+  font-family: var(--font-data);
+  font-size: var(--t-md);
+  letter-spacing: 0.01em;
+}
+
+.order-line__spec {
+  color: var(--ink-2);
+  font-family: var(--font-data);
+  font-size: var(--t-xs);
+  line-height: 1.55;
+}
+
+/* The breakup and the compliance facts are the two places on this site where a
+   hairline is allowed, because both are rows of tabular data — which is the
+   exception the ornament system already carries. */
+.order-line__breakup,
+.order-totals {
+  display: flex;
+  flex-direction: column;
+}
+
+.order-line__breakuprow,
+.order-totals__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-block: var(--s-2);
+  border-top: var(--rule-hair) solid rgba(168, 128, 44, 0.42);
+  color: var(--ink-2);
+  font-size: var(--t-xs);
+  gap: var(--s-5);
+}
+
+.order-line__breakuprow dd,
+.order-totals__row dd {
+  color: var(--ink);
+  font-family: var(--font-data);
+  white-space: nowrap;
+}
+
+.order-totals__row--total dt,
+.order-totals__row--total dd {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.order-line__facts {
+  display: grid;
+  gap: var(--s-2) var(--s-5);
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.order-line__fact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.order-line__fact dt {
+  color: var(--ink-2);
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.order-line__fact dd {
+  color: var(--ink);
+  font-family: var(--font-data);
+  font-size: var(--t-xs);
+  line-height: 1.5;
+}
+
+/* --- The figure ---------------------------------------------------------- */
+
+.order-summary {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding: var(--s-7);
+  background: var(--plaster-lift);
+  gap: var(--s-4);
+}
+
+.order-summary .label {
+  margin: 0;
+}
+
+.order-summary__figure {
+  color: var(--ink); /* 15.65:1 on plaster-lift */
+  font-family: var(--font-data);
+  font-size: var(--d-m);
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+}
+
+.order-summary__note {
+  color: var(--ink-2); /* 8.67:1 on plaster-lift */
+  font-size: var(--t-xs);
+  line-height: 1.6;
+}
+
+.order-summary .order-line {
+  background: var(--plaster);
+}
+
+/* --- The sill, the close and the threshold out --------------------------- */
+
+.checkout-sill {
+  max-width: var(--content-max);
+  margin: var(--s-7) auto 0;
+}
+
+.checkout-close__panel {
+  position: relative;
+  margin-bottom: 0;
+  padding: var(--m-1) var(--s-7);
+}
+
+.checkout-close__panel h2 {
+  max-width: 16ch;
+  margin-inline: auto;
+  font-size: var(--d-l);
+}
+
+.checkout-close__body {
+  max-width: 54ch;
+  margin: var(--s-6) auto var(--s-7);
+  color: var(--plaster-sunk); /* 9.82:1 on oxblood */
+  font-size: var(--t-md);
+}
+
+.checkout-colophon {
+  padding: var(--s-7) var(--gutter);
+  color: var(--plaster);
+  font-size: var(--t-sm);
+}
+
+.checkout-colophon p {
+  max-width: var(--content-max);
+  margin-inline: auto;
+}
+
+.checkout-colophon a {
+  color: var(--gold); /* 7.50:1 on oxblood-deep */
+  text-decoration: underline;
+  text-decoration-thickness: var(--rule-hair);
+  text-underline-offset: 6px;
+}
+
+@media (max-width: 1100px) {
+  .checkout-layout {
+    gap: var(--s-7);
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .checkout-wall {
+    padding: var(--s-7);
+  }
+}
+
+@media (max-width: 720px) {
+  .checkout-wall {
+    padding: var(--s-6);
+  }
+
+  .checkout-form {
+    padding: var(--s-5);
+  }
+
+  /* One column. Two fields side by side stop working once a label wraps. */
+  .checkout-fieldset {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .order-summary {
+    padding: var(--s-5);
+  }
+
+  .checkout-close__panel {
+    padding: var(--s-7) var(--s-5);
+  }
+}

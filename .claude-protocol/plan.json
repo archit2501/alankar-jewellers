@@ -218,7 +218,7 @@
                 "test",
                 "build"
               ],
-              "status": "todo",
+              "status": "done",
               "criticalPath": true
             }
           ]
