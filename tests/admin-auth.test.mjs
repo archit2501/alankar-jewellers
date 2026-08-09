@@ -653,8 +653,19 @@ test("a cookie value round-trips, and one flipped character in the MAC refuses i
   assert.equal(await tokenFromCookieValue(value), token);
 
   const [, mac] = value.split(".");
+  // Flip a character at several positions. The replacement must change the
+  // DECODED bytes, not merely the string: a 32-byte MAC is 256 bits but 43
+  // base64url characters carry 258, so the FINAL character has two bits of
+  // slack and A/B/C/D all decode alike. Swapping the last "C" for an "A" left
+  // the MAC valid and failed this assertion roughly 6% of runs. Stepping the
+  // alphabet by 16 moves a high bit at every position, including the last.
+  const ALPHABET =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
   for (let i = 0; i < mac.length; i += 7) {
-    const flipped = `${mac.slice(0, i)}${mac[i] === "A" ? "B" : "A"}${mac.slice(i + 1)}`;
+    const at = ALPHABET.indexOf(mac[i]);
+    const replacement = ALPHABET[(at + 16) % 64];
+    const flipped = `${mac.slice(0, i)}${replacement}${mac.slice(i + 1)}`;
+    assert.notEqual(flipped, mac, `tampering at ${i} must change the MAC`);
     assert.equal(
       await tokenFromCookieValue(`${token}.${flipped}`),
       null,
@@ -711,7 +722,16 @@ test("the CSRF token is derived, bound to one session, and verified in constant 
   assert.equal(await verifyCsrfToken(token, await csrfTokenFor(other)), false);
   assert.equal(await verifyCsrfToken(token, null), false);
   assert.equal(await verifyCsrfToken(token, ""), false);
-  assert.equal(await verifyCsrfToken(token, `${csrf.slice(0, -1)}A`), false);
+  // Tamper with a character that actually carries data. A 32-byte token is 256
+  // bits, but 43 base64url characters carry 258, so the FINAL character has two
+  // bits of slack: replacing it with "A" decodes identically whenever the
+  // original was A, B, C or D. That made this assertion fail spuriously about
+  // 6% of runs — on a security property, which is the worst place to train
+  // people to ignore a red build. The first character has no such slack.
+  const flipped = csrf[0] === "A" ? "B" : "A";
+  const tampered = `${flipped}${csrf.slice(1)}`;
+  assert.notEqual(tampered, csrf, "the tampered token must actually differ");
+  assert.equal(await verifyCsrfToken(token, tampered), false);
 });
 
 test("a MISSING Origin is refused — the inverse of the storefront's rule", () => {
@@ -1231,7 +1251,17 @@ function discoverAdminRoutes() {
   return found;
 }
 
-test("the enumeration finds the routes that exist, and none of them is dynamic", () => {
+/**
+ * How to request a route that has a dynamic segment. The VALUE is a
+ * well-formed handle of the kind that route takes, so the refusal is tested on
+ * a URL the router will actually match — a nonsense segment could be refused
+ * by routing rather than by the gate, which would prove nothing.
+ */
+const DYNAMIC_SAMPLES = {
+  "/admin/orders/[id]": "/admin/orders/AJ-2608-7QW2XF",
+};
+
+test("the enumeration finds the routes that exist, and every dynamic one is requestable", () => {
   const routes = discoverAdminRoutes();
   assert.ok(routes.length >= 2, "the walker found nothing, so the checks below prove nothing");
 
@@ -1244,13 +1274,14 @@ test("the enumeration finds the routes that exist, and none of them is dynamic",
   }
 
   for (const route of routes) {
-    // A dynamic segment cannot be requested without inventing an id, which
-    // would make the refusal checks silently skip it. Fail loudly instead, so
-    // whoever adds the first one extends this test on purpose.
-    assert.equal(
-      /\[|\]/.test(route.path),
-      false,
-      `${route.path} is dynamic; teach this test how to request it`
+    // A dynamic segment cannot be requested without a value, which would make
+    // the refusal checks below silently skip it. So each one declares a sample
+    // in DYNAMIC_SAMPLES, and adding a dynamic route without one fails here —
+    // on purpose, and loudly.
+    if (!/\[|\]/.test(route.path)) continue;
+    assert.ok(
+      DYNAMIC_SAMPLES[route.path],
+      `${route.path} is dynamic; add it to DYNAMIC_SAMPLES so it can be requested`
     );
   }
 });
@@ -1287,28 +1318,32 @@ test("EVERY admin route refuses an anonymous request, and leaks nothing while do
   assert.ok(targets.length >= probes.length);
 
   for (const route of targets) {
-    const response = await fetchWorker(route.path, {
+    // A dynamic route is requested at its declared sample; everything else is
+    // requested at itself.
+    const target = DYNAMIC_SAMPLES[route.path] ?? route.path;
+
+    const response = await fetchWorker(target, {
       redirect: "manual",
       headers: { accept: route.kind === "page" ? "text/html" : "application/json" },
     });
 
     const body = await response.text();
 
-    if (route.path.startsWith("/api/admin")) {
-      assert.equal(response.status, 401, `${route.path} must refuse with 401`);
+    if (target.startsWith("/api/admin")) {
+      assert.equal(response.status, 401, `${target} must refuse with 401`);
     } else {
-      assert.equal(response.status, 303, `${route.path} must redirect`);
+      assert.equal(response.status, 303, `${target} must redirect`);
       assert.match(
         response.headers.get("location") ?? "",
         /\/admin\/login$/,
-        `${route.path} must redirect to the sign-in page`
+        `${target} must redirect to the sign-in page`
       );
       // A redirect with the protected page still rendered underneath is a real
       // framework bug class, and the redirect hides it perfectly.
-      assert.equal(body.trim().length, 0, `${route.path} rendered a body while refusing`);
+      assert.equal(body.trim().length, 0, `${target} rendered a body while refusing`);
     }
 
-    assert.equal(setCookies(response).length, 0, `${route.path} set a cookie for a stranger`);
+    assert.equal(setCookies(response).length, 0, `${target} set a cookie for a stranger`);
   }
 });
 

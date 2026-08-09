@@ -1,0 +1,602 @@
+/* ------------------------------------------------------------------------- *
+ * THE SHOP PANEL — the shared admin stylesheet.
+ *
+ * Imported once, by app/admin/layout.tsx, so every admin screen inherits the
+ * chrome, the palette and the accessibility floor without importing anything.
+ * A screen may add its own sheet for its own blocks; it must not restate what
+ * is here.
+ *
+ * ===========================================================================
+ * THE REGISTER: THE BACK ROOM OF THE SHOP
+ * ===========================================================================
+ * research/05-admin-ux.md §1. The admin uses the HAVELI register — plaster
+ * ground, ink, sindoor accent, brass hairlines — and the VITRINE register for
+ * the header strip, the bottom bar and dark mode. It DISCARDS Darbar entirely:
+ * no oxblood ground, no cusped arches, no jali screens, no doubled gold rules.
+ * Ceremony is a sales instrument and it has no addressee in here.
+ *
+ * TWO RULES CARRY THE WHOLE DESIGN
+ *   1. Nothing has fixed prominence. A thing grows only when it is wrong. The
+ *      gold rate is one quiet line until it goes stale, at which point it is
+ *      the top of the screen. That is why there is no stat-tile row in this
+ *      file: a tile gives a number permanent prominence whether or not it needs
+ *      attention, and a tile you cannot tap is a dead end.
+ *   2. Ornament marks the statutory. The only ornament that survives is
+ *      `.illuminated--brass`, and it belongs to one thing — the price breakup,
+ *      which is a BIS Reg. 5(11) document. Brackets mean "this is a record".
+ *
+ * ===========================================================================
+ * THE COLOUR RULE, MEASURED
+ * ===========================================================================
+ * On --plaster #ede3d0:  --ink 14.08 · --ink-2 7.80 · --ink-3 3.96 (captions
+ * only, never body) · --sindoor 6.48 · --brass 2.85 · --gold 1.90.
+ *
+ *   --brass IS NEVER A LETTERFORM. 2.85:1. Hairlines and brackets only.
+ *   --gold IS BANNED ON THIS FIELD. 1.90:1. Not text, not a border, not a dot.
+ *   --sindoor IS THE ONE LIGHT-FIELD ACCENT, and it appears only where
+ *   something is late or wrong. Colour on this screen means "attend to this";
+ *   if it meant anything else the eye would stop finding the one red square.
+ *
+ * On --teak-deep #241409 (the strip, the bar, dark mode): --plaster 13.99,
+ * --gold-leaf 10.71, --gold 7.36. --sindoor FAILS here at 2.16:1, so the dark
+ * field uses --adm-alert-lift #d0674f (4.86:1) instead. There is no green
+ * anywhere: emerald against sindoor is ΔE 4.0 under protanopia, so a colour-
+ * blind owner could not tell "good" from "late". "Everything is fine" needs no
+ * colour at all.
+ *
+ * ===========================================================================
+ * PHONE FIRST
+ * ===========================================================================
+ * 390px is the target and desktop is the adaptation. One column, 720px at most
+ * on every viewport, no sidebar ever — five destinations do not need
+ * navigation, and there is no second information architecture to learn. Tap
+ * targets are 48px, 56px on a screen's primary action, 8px apart. The bottom
+ * bar is thumb-reachable; top tabs are not.
+ * ------------------------------------------------------------------------- */
+
+.admin {
+  /* Grain drops from the storefront's 0.055: texture behind 13px mono is
+     texture on top of texture. */
+  --grain-opacity: 0.03;
+
+  /* The field contract, exactly as the storefront declares it, so buttons,
+     links, labels and focus rings follow without knowing which surface they
+     are on. */
+  --field: var(--plaster);
+  --field-ink: var(--ink-2);
+  --field-head: var(--ink);
+  --field-label: var(--sindoor);
+  --field-metal: var(--brass);
+  --field-focus: var(--oxblood-deep);
+
+  --adm-ground: var(--plaster);
+  --adm-raised: var(--plaster-lift);
+  --adm-sunk: var(--plaster-sunk);
+  --adm-ink: var(--ink-2);
+  --adm-head: var(--ink);
+  --adm-meta: var(--ink-3);
+  --adm-alert: var(--sindoor);
+  --adm-on-alert: var(--plaster);
+  --adm-hair: rgba(125, 108, 91, 0.28);
+  --adm-line: rgba(125, 108, 91, 0.2);
+
+  min-height: 100vh;
+  background: var(--adm-ground);
+  color: var(--adm-ink);
+  font-family: var(--font-body);
+  font-size: var(--t-md);
+  line-height: var(--leading-body);
+  /* Clear of the fixed bottom bar, plus the phone's own inset. */
+  padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px) + var(--s-5));
+}
+
+/* --- The strip ---------------------------------------------------------- */
+
+.admin-bar {
+  --field: var(--teak-deep);
+  --field-ink: var(--plaster);
+  --field-head: var(--gold-leaf);
+  --field-label: var(--gold);
+  --field-metal: var(--gold);
+  --field-focus: var(--gold-leaf);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  min-height: 48px;
+  padding: var(--s-2) var(--s-4);
+  background: var(--teak-deep);
+  color: var(--plaster);
+}
+
+.admin-bar__mark {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+  margin: 0;
+  color: var(--gold-leaf);
+}
+
+.admin-bar__deva {
+  font-family: var(--font-deva);
+  font-size: var(--t-lg);
+  line-height: 1;
+}
+
+.admin-bar__name {
+  font-family: var(--font-data);
+  font-size: var(--t-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+/* Who is signed in, printed because a shared credential is otherwise invisible
+   to the person using it — research/06-admin-compliance.md. */
+.admin-bar__who {
+  margin: 0;
+  color: var(--plaster);
+  font-family: var(--font-data);
+  font-size: var(--t-2xs);
+  opacity: 0.8;
+}
+
+.admin-bar__out {
+  min-height: 48px;
+  padding: 0 var(--s-3);
+  border: var(--rule-hair) solid var(--gold-deep);
+  background: transparent;
+  color: var(--gold-leaf);
+  font-family: var(--font-data);
+  font-size: var(--t-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+/* --- The column --------------------------------------------------------- */
+
+.admin-main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--s-5) var(--s-4) var(--s-6);
+}
+
+.admin-title {
+  margin: 0 0 var(--s-4);
+  color: var(--adm-head);
+  font-family: var(--font-body);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: var(--leading-tight);
+}
+
+.admin-section {
+  margin: var(--s-6) 0 0;
+}
+
+.admin-section__head {
+  margin: 0 0 var(--s-3);
+  color: var(--adm-head);
+  font-size: var(--t-lg);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+}
+
+.admin-p {
+  margin: 0 0 var(--s-3);
+  max-width: 42ch;
+}
+
+.admin-note {
+  margin: var(--s-5) 0 0;
+  color: var(--adm-meta);
+  font-family: var(--font-data);
+  font-size: var(--t-2xs);
+}
+
+/* Money and weight are mono and tabular everywhere, so a column of figures can
+   be scanned down a list without being a table. */
+.admin-num {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- The rate line, and the rate alarm ---------------------------------- */
+
+.admin-rate {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-2) var(--s-4);
+  margin: 0 0 var(--s-5);
+  padding: 0 0 var(--s-4);
+  border-bottom: var(--rule-hair) solid var(--adm-line);
+}
+
+.admin-rate__figure {
+  color: var(--adm-head);
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-md);
+}
+
+.admin-rate__note {
+  color: var(--adm-meta);
+  font-size: var(--t-xs);
+}
+
+/*
+ * THE PROMINENCE RULE, MADE VISIBLE. This block only exists when the rate is
+ * out of date — at which point the website cannot price anything and the shop
+ * is silently shut, so it takes the top of the screen and the size that goes
+ * with it.
+ */
+.admin-alarm {
+  margin: 0 0 var(--s-5);
+  padding: var(--s-4);
+  border-left: var(--rule-heavy, 3px) solid var(--adm-alert);
+  background: var(--adm-raised);
+}
+
+.admin-alarm__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  margin: 0 0 var(--s-3);
+  color: var(--adm-alert);
+  font-size: var(--t-lg);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+}
+
+/* Colour is never the only channel: every marked thing carries a filled square
+   AND a word. */
+.admin-mark {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  background: var(--adm-alert);
+}
+
+/* --- The queue ---------------------------------------------------------- */
+
+.admin-queue {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/*
+ * The three sources are visually undifferentiated. The owner does not care
+ * which table a person came from; the kind is stated in the line of text where
+ * it belongs, as context rather than as a category header.
+ *
+ * The one hairline this design permits — globals.css: "no hairline appears
+ * anywhere except between two rows of tabular data".
+ */
+.admin-queue__item {
+  padding: var(--s-4) 0;
+  border-top: var(--rule-hair) solid var(--adm-line);
+}
+
+.admin-queue__item:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+/* The customer's name is the largest thing on the row. The owner recognises
+   people; they do not recognise order numbers. */
+.admin-queue__name {
+  margin: 0;
+  color: var(--adm-head);
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: var(--leading-tight);
+}
+
+.admin-queue__due {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  margin: var(--s-2) 0 0;
+  color: var(--adm-ink);
+  font-size: var(--t-sm);
+}
+
+/* The one colour on this screen, and it means one thing: THIS IS LATE OR
+   WRONG NOW. If it meant anything else the eye would stop finding it. */
+.admin-wrong {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  color: var(--adm-alert);
+  font-weight: 600;
+}
+
+.admin-queue__summary {
+  margin: var(--s-2) 0 0;
+  max-width: 42ch;
+  font-size: var(--t-sm);
+}
+
+/* The order number is the smallest thing on the row, and it is present only
+   because the owner reads it out on the call. */
+.admin-queue__meta {
+  margin: var(--s-2) 0 0;
+  color: var(--adm-meta);
+  font-family: var(--font-data);
+  font-size: var(--t-2xs);
+}
+
+/* Call and WhatsApp live on the row, not behind a tap-through: following up by
+   phone is the highest-frequency action in the whole tool. */
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin: var(--s-3) 0 0;
+}
+
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  min-width: 7.5rem;
+  padding: 0 var(--s-4);
+  border: var(--rule-hair) solid var(--adm-hair);
+  background: var(--adm-raised);
+  color: var(--adm-head);
+  font-family: var(--font-data);
+  font-size: var(--t-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.admin-btn--primary {
+  min-height: 56px;
+  border-color: var(--adm-alert);
+  background: var(--adm-alert);
+  color: var(--adm-on-alert);
+}
+
+.admin-link {
+  color: var(--adm-alert);
+  text-underline-offset: 0.2em;
+}
+
+/* The number as selectable text is a DESKTOP answer: a desktop `tel:` usually
+   does nothing useful, and a number you can copy does. On a phone the two
+   buttons are the answer and the digits are clutter. */
+.admin-actions .admin-num {
+  display: none;
+}
+
+/* --- The number the shop has no number for ------------------------------ */
+
+.admin-nophone {
+  margin: var(--s-3) 0 0;
+  color: var(--adm-meta);
+  font-size: var(--t-xs);
+}
+
+/* --- Before the shop can take orders ------------------------------------ */
+
+.admin-gaps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-gap {
+  padding: var(--s-4) 0;
+  border-top: var(--rule-hair) solid var(--adm-line);
+}
+
+.admin-gap:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.admin-gap__title {
+  margin: 0;
+  color: var(--adm-head);
+  font-size: var(--t-md);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+}
+
+.admin-gap__detail {
+  margin: var(--s-2) 0 0;
+  max-width: 42ch;
+  font-size: var(--t-sm);
+}
+
+/* --- The bottom bar ----------------------------------------------------- */
+
+.admin-nav {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  background: var(--teak-deep);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.admin-nav__link {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 64px;
+  border-top: 2px solid transparent;
+  color: var(--plaster);
+  font-family: var(--font-data);
+  font-size: var(--t-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+/* The current destination is marked by a rule AND by aria-current, never by
+   colour alone. */
+.admin-nav__link[aria-current="page"] {
+  border-top-color: var(--gold-leaf);
+  color: var(--gold-leaf);
+}
+
+/* --- Focus, everywhere, never removed ----------------------------------- */
+
+.admin a:focus-visible,
+.admin button:focus-visible,
+.admin input:focus-visible,
+.admin summary:focus-visible {
+  outline: 2px solid var(--field-focus);
+  outline-offset: 2px;
+}
+
+.admin-nav__link:focus-visible,
+.admin-bar__out:focus-visible {
+  outline: 2px solid var(--gold-leaf);
+  outline-offset: -4px;
+}
+
+/* --- Desktop is the phone layout with more air -------------------------- */
+
+@media (min-width: 56rem) {
+  .admin {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 0;
+  }
+
+  /* The bar becomes four text links under the wordmark. It is the same four
+     destinations in the same order; there is no second architecture. */
+  .admin-nav {
+    position: static;
+    order: -1;
+    justify-content: flex-start;
+    gap: var(--s-5);
+    padding: 0 var(--s-5);
+    background: var(--teak-deep);
+  }
+
+  .admin-nav__link {
+    flex: 0 0 auto;
+    min-height: 48px;
+    border-top: 0;
+    border-bottom: 2px solid transparent;
+  }
+
+  .admin-nav__link[aria-current="page"] {
+    border-top-color: transparent;
+    border-bottom-color: var(--gold-leaf);
+  }
+
+  .admin-main {
+    padding: var(--s-6) var(--s-5) var(--m-1);
+    font-size: var(--t-lg);
+  }
+
+  .admin-actions .admin-num {
+    display: inline;
+    align-self: center;
+    color: var(--adm-ink);
+  }
+}
+
+/* --- Dark mode is a SELECTION, not an inversion -------------------------- */
+/*
+ * It is the Vitrine register — the inside of the case — declared under both the
+ * media query and a [data-theme] scope so a manual toggle would win in both
+ * directions. --sindoor is 2.16:1 here and must not be the alert colour; the
+ * lift below measures 4.86:1 on --teak-deep and was validated as a pair with
+ * the data hue.
+ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .admin {
+    --adm-ground: var(--teak-deep);
+    --adm-raised: #33200f;
+    --adm-sunk: #1b0f06;
+    --adm-ink: var(--plaster);
+    --adm-head: var(--plaster);
+    --adm-meta: #b7a68f;
+    --adm-alert: #d0674f;
+    --adm-on-alert: var(--teak-deep);
+    --adm-hair: rgba(237, 227, 208, 0.28);
+    --adm-line: rgba(237, 227, 208, 0.18);
+
+    --field: var(--teak-deep);
+    --field-ink: var(--plaster);
+    --field-head: var(--plaster);
+    --field-label: var(--gold);
+    --field-metal: var(--gold);
+    --field-focus: var(--gold-leaf);
+  }
+}
+
+:root[data-theme="dark"] .admin {
+  --adm-ground: var(--teak-deep);
+  --adm-raised: #33200f;
+  --adm-sunk: #1b0f06;
+  --adm-ink: var(--plaster);
+  --adm-head: var(--plaster);
+  --adm-meta: #b7a68f;
+  --adm-alert: #d0674f;
+  --adm-on-alert: var(--teak-deep);
+  --adm-hair: rgba(237, 227, 208, 0.28);
+  --adm-line: rgba(237, 227, 208, 0.18);
+
+  --field: var(--teak-deep);
+  --field-ink: var(--plaster);
+  --field-head: var(--plaster);
+  --field-label: var(--gold);
+  --field-metal: var(--gold);
+  --field-focus: var(--gold-leaf);
+}
+
+/* --- There is almost no motion here, and none of it is required ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .admin *,
+  .admin *::before,
+  .admin *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* --- Print: the chrome goes, the record stays --------------------------- */
+
+@media print {
+  .admin {
+    background: #fff;
+    color: #000;
+    padding-bottom: 0;
+  }
+
+  .admin-bar,
+  .admin-nav,
+  .admin-actions,
+  .admin-btn {
+    display: none;
+  }
+
+  .admin .grained::after,
+  .admin.grained::after {
+    display: none;
+  }
+
+  .admin-main {
+    max-width: none;
+    padding: 0;
+    font-size: 11pt;
+  }
+}

@@ -1,0 +1,559 @@
+/**
+ * THE ORDERS SCREENS — the back room, not the shop window.
+ *
+ * ===========================================================================
+ * WHICH REGISTER THIS IS
+ * ===========================================================================
+ * research/05-admin-ux.md §1: the admin is the HAVELI register — plaster
+ * ground, ink, sindoor, brass hairlines. The Darbar ornament of the storefront
+ * (oxblood fields, gold rules, multifoil arches, the flip) is discarded here.
+ * A management screen is a register on a counter, read at arm's length by
+ * someone standing up.
+ *
+ * ORNAMENT MARKS THE STATUTORY, and nothing else. `.illuminated--brass`
+ * appears on exactly one element in these two screens — the price breakup on
+ * the order page — because that panel is a BIS Reg. 5(11) and GST document and
+ * the brackets are its frame rather than its decoration. Every other block is
+ * separated by a hairline or by space.
+ *
+ * ===========================================================================
+ * MEASURED, NOT ASSUMED (research/05 §2)
+ * ===========================================================================
+ *   --ink     on --plaster  14.08:1   headings, names, amounts
+ *   --ink-2   on --plaster   7.80:1   body, secondary lines
+ *   --ink-3   on --plaster   3.96:1   captions and mono metadata ONLY — never
+ *                                     body text, and never the sole carrier of
+ *                                     a fact
+ *   --sindoor on --plaster   6.48:1   the one accent: late, wrong, irreversible
+ *   --brass   on --plaster   2.85:1   ORNAMENT ONLY. Never a letterform.
+ *   --gold    on --plaster   1.90:1   banned outright on this field
+ *
+ * ===========================================================================
+ * THE SHELL PAINTS THE GROUND; THIS FILE PAINTS THE SCREEN
+ * ===========================================================================
+ * `app/admin/layout.tsx` owns `.admin` — the field, the 720px column, the
+ * bottom-bar clearance and the `<main>` landmark — and declares the register as
+ * variables. These screens read those variables and set no ground of their
+ * own, so a change of register in the shell moves them with it, and the dark
+ * field (where --sindoor fails at 2.16:1 and the shell lifts the alert colour)
+ * needs no second declaration here.
+ *
+ * Every variable is read with a fallback to the token it aliases, so the
+ * screens stay legible if they are ever rendered outside the shell.
+ *
+ * ===========================================================================
+ * NO JAVASCRIPT
+ * ===========================================================================
+ * Search is a GET form, the filters are links, every action is a POST form,
+ * and the confirmation before a cancellation is a second page rather than a
+ * dialog. Nothing below styles a control that needs a bundle to work.
+ */
+
+@import "../../_ornament.css";
+
+.ord {
+  --ord-ink: var(--adm-ink, var(--ink-2));
+  --ord-head: var(--adm-head, var(--ink));
+  --ord-meta: var(--adm-meta, var(--ink-3));
+  --ord-raised: var(--adm-raised, var(--plaster-lift));
+  --ord-sunk: var(--adm-sunk, var(--plaster-sunk));
+  --ord-alert: var(--adm-alert, var(--sindoor));
+  --ord-on-alert: var(--adm-on-alert, var(--plaster));
+  --ord-hair: var(--adm-hair, rgba(125, 108, 91, 0.28));
+  --ord-focus: var(--field-focus, var(--oxblood-deep));
+  --ord-label: var(--field-label, var(--sindoor));
+
+  color: var(--ord-ink);
+  font-family: var(--font-body);
+}
+
+.ord *,
+.ord *::before,
+.ord *::after {
+  box-sizing: border-box;
+}
+
+.ord :focus-visible {
+  outline: 2px solid var(--ord-focus);
+  outline-offset: 2px;
+}
+
+/* --- Type ---------------------------------------------------------------- */
+
+.ord__title {
+  margin: 0 0 var(--s-4);
+  color: var(--ord-head);
+  font-family: var(--font-body);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: var(--leading-tight);
+}
+
+.ord__label {
+  display: block;
+  margin: 0 0 var(--s-2);
+  color: var(--ord-label);
+  font-family: var(--font-body);
+  font-size: var(--t-2xs);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.ord__lede {
+  margin: 0 0 var(--s-3);
+  max-width: 42ch;
+}
+
+.ord__mono {
+  margin: var(--s-1) 0 0;
+  color: var(--ord-meta);
+  font-family: var(--font-data);
+  font-size: var(--t-2xs);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Money is mono and tabular everywhere, so a column of figures can be scanned
+   down a list without being a table. */
+.ord__amount {
+  color: var(--ord-head);
+  font-family: var(--font-data);
+  font-size: var(--t-md);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* The one accent. It always carries a word as well as a colour: colour is
+   never the only channel, and the mark has a shape as well as a hue. */
+.ord__alert {
+  color: var(--ord-alert);
+  font-weight: 600;
+}
+
+.ord__mark {
+  display: inline-block;
+  width: 0.6em;
+  height: 0.6em;
+  margin-right: 0.45em;
+  background: var(--ord-alert);
+}
+
+/* --- Notices ------------------------------------------------------------- */
+
+.ord__notice {
+  margin: 0 0 var(--s-5);
+  padding: var(--s-3) var(--s-4);
+  border-left: var(--rule-heavy) solid var(--field-metal, var(--brass));
+  background: var(--ord-raised);
+  color: var(--ord-head);
+}
+
+.ord__notice--problem {
+  border-left-color: var(--ord-alert);
+}
+
+/* --- Search and filters -------------------------------------------------- */
+
+.ord__search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin: 0 0 var(--s-4);
+}
+
+/* The label sits on its own line above the field: bound with `for`, never a
+   placeholder standing in for one. */
+.ord__search .ord__label {
+  flex: 1 0 100%;
+  margin: 0;
+}
+
+.ord__input {
+  flex: 1 1 12rem;
+  min-width: 0;
+  min-height: 48px;
+  padding: var(--s-2) var(--s-3);
+  border: var(--rule-hair) solid var(--ord-hair);
+  border-radius: 0;
+  background: var(--ord-raised);
+  color: var(--ord-head);
+  font-family: var(--font-data);
+  font-size: var(--t-md);
+}
+
+.ord__go {
+  flex: 0 0 auto;
+  min-width: 48px;
+  min-height: 48px;
+  padding: 0 var(--s-4);
+  border: var(--rule-hair) solid var(--ord-hair);
+  background: var(--ord-sunk);
+  color: var(--ord-head);
+  font-family: var(--font-body);
+  font-size: var(--t-sm);
+  cursor: pointer;
+}
+
+/* Counts are filter links in a sentence, never stat tiles. research/05 §3:
+   "a stat tile you cannot click is a dead end." */
+.ord__filters {
+  margin: 0 0 var(--s-4);
+  padding: 0 0 var(--s-4);
+  border-bottom: var(--rule-hair) solid var(--ord-hair);
+  font-size: var(--t-sm);
+}
+
+.ord__filter {
+  display: inline-block;
+  padding: var(--s-2) 0;
+  color: var(--ord-alert);
+}
+
+.ord__filter[aria-current="true"] {
+  color: var(--ord-head);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ord__sep {
+  color: var(--ord-meta);
+}
+
+/* --- The list ------------------------------------------------------------ */
+
+.ord__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ord__row {
+  padding: var(--s-4) 0;
+  border-bottom: var(--rule-hair) solid var(--ord-hair);
+}
+
+.ord__rowhead {
+  display: flex;
+  gap: var(--s-3);
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+/* The customer's name is the largest thing on the row: the owner recognises
+   people, not order numbers. */
+.ord__name {
+  margin: 0;
+  color: var(--ord-head);
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: var(--leading-tight);
+}
+
+.ord__name a {
+  color: inherit;
+}
+
+.ord__what {
+  margin: var(--s-1) 0 0;
+  max-width: 42ch;
+}
+
+.ord__state {
+  margin: var(--s-2) 0 0;
+  color: var(--ord-head);
+  font-size: var(--t-sm);
+  font-weight: 600;
+}
+
+/* --- Controls ------------------------------------------------------------ */
+
+.ord__acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin: var(--s-3) 0 0;
+}
+
+.ord__acts form {
+  margin: 0;
+}
+
+.ord__btn {
+  display: inline-flex;
+  min-width: 8rem;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--s-4);
+  border: var(--rule-hair) solid var(--ord-hair);
+  background: var(--ord-raised);
+  color: var(--ord-head);
+  font-family: var(--font-body);
+  font-size: var(--t-sm);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* The two most-pressed controls in the whole panel are 56px, not 48px. */
+.ord__btn--call {
+  min-height: 56px;
+}
+
+.ord__btn--primary {
+  border-color: var(--ord-alert);
+  background: var(--ord-alert);
+  color: var(--ord-on-alert);
+}
+
+.ord__link {
+  color: var(--ord-alert);
+}
+
+.ord__back {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  color: var(--ord-alert);
+}
+
+/* --- Sections on the order page ------------------------------------------ */
+
+.ord__section {
+  margin: var(--s-6) 0 0;
+  padding: var(--s-5) 0 0;
+  border-top: var(--rule-hair) solid var(--ord-hair);
+}
+
+.ord__blocked {
+  margin: var(--s-3) 0 0;
+  padding: var(--s-3) var(--s-4);
+  max-width: 46ch;
+  background: var(--ord-sunk);
+  color: var(--ord-head);
+  font-size: var(--t-sm);
+}
+
+.ord__reasons {
+  margin: 0 0 var(--s-4);
+  padding: 0;
+  border: 0;
+}
+
+.ord__reasons legend {
+  margin: 0 0 var(--s-3);
+  padding: 0;
+  color: var(--ord-head);
+  font-weight: 600;
+}
+
+.ord__reason {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+/* --- THE BILL — the only ornamented thing in the panel -------------------- */
+
+.bill {
+  margin: var(--s-6) 0 0;
+  padding: var(--s-6) var(--s-5);
+  background: var(--ord-raised);
+}
+
+.bill__head {
+  margin: 0 0 var(--s-4);
+  padding: 0 0 var(--s-4);
+  border-bottom: var(--rule-hair) solid var(--ord-hair);
+}
+
+.bill__title {
+  margin: 0 0 var(--s-2);
+  color: var(--ord-head);
+  font-family: var(--font-body);
+  font-size: var(--t-md);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.bill__line {
+  margin: 0 0 var(--s-5);
+}
+
+.bill__lineTitle {
+  margin: 0;
+  color: var(--ord-head);
+  font-size: var(--t-md);
+  font-weight: 600;
+}
+
+.bill__table {
+  width: 100%;
+  margin: var(--s-3) 0 0;
+  border-collapse: collapse;
+  font-family: var(--font-data);
+  font-size: var(--t-2xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.bill__table caption {
+  margin: 0 0 var(--s-1);
+  color: var(--ord-meta);
+  font-size: var(--t-2xs);
+  letter-spacing: 0.08em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.bill__table th {
+  padding: var(--s-1) var(--s-3) var(--s-1) 0;
+  color: var(--ord-ink);
+  font-weight: 400;
+  text-align: left;
+}
+
+.bill__table td {
+  padding: var(--s-1) 0;
+  color: var(--ord-head);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.bill__foot th,
+.bill__foot td {
+  padding-top: var(--s-2);
+  border-top: var(--rule-hair) solid var(--ord-hair);
+  font-weight: 600;
+}
+
+.bill__total th,
+.bill__total td {
+  font-size: var(--t-md);
+}
+
+/* A missing hallmark number prints the exemption, never a blank. */
+.bill__why {
+  display: block;
+  margin: var(--s-1) 0 0;
+  max-width: 40ch;
+  color: var(--ord-ink);
+  font-family: var(--font-body);
+  font-size: var(--t-2xs);
+  white-space: normal;
+}
+
+.bill__provenance {
+  margin: var(--s-3) 0 0;
+  color: var(--ord-ink);
+  font-family: var(--font-data);
+  font-size: var(--t-2xs);
+}
+
+/* The torn panel REPLACES the bill. There is no disabled Print button beside
+   it, because a disabled control invites a retry. */
+.bill--torn {
+  border-left: var(--rule-heavy) solid var(--ord-alert);
+  background: var(--ord-sunk);
+}
+
+.ord__nodelete {
+  margin: var(--s-6) 0 0;
+  padding: var(--s-5) 0 0;
+  max-width: 46ch;
+  border-top: var(--rule-hair) solid var(--ord-hair);
+  font-size: var(--t-sm);
+}
+
+/* --- Wider screens ------------------------------------------------------- */
+/* The desktop gains larger type, nothing else. The bill and the working page
+   stay stacked in one column: split into a gutter, the bill's tabular figures
+   wrap and it stops reading as one document. research/05 §8. */
+
+@media (min-width: 56rem) {
+  .ord__title {
+    font-size: 1.75rem;
+  }
+
+  .bill__table {
+    font-size: var(--t-xs);
+  }
+}
+
+/* --- Motion -------------------------------------------------------------- */
+/* There is almost none to reduce. This is here so a future addition inherits
+   the rule rather than being exempt from it. */
+
+@media (prefers-reduced-motion: reduce) {
+  .ord *,
+  .ord *::before,
+  .ord *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* --- Print --------------------------------------------------------------- */
+/* A4, one page for a single-line order. The bill is the only thing that
+   prints: everything warm is dropped and the brackets survive as hairlines,
+   because they are the document's own frame. research/05 §8. */
+
+@media print {
+  .ord {
+    color: #000;
+  }
+
+  .ord__search,
+  .ord__filters,
+  .ord__acts,
+  .ord__section,
+  .ord__back,
+  .ord__notice,
+  .ord__btn,
+  .ord__blocked,
+  .ord__mono,
+  .ord a[href^="tel"],
+  .ord a[href^="https://wa.me"],
+  .ord button {
+    display: none !important;
+  }
+
+  .bill {
+    margin: 0;
+    padding: 0;
+    background: #fff;
+    color: #000;
+  }
+
+  .bill__title,
+  .bill__lineTitle,
+  .bill__provenance,
+  .bill__why,
+  .bill__table caption,
+  .bill__table th,
+  .bill__table td {
+    color: #000;
+  }
+
+  /* The rate line and the hallmarking sentence are part of the document and
+     print with it, whatever the rule above did to their class-mates. */
+  .bill .ord__mono {
+    display: block;
+    color: #000;
+  }
+
+  .bill.illuminated::before,
+  .bill.illuminated::after {
+    border-color: #000;
+    border-width: 0.5pt;
+  }
+
+  /* The sentence about there being no delete is part of the record's own
+     terms, so it prints with it. */
+  .ord__nodelete {
+    display: block;
+    border-top: 0.5pt solid #000;
+    color: #000;
+  }
+}
