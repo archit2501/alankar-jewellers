@@ -352,10 +352,15 @@ function Confirmation({ receipt }: { receipt: OrderReceipt }) {
               </dl>
             </section>
 
-            {/* Consumer Protection (E-Commerce) Rule 7(1)(f): a ticket number
-                for each complaint, through which the consumer can track its
-                status. It is issued with the order rather than after a
-                complaint, so there is always a reference to quote. */}
+            {/* Consumer Protection (E-Commerce) Rule 7(1)(f) gives a ticket
+                number for each COMPLAINT, through which the consumer can track
+                its status. This block used to say the two Rule 4(5) clocks were
+                "already running", because placement opened a grievance ticket on
+                every order. That was wrong twice over: the rule's clocks start
+                on a complaint, not on a purchase, and the promise was made to
+                customers on the confirmation page. Placement no longer opens a
+                ticket, so this now offers the order number as the reference and
+                states the clocks start when someone actually reports a problem. */}
             <section className="order-block" aria-labelledby="order-ticket-title">
               <h2 className="order-block__title" id="order-ticket-title">
                 If something is wrong with this order
@@ -365,9 +370,9 @@ function Confirmation({ receipt }: { receipt: OrderReceipt }) {
                 <strong className="order-ticket">
                   {receipt.ticketNumber ?? receipt.orderNumber}
                 </strong>{" "}
-                and we will find it in one step. That reference is open from now:
-                we answer within forty-eight hours and settle within a month, and
-                those two clocks are already running on it.
+                and we will find it in one step. Tell us something is wrong and
+                we open a complaint against it the same day — from that point we
+                answer within forty-eight hours and settle within a month.
               </p>
             </section>
           </div>

@@ -150,6 +150,18 @@ export const appointments = sqliteTable(
  *     triggers, which the migration pipeline does not emit, so it is a review
  *     rule — but every *structural* path into an order delete (a cascading
  *     foreign key from `customers`) has been removed. See `customers`.
+ *
+ *     CANCELLATION IS THEREFORE A TRANSITION, NOT A REMOVAL: `status` moves to
+ *     `cancelled`, `cancelled_at`/`cancelled_by`/`cancellation_reason_code` are
+ *     written, and `variants.stockQuantity` is given back — all in ONE batch,
+ *     because a cancelled order whose stock was not restored is a one-of-a-kind
+ *     piece permanently off sale, and a restored piece on a live order is an
+ *     oversell of something there is no second of. That batch is idempotent by
+ *     the same device as placement: it opens with an insert into
+ *     `webhook_events` keyed `manual:order:<id>:cancelled`, so a second
+ *     cancellation collides on the primary key and the restore dies with it.
+ *     Which states may be cancelled is decided by the DATABASE and not by a
+ *     prior read — see `cancelOrder()` in `app/_data/orders.ts`.
  */
 
 /* -------------------------------------------------------------------------
@@ -954,12 +966,53 @@ export const orders = sqliteTable(
     /**
      * Ticket number for a complaint lodged against this order, so the consumer
      * can track its status — E-Commerce Rule 7(1)(f) requires one to be issued
-     * per complaint. Denormalised copy of the first
+     * per complaint. Denormalised copy of the FIRST
      * `support_tickets.ticketNumber` raised on this order so the order page
      * and the invoice can print it without a join; `support_tickets` remains
      * authoritative and holds the full thread and the Rule 4(5) timers.
+     *
+     * NULL UNTIL A COMPLAINT IS ACTUALLY LODGED, and that is the point of the
+     * column. Rule 4(5)'s clocks run from the receipt of a CONSUMER COMPLAINT,
+     * not from a purchase, so placement writes nothing here: it is a single
+     * column under a UNIQUE index, and filling it at placement leaves a real
+     * complaint with nowhere to record its statutory number. A second complaint
+     * on the same order lives in `support_tickets` alone — `orderId` there is a
+     * weak reference and already supports many-to-one.
      */
     complaintTicketNumber: text("complaint_ticket_number"),
+
+    /* --- Cancellation. A status transition, never a delete: see (7). ------ */
+
+    /**
+     * When this order was cancelled, and by whom, and why.
+     *
+     * All four are NULL on a live order and are written together, in the one
+     * batch that also restores `variants.stockQuantity`. They exist as columns
+     * rather than as an `admin_audit_log` row alone because the order's own
+     * state has to be readable without a join: "is this piece back on the
+     * wall, and on whose word?" is answered from the order, and the audit row
+     * is the separate machine record of the same act.
+     *
+     * `cancelledBy` is an ACTOR, not a customer: an admin's email, or a
+     * reserved word for an automated sweep. It is deliberately not a customer
+     * identifier, so the DPDP erasure job has nothing to redact here.
+     *
+     * `cancellationReasonCode` is a closed set on the TypeScript side and
+     * carries NO CHECK constraint: nothing the database itself guarantees
+     * depends on the value, and adding one later would need a rebuild of a
+     * table that holds statutory records. `cancellationNote` is the human
+     * sentence — Rule 4(8) turns on why a cancellation happened and who
+     * initiated it, so the reason is not optional at the call site even though
+     * the column is nullable for every order that was never cancelled.
+     *
+     * There is no CHECK tying `status = 'cancelled'` to a non-null
+     * `cancelledAt` for the same reason. It is a review rule, and the one code
+     * path that writes either writes both.
+     */
+    cancelledAt: text("cancelled_at"),
+    cancelledBy: text("cancelled_by"),
+    cancellationReasonCode: text("cancellation_reason_code"),
+    cancellationNote: text("cancellation_note"),
 
     /**
      * Written in the SAME batch as the line items. Any reader must assert it
@@ -1303,6 +1356,21 @@ export const stockReservations = sqliteTable(
  * `orderId` and `customerId` are weak references, not foreign keys: a complaint
  * must survive independently of anything the erasure job does, and it must be
  * possible to lodge one without an order at all.
+ *
+ * ---------------------------------------------------------------------------
+ * A ROW HERE IS A GRIEVANCE CLOCK. DO NOT OPEN ONE FOR A PURCHASE.
+ * ---------------------------------------------------------------------------
+ * Rule 4(5) triggers on the RECEIPT OF A CONSUMER COMPLAINT. Both deadline
+ * columns are `notNull`, so every row that exists here asserts two statutory
+ * deadlines against the shop. Writing one per order — which this code did
+ * until the clocks were removed from `placeOrder()` — makes the database
+ * assert a breached SLA on every purchase within two days, destroys the
+ * overdue queue `support_tickets_status_due_idx` exists to serve, and consumes
+ * the single `orders.complaintTicketNumber` slot that a real complaint needs.
+ *
+ * The deadlines are computed from the date the complaint was RECEIVED, which
+ * may be earlier than the moment it is typed in: a complaint arrives by phone
+ * on Monday and is entered on Wednesday with Monday's clocks.
  */
 export const supportTickets = sqliteTable(
   "support_tickets",
@@ -1316,11 +1384,16 @@ export const supportTickets = sqliteTable(
     contactName: text("contact_name").notNull(),
     contactPhone: text("contact_phone"),
     contactEmail: text("contact_email"),
+    /**
+     * NO DEFAULT, DELIBERATELY. This column used to default to `'complaint'`,
+     * which meant any insert that forgot it filed a consumer complaint against
+     * the shop — silently, with the Rule 4(5) clocks the two `notNull` deadline
+     * columns below make mandatory. Classifying the row is now something the
+     * writer has to do on purpose, and an insert that omits it fails.
+     */
     kind: text("kind", {
       enum: ["complaint", "return", "exchange", "query", "other"],
-    })
-      .notNull()
-      .default("complaint"),
+    }).notNull(),
     subject: text("subject").notNull(),
     body: text("body"),
     status: text("status", {

@@ -285,10 +285,13 @@ export async function POST(request: Request): Promise<Response> {
       body: {
         ok: true,
         placed: true,
+        // The reference the customer quotes. There is no separate ticket
+        // number here any more: E-Commerce Rule 7(1)(f) issues one per
+        // COMPLAINT LODGED, and a purchase is not a complaint — opening one at
+        // placement started Rule 4(5)'s clocks on every order and consumed the
+        // single `orders.complaint_ticket_number` slot a real complaint needs.
+        // See section (10) of app/_data/orders.ts.
         orderNumber: placed.orderNumber,
-        // E-Commerce Rule 7(1)(f): a ticket number the consumer can track a
-        // complaint about this order with.
-        complaintTicketNumber: placed.ticketNumber,
         lineItemCount: placed.lineItemCount,
         totalPaise: placed.totalPaise,
         amountDuePaise: placed.advanceDuePaise,

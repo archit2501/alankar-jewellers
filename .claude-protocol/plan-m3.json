@@ -1,0 +1,224 @@
+{
+  "version": "2.0",
+  "feature": "M3 — Admin panel",
+  "scope": "large",
+  "status": "AWAITING APPROVAL — no code written",
+  "researchInputs": [
+    "research/04-admin-integration.md",
+    "research/05-admin-ux.md",
+    "research/06-admin-compliance.md"
+  ],
+  "openDecisions": [
+    {
+      "id": "D1",
+      "title": "Admin authentication",
+      "why": "The recorded decision is password + signed session, chosen so the owner needs no ChatGPT/Google account. The compliance research argues Workers cannot host that properly: PBKDF2 is capped at 100,000 iterations with no Argon2/bcrypt, against OWASP's >=600,000, and on the Free plan's 10ms CPU ceiling even 100k may be killed. This repo's own earlier research (02 section 5.4) recommended SIWC + a D1 allowlist and rated password sessions 'bad as the identity source'.",
+      "options": [
+        "Keep password, mitigated: a GENERATED >=100-bit passphrase (not owner-chosen) plus an env-secret pepper, so a D1-only leak yields nothing crackable",
+        "Switch to Sign in with ChatGPT + server-side allowlist, as the original research recommended",
+        "Password now, pepper included, revisit if the plan tier turns out to be Free"
+      ],
+      "blocks": "Everything in phase 1"
+    },
+    {
+      "id": "D2",
+      "title": "CERT-In 180-day logs in Indian jurisdiction",
+      "why": "CERT-In Direction (iv) requires logs kept 180 days WITHIN Indian jurisdiction. D1 has no India region. This is live today and is not an admin-only problem, though the admin is what makes it acute by adding a human reading PII.",
+      "options": [
+        "Mirror audit + access logs to an India-hosted sink (reuses the LEAD_WEBHOOK_URL pattern; also answers the tamper-proofing gap)",
+        "Confirm with counsel whether the direction binds a shop this size, then act",
+        "Accept and document the exposure"
+      ],
+      "blocks": "Not a code blocker; changes phase 1 scope"
+    },
+    {
+      "id": "D3",
+      "title": "One password, shared",
+      "why": "Shops share credentials with a son or a counter assistant. The moment that happens, admin_audit_log.actor_email records something UNTRUE about who read a customer's PAN. A false audit trail is worse than none, because it gets produced in evidence. The schema already has seats for multiple admins.",
+      "options": [
+        "One credential per person from the start (small extra scope, honest log)",
+        "Single credential, and the log records the session rather than claiming a person",
+        "Accept"
+      ],
+      "blocks": "Phase 1 shape"
+    }
+  ],
+  "phases": [
+    {
+      "id": "0",
+      "name": "Fix what is already broken",
+      "rationale": "Two defects in shipped code, both found by the M3 research, both worse once an admin exists. Neither is admin work; both must precede it.",
+      "tasks": [
+        {
+          "id": "0.1",
+          "title": "Cancel an order and restore its stock",
+          "detail": "app/_data/orders.ts:1232 is the ONLY stock mutation in the application — a decrement. Nothing anywhere increments. With capture off, every unpaid order permanently retires a one-of-a-kind piece and the shop cannot put it back. One db.batch(), idempotent, recording who cancelled and why.",
+          "acceptance": [
+            "Cancelling restores stock_quantity in the same batch that marks the order cancelled",
+            "Idempotent — cancelling twice restores once",
+            "Cancellation is recorded, not silent; orders stay append-only (a status transition, never a delete)",
+            "Tested against real SQLite through the production adapter, not mocked"
+          ],
+          "estimateHours": 5,
+          "criticalPath": true,
+          "status": "todo"
+        },
+        {
+          "id": "0.2",
+          "title": "Stop every order opening a grievance clock",
+          "detail": "placeOrder() writes a support_tickets row per order with a 48h acknowledgement deadline. Rule 4(5) triggers on a CONSUMER COMPLAINT, not on a purchase. Within days the database asserts a breached SLA on every order and the overdue queue is worthless. Worse: orders.complaint_ticket_number is UNIQUE and is already consumed by that kind='query' row, so a REAL complaint has nowhere to record its Rule 7(1)(f) number.",
+          "acceptance": [
+            "An order no longer opens a grievance ticket by default",
+            "The Rule 7(1)(f) number remains issuable when a real complaint arrives",
+            "Existing rows migrated or reinterpreted, not orphaned",
+            "supportTickets.kind default reconsidered — it is currently 'complaint'"
+          ],
+          "estimateHours": 4,
+          "criticalPath": true,
+          "status": "todo"
+        },
+        {
+          "id": "0.3",
+          "title": "Correct the DPDP retention floor and documentation drift",
+          "detail": "Rule 8(3) measures one year from the date of PROCESSING; the schema comment measures from deletionRequestedAt, over-retaining by up to a year. Also: wrangler.jsonc now exists (vinext deploy generated it, and it was committed unnoticed), so several comments, env.d.ts and the state.json hazard describe a world that ended — including the claim that next/image cannot work.",
+          "acceptance": [
+            "Retention comment corrected; the CHECK itself is sound and need not change",
+            "state.json hazards updated; the next/image hazard is re-tested rather than assumed",
+            "README's 'this starter does not use wrangler.jsonc' corrected"
+          ],
+          "estimateHours": 2,
+          "criticalPath": false,
+          "status": "todo"
+        }
+      ]
+    },
+    {
+      "id": "1",
+      "name": "Auth foundation",
+      "rationale": "admin_users is an allowlist written for platform sign-in: no password column, no lockout, no sessions table. That is a migration, and migrations here are FORWARD-ONLY — so the column list must be right before the first login, because SQLite cannot add a CHECK to a populated table without a table rebuild.",
+      "tasks": [
+        {
+          "id": "1.1",
+          "title": "Measure the KDF on the real runtime before designing around it",
+          "detail": "Workers caps PBKDF2 at 100k iterations. On the Free plan's 10ms CPU ceiling even that may throw. Which plan this account is on is UNVERIFIED and it decides whether the chosen design is buildable at all.",
+          "acceptance": ["Iteration count measured on the deployed runtime, not inferred", "Result recorded before the migration is written"],
+          "estimateHours": 2,
+          "criticalPath": true,
+          "status": "todo"
+        },
+        {
+          "id": "1.2",
+          "title": "Session migration + login",
+          "detail": "One migration adding what a working login needs. Session id regenerated on login (session fixation). Origin check with MISSING treated as refusal — inverting the storefront's deliberate allowance, because there is no legitimate non-browser admin client. Per-session CSRF token. No mutation on GET.",
+          "acceptance": [
+            "One forward-only migration, columns right the first time",
+            "A cross-site POST cannot plant a session (the cart's bug class, which recurs worse here)",
+            "Sign-in failure is a single string for every path — wrong password, empty, throttled, expired, no admin configured — so it is not an oracle",
+            "An unauthenticated request to every admin route is refused, and that is tested per route"
+          ],
+          "estimateHours": 10,
+          "criticalPath": true,
+          "status": "todo"
+        },
+        {
+          "id": "1.3",
+          "title": "Audit log with an allowlisted diff",
+          "detail": "DPDP Rule 6(1)(c) REQUIRES visibility on access through logs — not merely wise. Read logging is what bounds a breach notification from 'all customers' to a named handful. A naive whole-row diff would write name, phone, address and PAN into the audit table, outside the erasure job's reach.",
+          "acceptance": ["Diff is allowlist-driven; no PII and no secret is ever written to the audit table", "Reads of customer data are logged, not only writes"],
+          "estimateHours": 5,
+          "criticalPath": true,
+          "status": "todo"
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "name": "Orders",
+      "rationale": "The owner's unit of work is a person, not an order. Sorted by obligation, not recency.",
+      "tasks": [
+        {
+          "id": "2.1",
+          "title": "Today — the landing queue",
+          "detail": "Merges orders, appointments and open tickets into one queue. The empty state is the most important screen in the panel: with no inventory, no contact details, no rate and capture off, an owner who signs in twice and sees nothing stops using it. It lists the four real unfinished things, each with the action that resolves it.",
+          "acceptance": ["Nothing has fixed prominence — a thing grows only when it is wrong", "Empty state is a to-do list for opening the shop, not a blank slate"],
+          "estimateHours": 8,
+          "criticalPath": true,
+          "status": "todo"
+        },
+        {
+          "id": "2.2",
+          "title": "Orders list and detail",
+          "detail": "readOrderForCart() is authorised by the CART COOKIE and cannot be reused; an admin-shaped query is required. assertOrderIntact() is exported for exactly this and is mandatory on every admin order read. The price breakup is a statutory document (BIS Reg. 5(11)) and must read as one.",
+          "acceptance": [
+            "Torn orders are reported, never silently rendered — a figure is refused rather than guessed",
+            "The status control cannot express a payment state the flag has not authorised. This is the top-rated risk in the integration research: an 11-member dropdown is the most natural way to make the site claim money was received when none was",
+            "No delete control exists, and its absence is explained on screen rather than merely missing"
+          ],
+          "estimateHours": 12,
+          "criticalPath": true,
+          "status": "todo"
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "name": "Catalogue management",
+      "rationale": "Entering a piece means weight, fineness, making charge, HUID, certificate — a long, error-prone form used rarely by someone who is not a data-entry clerk.",
+      "tasks": [
+        {
+          "id": "3.1",
+          "title": "Create and edit a piece, incrementally",
+          "detail": "Not one long form. Two fields to start, then small independent sections, so a half-finished piece is safe and a rejected save loses nothing. Weight confirms by echo ('eighteen grams and four hundred milligrams... Rs 1,34,762 of gold') because a 10x typo must be unmissable.",
+          "acceptance": [
+            "A half-finished piece is valid and invisible to the storefront, never a broken listing",
+            "variants_pricing_inputs_ck cannot be violated in a way the owner cannot diagnose",
+            "HUID and certificate stay optional and honest — never invented, absence explained"
+          ],
+          "estimateHours": 14,
+          "criticalPath": true,
+          "status": "todo"
+        },
+        {
+          "id": "3.2",
+          "title": "Image upload — BLOCKED",
+          "detail": "R2 is not enabled on the account (dashboard opt-in; wrangler error 10042), hosting.json has r2: null, and env.MEDIA is undefined at runtime. The deploy-time IMAGES/ASSETS bindings do NOT help: worker/index.ts resolves sources only through env.ASSETS and vinext's optimizer serves local files only. Serving uploads needs a route handler over env.MEDIA. Until R2 is on, the admin can create a piece but not give it a photograph.",
+          "acceptance": ["Blocked pending a Cloudflare dashboard step — not schedulable"],
+          "estimateHours": 8,
+          "criticalPath": false,
+          "status": "blocked"
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "name": "Rate and numbers",
+      "tasks": [
+        {
+          "id": "4.1",
+          "title": "Gold rate screen",
+          "detail": "Append-only, so there is no Edit control — only 'This one is wrong', which supersedes rather than mutates. It names the orders already billed from a bad rate, reachable via order_items.goldRateId, which is the part most tools skip.",
+          "acceptance": ["Append-only is explained in one line of shop English", "Staleness is visible before it is a problem"],
+          "estimateHours": 6,
+          "criticalPath": false,
+          "status": "todo"
+        },
+        {
+          "id": "4.2",
+          "title": "Numbers",
+          "detail": "Two charts, no KPI tiles — a revenue tile would print a figure no bank account contains while capture is off. Orders-a-day as bars (a line hides the days with nothing), and gold committed by fineness in GRAMS, because a jeweller's stock is metal. The dataviz validator FAILED the brand jewel notes as a categorical set (emerald/sindoor is dE 4.0 under protanopia), so there is no green here and no categorical palette at all.",
+          "acceptance": ["Single-series charts only; the one validated data colour and the one alert colour", "No tile prints money the shop has not received"],
+          "estimateHours": 6,
+          "criticalPath": false,
+          "status": "todo"
+        }
+      ]
+    }
+  ],
+  "externalBlockers": [
+    "R2 not enabled on the Cloudflare account — blocks admin image upload entirely",
+    "Which Workers plan this account is on is UNVERIFIED and decides whether the chosen password auth is buildable",
+    "CERT-In 180-day India-jurisdiction logging — needs counsel; D1 has no India region",
+    "BIS certification still gates payment capture, unchanged",
+    "Seven questions now need an Indian lawyer, five of them new this milestone"
+  ]
+}

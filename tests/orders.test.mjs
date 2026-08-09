@@ -53,6 +53,7 @@ import { fileURLToPath } from "node:url";
 
 import { env } from "cloudflare:workers";
 
+import { buildBackfillSql } from "../scripts/close-placement-tickets.mjs";
 import { buildSeedSql } from "../scripts/seed-catalogue.mjs";
 import { fetchWorker } from "./helpers.mjs";
 
@@ -62,21 +63,26 @@ const { CART_COOKIE, addToCart, d1CartDb, newCartToken } = await import(
 const { mostRecentPublicationAtOrBefore } = await import("../app/_pricing/rates.ts");
 const {
   BOOKING_ADVANCE_BPS,
+  CANCELLABLE_ORDER_STATUSES,
   CHECKOUT_NOTICES,
   PAN_REQUIRED_AT_PAISE,
   PAYMENT_CAPTURE_ENABLED,
   PriceableOrderCheckout,
   assertOrderIntact,
+  cancelOrder,
   checkoutHref,
   formatWeightMg,
   isOrderNumber,
+  isTicketNumber,
+  lodgeComplaint,
   newOrderNumber,
+  newTicketNumber,
+  oneCalendarMonthAfter,
   paymentLegs,
   paymentStanding,
   placeOrder,
   readOrderForCart,
   resolveCheckout,
-  ticketNumberFor,
   toCheckoutFields,
   toCheckoutNotice,
   validateCheckoutDetails,
@@ -348,11 +354,47 @@ test("an order number is dated, unguessable and not a sequence", () => {
   }
 });
 
-test("the complaint ticket number is the order's own number, marked", () => {
-  const order = newOrderNumber();
-  const ticket = ticketNumberFor(order);
-  assert.equal(ticket, order.replace("AJ-", "AJ-C-"));
-  assert.match(ticket, /^AJ-C-\d{4}-[0-9A-HJKMNP-TV-Z]{6}$/);
+test("A COMPLAINT NUMBER IS DRAWN, NOT DERIVED FROM THE ORDER", () => {
+  // It used to be `orderNumber.replace("AJ-", "AJ-C-")`, which is a bijection
+  // with the order and so permits exactly ONE ticket per order — while
+  // Rule 7(1)(f) issues a number per COMPLAINT LODGED, and one order can
+  // legitimately produce a second complaint that
+  // `support_tickets_ticket_number_unique` would then refuse.
+  const numbers = new Set();
+  for (let index = 0; index < 2000; index += 1) numbers.add(newTicketNumber());
+  assert.equal(numbers.size, 2000, "two ticket numbers collided in 2000 draws");
+
+  for (const number of numbers) {
+    assert.match(number, /^AJ-C-\d{4}-[0-9A-HJKMNP-TV-Z]{6}$/);
+    assert.ok(isTicketNumber(number));
+    // An order number and a ticket number are never mistakable for each other.
+    assert.equal(isOrderNumber(number), false);
+  }
+  assert.equal(isTicketNumber(newOrderNumber()), false);
+});
+
+test("ONE MONTH IS A CALENDAR MONTH, NOT THIRTY DAYS", () => {
+  const at = (iso) => new Date(oneCalendarMonthAfter(Date.parse(iso))).toISOString();
+
+  // General Clauses Act 1897 s.3(35): a month is reckoned by the British
+  // calendar. One month from 31 January expires on 28 February — twenty-eight
+  // days. The old fixed +30 days landed on 2 March, which is LATER than the
+  // statutory deadline, and later is the direction that loses a case.
+  assert.equal(at("2026-01-31T06:00:00.000Z"), "2026-02-28T06:00:00.000Z");
+  // A leap February takes the 29th.
+  assert.equal(at("2028-01-31T06:00:00.000Z"), "2028-02-29T06:00:00.000Z");
+  // 31 March has no 31 April; it clamps to the 30th.
+  assert.equal(at("2026-03-31T06:00:00.000Z"), "2026-04-30T06:00:00.000Z");
+  // An ordinary month keeps its day, and December rolls the year.
+  assert.equal(at("2026-08-09T06:00:00.000Z"), "2026-09-09T06:00:00.000Z");
+  assert.equal(at("2026-12-15T06:00:00.000Z"), "2027-01-15T06:00:00.000Z");
+
+  // Never shorter than the shortest lawful month, never longer than a long one.
+  for (const iso of ["2026-01-01", "2026-02-14", "2026-05-31", "2026-11-30"]) {
+    const from = Date.parse(`${iso}T00:00:00.000Z`);
+    const days = (oneCalendarMonthAfter(from) - from) / 86_400_000;
+    assert.ok(days >= 28 && days <= 31, `${iso} produced ${days} days`);
+  }
 });
 
 test("the two money legs always account for the whole order", () => {
@@ -735,14 +777,16 @@ test("A PRICED CART PRODUCES EXACTLY ONE ORDER, WITH A SNAPSHOT THAT FOOTS", asy
 
   assert.equal(placed.ok, true, JSON.stringify(placed));
   assert.ok(isOrderNumber(placed.orderNumber));
-  assert.equal(placed.ticketNumber, ticketNumberFor(placed.orderNumber));
 
   assert.equal(count(sqlite, "SELECT count(*) AS c FROM orders"), 1);
   assert.equal(count(sqlite, "SELECT count(*) AS c FROM order_items"), 1);
   assert.equal(count(sqlite, "SELECT count(*) AS c FROM price_quotes"), 1);
   assert.equal(count(sqlite, "SELECT count(*) AS c FROM payments"), 1);
-  assert.equal(count(sqlite, "SELECT count(*) AS c FROM support_tickets"), 1);
   assert.equal(count(sqlite, "SELECT count(*) AS c FROM webhook_events"), 1);
+
+  // AND NO GRIEVANCE CLOCK. Rule 4(5) runs from the receipt of a consumer
+  // complaint; a purchase is not one. See section 2b.
+  assert.equal(count(sqlite, "SELECT count(*) AS c FROM support_tickets"), 0);
 
   const order = sqlite.prepare("SELECT * FROM orders").get();
   const item = sqlite.prepare("SELECT * FROM order_items").get();
@@ -912,8 +956,9 @@ test("THE PLACEMENT IS ONE BATCH, IN THE ORDER THE SCHEMA ASKS FOR", async () =>
   assert.ok(first("INSERT INTO payments") > first("INSERT INTO order_items"));
   assert.ok(first("UPDATE variants") > first("INSERT INTO payments"));
   assert.ok(first("UPDATE stock_reservations") > first("UPDATE variants"));
-  assert.ok(first("INSERT INTO support_tickets") > first("UPDATE stock_reservations"));
-  assert.ok(first("UPDATE carts") > first("INSERT INTO support_tickets"));
+  assert.ok(first("UPDATE carts") > first("UPDATE stock_reservations"));
+  // And the statement that is NOT in this transaction any more.
+  assert.equal(first("INSERT INTO support_tickets"), -1);
 
   // ONE INSERT PER LINE ITEM, never a multi-row VALUES: six items at ~37
   // columns would be 222 bound parameters and would fail where two passed.
@@ -970,7 +1015,6 @@ test("A DUPLICATE PLACEMENT COLLIDES ON THE PRIMARY KEY AND IS DISCARDED WHOLE",
   assert.equal(count(sqlite, "SELECT count(*) AS c FROM order_items"), 1);
   assert.equal(count(sqlite, "SELECT count(*) AS c FROM payments"), 1);
   assert.equal(count(sqlite, "SELECT count(*) AS c FROM price_quotes"), 1);
-  assert.equal(count(sqlite, "SELECT count(*) AS c FROM support_tickets"), 1);
   assert.equal(count(sqlite, "SELECT count(*) AS c FROM webhook_events"), 1);
   assert.equal(
     sqlite.prepare("SELECT stock_quantity AS q FROM variants WHERE id = ?").get(HAAR_VARIANT).q,
@@ -1083,7 +1127,17 @@ test("lineItemCount matches the rows written, and a torn order is detected", asy
   sqlite.close();
 });
 
-test("a complaint ticket number is issued with the order, and it is trackable", async () => {
+/* =========================================================================
+ * 2b. A PURCHASE IS NOT A COMPLAINT — Rule 4(5) and Rule 7(1)(f)
+ *
+ * `placeOrder()` used to write a `support_tickets` row per order with
+ * `acknowledge_due_at = placed_at + 48h`. Rule 4(5)'s clocks run from the
+ * RECEIPT OF A CONSUMER COMPLAINT. Every test here drives the real data layer
+ * against the real migration; none of them stubs the table, because what is
+ * being proved is what the database ends up asserting about the shop.
+ * ====================================================================== */
+
+test("AN ORDER OPENS NO GRIEVANCE CLOCK", async () => {
   const { sqlite, db } = freshOrders();
   const { resolution } = await readyCheckout(sqlite, db);
 
@@ -1092,25 +1146,658 @@ test("a complaint ticket number is issued with the order, and it is trackable", 
   });
   assert.equal(placed.ok, true);
 
-  // E-Commerce Rule 7(1)(f): a ticket number for each complaint, through which
-  // the consumer can track its status. `support_tickets` is authoritative;
-  // `orders.complaintTicketNumber` is the denormalised copy for the invoice,
-  // and the two are written in the SAME transaction so one cannot name the
-  // other into thin air.
+  // Not one row, and therefore not one deadline. Both deadline columns are
+  // NOT NULL, so a row here IS a pair of statutory clocks running against the
+  // shop — within two days of launch the database would otherwise assert a
+  // breached acknowledgement deadline on every order ever taken.
+  assert.equal(count(sqlite, "SELECT count(*) AS c FROM support_tickets"), 0);
+
+  // And the overdue queue `support_tickets_status_due_idx` exists to serve is
+  // empty rather than full of purchases, so one angry customer would be
+  // visible in it.
+  assert.equal(
+    count(
+      sqlite,
+      "SELECT count(*) AS c FROM support_tickets WHERE status = 'open' AND redress_due_at < ?",
+      new Date(Date.now() + 400 * 86_400_000).toISOString()
+    ),
+    0
+  );
+
+  // The Rule 7(1)(f) slot is a single column under a UNIQUE index. It is left
+  // free, which is the whole point: it is what a real complaint needs.
+  const order = sqlite.prepare("SELECT * FROM orders").get();
+  assert.equal(order.complaint_ticket_number, null);
+
+  // The customer is not left without a reference. They have the order number.
+  assert.ok(isOrderNumber(order.order_number));
+  sqlite.close();
+});
+
+test("A REAL COMPLAINT STILL TAKES THE RULE 7(1)(f) NUMBER", async () => {
+  const { sqlite, db } = freshOrders();
+  const { resolution } = await readyCheckout(sqlite, db);
+  const placed = await placeOrder(db, resolution.checkout, PICKUP_DETAILS, {
+    shopStateCode: SHOP_STATE,
+  });
+  assert.equal(placed.ok, true);
+
+  // The complaint arrived by telephone on the 3rd and is typed in on the 5th.
+  // Rule 4(5) runs from RECEIPT, not from data entry.
+  const receivedAtMs = Date.parse("2026-09-03T10:00:00.000Z");
+  const enteredAtMs = Date.parse("2026-09-05T16:30:00.000Z");
+
+  const lodged = await lodgeComplaint(db, {
+    orderNumber: placed.orderNumber,
+    kind: "complaint",
+    subject: "The clasp does not hold",
+    body: "Called the shop; the clasp opens on its own.",
+    receivedAtMs,
+    nowMs: enteredAtMs,
+  });
+
+  assert.equal(lodged.ok, true, JSON.stringify(lodged));
+  assert.ok(isTicketNumber(lodged.ticketNumber));
+  assert.equal(lodged.isFirstOnOrder, true);
+
   const ticket = sqlite.prepare("SELECT * FROM support_tickets").get();
   const order = sqlite.prepare("SELECT * FROM orders").get();
-  assert.equal(ticket.ticket_number, placed.ticketNumber);
+
+  // The denormalised copy and the authoritative row are written in ONE
+  // transaction, so the order can never quote a number that names no ticket —
+  // which was the sound half of the reasoning that put a ticket in the
+  // placement batch.
   assert.equal(order.complaint_ticket_number, ticket.ticket_number);
   assert.equal(ticket.order_id, order.id);
+  assert.equal(ticket.kind, "complaint");
   assert.equal(ticket.status, "open");
+  // Snapshotted from the order, so the thread survives any redaction.
+  assert.equal(ticket.contact_name, PICKUP_DETAILS.name);
   assert.equal(ticket.contact_phone, PICKUP_DETAILS.phone);
 
-  // Rule 4(5): acknowledge within forty-eight hours, redress within one month.
-  // The deadlines are stored rather than recomputed, so an overdue queue is one
-  // indexed query.
+  // 48 hours and one calendar month FROM RECEIPT, not from entry.
+  assert.equal(Date.parse(ticket.acknowledge_due_at) - receivedAtMs, 48 * 3600_000);
+  assert.equal(ticket.redress_due_at, new Date(oneCalendarMonthAfter(receivedAtMs)).toISOString());
+  assert.ok(Date.parse(ticket.acknowledge_due_at) < enteredAtMs, "the 48h clock started at entry");
+
+  sqlite.close();
+});
+
+test("a second complaint on one order gets its own number and its own clocks", async () => {
+  const { sqlite, db } = freshOrders();
+  const { resolution } = await readyCheckout(sqlite, db);
+  const placed = await placeOrder(db, resolution.checkout, PICKUP_DETAILS, {
+    shopStateCode: SHOP_STATE,
+  });
+
+  const first = await lodgeComplaint(db, {
+    orderNumber: placed.orderNumber,
+    kind: "complaint",
+    subject: "The clasp does not hold",
+    receivedAtMs: Date.parse("2026-09-03T10:00:00.000Z"),
+  });
+  const second = await lodgeComplaint(db, {
+    orderNumber: placed.orderNumber,
+    kind: "complaint",
+    subject: "It was not repaired",
+    receivedAtMs: Date.parse("2026-10-01T10:00:00.000Z"),
+  });
+
+  assert.equal(first.ok, true);
+  assert.equal(second.ok, true);
+  assert.notEqual(first.ticketNumber, second.ticketNumber);
+  assert.equal(count(sqlite, "SELECT count(*) AS c FROM support_tickets"), 2);
+
+  // `orders.complaint_ticket_number` is under a UNIQUE index and holds ONE
+  // number: the first complaint's, exactly as its comment says. The second is
+  // not lost and does not collide — `support_tickets` is authoritative.
+  const order = sqlite.prepare("SELECT * FROM orders").get();
+  assert.equal(order.complaint_ticket_number, first.ticketNumber);
+  assert.equal(second.isFirstOnOrder, false);
+  assert.equal(
+    count(sqlite, "SELECT count(*) AS c FROM support_tickets WHERE order_id = ?", order.id),
+    2
+  );
+  sqlite.close();
+});
+
+test("THE ROWS THE OLD PLACEMENT PATH WROTE ARE REINTERPRETED, NOT ORPHANED", async () => {
+  const { sqlite, db } = freshOrders();
+  await placedOrder(sqlite, db);
+  const order = sqlite.prepare("SELECT * FROM orders").get();
+
+  // Reconstruct EXACTLY what placement used to write: a `kind='query'` ticket
+  // with the Rule 4(5) clocks already running, and its number in the order's
+  // single Rule 7(1)(f) slot.
+  const legacyNumber = order.order_number.replace("AJ-", "AJ-C-");
   const placedMs = Date.parse(order.placed_at);
-  assert.equal(Date.parse(ticket.acknowledge_due_at) - placedMs, 48 * 3600_000);
-  assert.equal(Date.parse(ticket.redress_due_at) - placedMs, 30 * 86_400_000);
+  sqlite
+    .prepare(
+      `INSERT INTO support_tickets
+         (id, ticket_number, order_id, contact_name, contact_phone, kind, subject,
+          body, status, acknowledge_due_at, redress_due_at, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, 'query', ?, ?, 'open', ?, ?, ?, ?)`
+    )
+    .run(
+      "legacy-1",
+      legacyNumber,
+      order.id,
+      PICKUP_DETAILS.name,
+      PICKUP_DETAILS.phone,
+      `Order ${order.order_number}`,
+      `Order ${order.order_number} placed online with no payment taken.`,
+      new Date(placedMs + 48 * 3600_000).toISOString(),
+      new Date(placedMs + 30 * 86_400_000).toISOString(),
+      order.placed_at,
+      order.placed_at
+    );
+  sqlite
+    .prepare("UPDATE orders SET complaint_ticket_number = ? WHERE id = ?")
+    .run(legacyNumber, order.id);
+
+  // A real complaint, typed by a person, sitting in the same table.
+  const real = await lodgeComplaint(db, {
+    orderNumber: null,
+    kind: "complaint",
+    subject: "The bangle arrived scratched",
+    contactName: "Anita Rao",
+    contactPhone: "+919800000000",
+    receivedAtMs: Date.parse("2026-09-03T10:00:00.000Z"),
+  });
+  assert.equal(real.ok, true);
+
+  const apply = () => {
+    for (const statement of buildBackfillSql({ now: "2026-08-09T00:00:00.000Z" })) {
+      sqlite.exec(statement);
+    }
+  };
+  apply();
+
+  // The row is CLOSED and says in words what it actually was. It is not
+  // deleted — nothing is orphaned — and `resolved_at` stays NULL, because
+  // claiming a redressal happened would be a second untruth on the first.
+  const legacy = sqlite.prepare("SELECT * FROM support_tickets WHERE id = 'legacy-1'").get();
+  assert.equal(legacy.status, "closed");
+  assert.equal(legacy.resolved_at, null);
+  assert.match(legacy.resolution_note, /Rule 4\(5\) runs from the receipt of a consumer complaint/);
+
+  // The Rule 7(1)(f) slot is free, and a real complaint can now take it —
+  // which is the thing the bug made impossible.
+  assert.equal(sqlite.prepare("SELECT * FROM orders").get().complaint_ticket_number, null);
+  const lodged = await lodgeComplaint(db, {
+    orderNumber: order.order_number,
+    kind: "complaint",
+    subject: "The clasp does not hold",
+    receivedAtMs: Date.parse("2026-09-03T10:00:00.000Z"),
+  });
+  assert.equal(lodged.ok, true);
+  assert.equal(lodged.isFirstOnOrder, true);
+  assert.equal(
+    sqlite.prepare("SELECT * FROM orders").get().complaint_ticket_number,
+    lodged.ticketNumber
+  );
+
+  // THE PERSON'S COMPLAINT WAS NOT TOUCHED. The predicate matches only a row
+  // carrying every fingerprint of the automatic ticket at once.
+  const untouched = sqlite
+    .prepare("SELECT * FROM support_tickets WHERE ticket_number = ?")
+    .get(real.ticketNumber);
+  assert.equal(untouched.status, "open");
+  assert.equal(untouched.resolution_note, null);
+
+  // And it is idempotent: a second run has nothing left to match.
+  const before = sqlite.prepare("SELECT * FROM support_tickets ORDER BY id").all();
+  apply();
+  assert.deepEqual(sqlite.prepare("SELECT * FROM support_tickets ORDER BY id").all(), before);
+  assert.equal(
+    sqlite.prepare("SELECT * FROM orders").get().complaint_ticket_number,
+    lodged.ticketNumber
+  );
+
+  sqlite.close();
+});
+
+test("a ticket that will not say what it is, is refused before it is written", async () => {
+  const { sqlite, db } = freshOrders();
+
+  // `support_tickets.kind` has no CHECK and no default any more, so this guard
+  // is the only thing between a mis-typed kind and the table.
+  await assert.rejects(
+    () =>
+      lodgeComplaint(db, {
+        orderNumber: null,
+        kind: "grievance",
+        subject: "A thing",
+        contactName: "Anita Rao",
+        receivedAtMs: Date.now(),
+      }),
+    /not one of complaint, return, exchange, query, other/
+  );
+
+  // And a complaint with no time of receipt: both statutory clocks run from it.
+  await assert.rejects(
+    () =>
+      lodgeComplaint(db, {
+        orderNumber: null,
+        kind: "complaint",
+        subject: "A thing",
+        contactName: "Anita Rao",
+        receivedAtMs: Number.NaN,
+      }),
+    /the time it was RECEIVED/
+  );
+
+  assert.equal(count(sqlite, "SELECT count(*) AS c FROM support_tickets"), 0);
+  sqlite.close();
+});
+
+test("THE DATABASE NO LONGER FILES A COMPLAINT FOR YOU", () => {
+  const sqlite = migratedDatabase();
+
+  // `kind` used to default to 'complaint', so any insert that omitted the
+  // column silently filed a consumer grievance — with the two NOT NULL clocks
+  // attached. Asserted against raw SQL, because the guarantee belongs to the
+  // migration and not to any call site that could be remembered to pass it.
+  assert.throws(
+    () =>
+      sqlite
+        .prepare(
+          `INSERT INTO support_tickets
+             (id, ticket_number, contact_name, subject, acknowledge_due_at, redress_due_at)
+           VALUES ('t1', 'AJ-C-2608-4KX9P2', 'Meera', 'A thing', '2026-09-01', '2026-10-01')`
+        )
+        .run(),
+    /NOT NULL constraint failed: support_tickets\.kind/i
+  );
+
+  // Stated explicitly, it is accepted — the column is a requirement, not a ban.
+  sqlite
+    .prepare(
+      `INSERT INTO support_tickets
+         (id, ticket_number, contact_name, kind, subject, acknowledge_due_at, redress_due_at)
+       VALUES ('t1', 'AJ-C-2608-4KX9P2', 'Meera', 'query', 'A thing', '2026-09-01', '2026-10-01')`
+    )
+    .run();
+  assert.equal(count(sqlite, "SELECT count(*) AS c FROM support_tickets"), 1);
+  sqlite.close();
+});
+
+/* =========================================================================
+ * 2c. CANCELLATION — the only path that gives a piece back
+ *
+ * `DECREMENT_STOCK` was the only statement in the application that touched
+ * `variants.stock_quantity`, and it only subtracted. Everything below runs
+ * against real SQLite through the production adapter, and the idempotency test
+ * fires a raw unguarded duplicate at the database rather than trusting what
+ * `cancelOrder()` returned.
+ * ====================================================================== */
+
+/** Place one order for one piece, and hand back what the tests need. */
+async function placedOrder(sqlite, db, options = {}) {
+  const { resolution } = await readyCheckout(sqlite, db, options);
+  const placed = await placeOrder(db, resolution.checkout, PICKUP_DETAILS, {
+    shopStateCode: SHOP_STATE,
+  });
+  assert.equal(placed.ok, true, JSON.stringify(placed));
+  return placed;
+}
+
+const CANCELLATION = {
+  actor: "owner@alankar.example",
+  reasonCode: "not_reachable",
+  note: "Called twice over four days; no answer. Piece back on the wall.",
+};
+
+function stockOf(sqlite, variantId = HAAR_VARIANT) {
+  return sqlite.prepare("SELECT stock_quantity AS q FROM variants WHERE id = ?").get(variantId).q;
+}
+
+test("CANCELLING RESTORES THE STOCK, IN THE SAME BATCH AS THE TRANSITION", async () => {
+  const { sqlite, db: inner } = freshOrders();
+
+  const batches = [];
+  const db = {
+    all: (sql, params) => inner.all(sql, params),
+    batch: (statements) => {
+      batches.push(statements);
+      return inner.batch(statements);
+    },
+  };
+
+  const placed = await placedOrder(sqlite, db);
+  assert.equal(stockOf(sqlite), 0, "the piece did not leave the wall");
+  batches.length = 0;
+
+  const cancelled = await cancelOrder(db, { orderNumber: placed.orderNumber, ...CANCELLATION });
+
+  assert.equal(cancelled.ok, true, JSON.stringify(cancelled));
+  assert.deepEqual(cancelled.restored, [{ variantId: HAAR_VARIANT, quantity: 1 }]);
+  // Nothing was captured, so nothing is owed back.
+  assert.equal(cancelled.refundDuePaise, 0);
+
+  // ONE batch is ONE transaction. Two would mean a cancelled order whose stock
+  // was never restored, which is a one-of-a-kind piece permanently off sale.
+  assert.equal(batches.length, 1, "the cancellation was split across transactions");
+  const statements = batches[0].map((statement) => statement.sql);
+  const first = (needle) => statements.findIndex((sql) => sql.includes(needle));
+  assert.equal(first("INSERT INTO webhook_events"), 0, "the idempotency key is not first");
+  assert.ok(first("UPDATE orders") > first("INSERT INTO webhook_events"));
+  assert.ok(first("UPDATE variants") > first("UPDATE orders"));
+  assert.ok(first("INSERT INTO admin_audit_log") > first("UPDATE variants"));
+  for (const statement of batches[0]) {
+    assert.ok(statement.params.length <= 100, "a statement bound over 100 parameters");
+  }
+
+  // The piece is back, and the order says so.
+  assert.equal(stockOf(sqlite), 1);
+  const order = sqlite.prepare("SELECT * FROM orders").get();
+  assert.equal(order.status, "cancelled");
+  assert.equal(order.cancelled_by, CANCELLATION.actor);
+  assert.equal(order.cancellation_reason_code, "not_reachable");
+  assert.equal(order.cancellation_note, CANCELLATION.note);
+  assert.ok(order.cancelled_at);
+
+  // The act is recorded as a machine record too, with NO PII in the diff: the
+  // note and the customer's name, phone and address stay out of a table the
+  // erasure job cannot reach.
+  const audit = sqlite.prepare("SELECT * FROM admin_audit_log").get();
+  assert.equal(audit.action, "order.cancelled");
+  assert.equal(audit.entity_type, "order");
+  assert.equal(audit.entity_id, order.id);
+  assert.equal(audit.actor_email, CANCELLATION.actor);
+  const diff = JSON.parse(audit.diff_json);
+  assert.deepEqual(diff.status, { from: "pending_payment", to: "cancelled" });
+  assert.deepEqual(diff.restored, [{ variantId: HAAR_VARIANT, quantity: 1 }]);
+  assert.ok(!audit.diff_json.includes(CANCELLATION.note));
+  assert.ok(!audit.diff_json.includes(PICKUP_DETAILS.name));
+  assert.ok(!audit.diff_json.includes(PICKUP_DETAILS.phone));
+
+  sqlite.close();
+});
+
+test("CANCELLING TWICE RESTORES ONCE, AND THE PRIMARY KEY IS WHY", async () => {
+  const { sqlite, db } = freshOrders();
+  const placed = await placedOrder(sqlite, db);
+
+  const first = await cancelOrder(db, { orderNumber: placed.orderNumber, ...CANCELLATION });
+  assert.equal(first.ok, true);
+  assert.equal(stockOf(sqlite), 1);
+
+  // The owner clicks twice; the tab is reloaded; a retry arrives.
+  const again = await cancelOrder(db, { orderNumber: placed.orderNumber, ...CANCELLATION });
+  assert.equal(again.ok, false);
+  assert.equal(again.reason, "already_cancelled");
+  assert.equal(again.cancelledAt, first.cancelledAt);
+
+  // ONE piece, not two. There is no second Jadau haar.
+  assert.equal(stockOf(sqlite), 1);
+  assert.equal(count(sqlite, "SELECT count(*) AS c FROM admin_audit_log"), 1);
+
+  // AND THE ARBITER IS THE DATABASE, NOT THE STATUS READ ABOVE. The same key
+  // the cancellation batch opens with, fired raw and unguarded — no
+  // ON CONFLICT anywhere near it — must be refused outright. If this insert
+  // were permitted, a cancellation racing another would restore twice however
+  // carefully the application had read the status first.
+  const order = sqlite.prepare("SELECT * FROM orders").get();
+  assert.equal(
+    count(sqlite, "SELECT count(*) AS c FROM webhook_events WHERE id = ?", `manual:order:${order.id}:cancelled`),
+    1
+  );
+  assert.throws(
+    () =>
+      sqlite
+        .prepare(
+          "INSERT INTO webhook_events (id, provider, event_type, payload_json) VALUES (?, 'manual', 'order.cancelled', '{}')"
+        )
+        .run(`manual:order:${order.id}:cancelled`),
+    /UNIQUE constraint failed|PRIMARY KEY/i
+  );
+  sqlite.close();
+});
+
+test("A DOUBLE RESTORE IS DESTROYED BY THE CHECK, NOT BY APPLICATION CODE", () => {
+  const sqlite = migratedDatabase();
+  makePriceable(sqlite);
+
+  // `variants_unique_piece_stock_ck`: a one-of-a-kind piece cannot be given a
+  // stock of two. So even if the idempotency key were removed tomorrow, the
+  // restore statement itself cannot corrupt the shop's inventory quietly — it
+  // aborts the transaction it is in.
+  assert.equal(stockOf(sqlite), 1);
+  assert.throws(
+    () =>
+      sqlite
+        .prepare("UPDATE variants SET stock_quantity = stock_quantity + 1 WHERE id = ?")
+        .run(HAAR_VARIANT),
+    /CHECK constraint failed/i
+  );
+  sqlite.close();
+});
+
+test("A SHIPPED ORDER CANNOT BE CANCELLED, AND THE DATABASE IS WHAT REFUSES IT", async () => {
+  const { sqlite, db } = freshOrders();
+  const placed = await placedOrder(sqlite, db);
+
+  sqlite.prepare("UPDATE orders SET status = 'shipped' WHERE id = ?").run(placed.orderId);
+
+  const refused = await cancelOrder(db, { orderNumber: placed.orderNumber, ...CANCELLATION });
+  assert.equal(refused.ok, false);
+  assert.equal(refused.reason, "not_cancellable");
+  assert.equal(refused.status, "shipped");
+
+  // The piece has left the shop. Putting it back on sale would advertise
+  // something that does not exist, which for a one-of-a-kind piece is the
+  // unrecoverable error.
+  assert.equal(stockOf(sqlite), 0);
+  assert.equal(count(sqlite, "SELECT count(*) AS c FROM webhook_events WHERE event_type = 'order.cancelled'"), 0);
+  assert.equal(count(sqlite, "SELECT count(*) AS c FROM admin_audit_log"), 0);
+
+  // AND THE GATE IS IN THE STATEMENT, NOT IN THE `if` ABOVE IT. Run the
+  // module's own transition SQL directly against a shipped order — as a race
+  // between the read and the batch would — and SQLite must refuse it, because
+  // the CASE writes NULL into a NOT NULL column rather than failing a WHERE
+  // clause and quietly changing nothing.
+  assert.throws(
+    () =>
+      sqlite
+        .prepare(
+          `UPDATE orders
+           SET status = CASE
+                 WHEN status IN (${CANCELLABLE_ORDER_STATUSES.map((s) => `'${s}'`).join(", ")})
+                   AND fulfilment_status = 'unfulfilled'
+                 THEN 'cancelled' ELSE NULL END
+           WHERE id = ?`
+        )
+        .run(placed.orderId),
+    /NOT NULL constraint failed: orders\.status/i
+  );
+  assert.equal(sqlite.prepare("SELECT status AS s FROM orders").get().s, "shipped");
+  sqlite.close();
+});
+
+test("a fulfilled order is refused too — part of it may already be handed over", async () => {
+  const { sqlite, db } = freshOrders();
+  const placed = await placedOrder(sqlite, db);
+
+  sqlite
+    .prepare("UPDATE orders SET fulfilment_status = 'partially_fulfilled' WHERE id = ?")
+    .run(placed.orderId);
+
+  const refused = await cancelOrder(db, { orderNumber: placed.orderNumber, ...CANCELLATION });
+  assert.equal(refused.ok, false);
+  assert.equal(refused.reason, "not_cancellable");
+  assert.equal(refused.fulfilmentStatus, "partially_fulfilled");
+  assert.equal(stockOf(sqlite), 0);
+  sqlite.close();
+});
+
+test("A CANCELLED ORDER KEEPS ITS STATUTORY SNAPSHOT, TO THE PAISE", async () => {
+  const { sqlite, db } = freshOrders();
+  const placed = await placedOrder(sqlite, db);
+
+  const before = sqlite.prepare("SELECT * FROM orders").get();
+  const itemsBefore = sqlite.prepare("SELECT * FROM order_items ORDER BY rowid").all();
+  const quoteBefore = sqlite.prepare("SELECT * FROM price_quotes").get();
+
+  const cancelled = await cancelOrder(db, { orderNumber: placed.orderNumber, ...CANCELLATION });
+  assert.equal(cancelled.ok, true);
+
+  const after = sqlite.prepare("SELECT * FROM orders").get();
+  const itemsAfter = sqlite.prepare("SELECT * FROM order_items ORDER BY rowid").all();
+
+  // NOTHING WAS DELETED. db/schema.ts compensation (7): orders are append-only
+  // and a cancellation is a status transition, never a removal.
+  assert.equal(count(sqlite, "SELECT count(*) AS c FROM orders"), 1);
+  assert.equal(count(sqlite, "SELECT count(*) AS c FROM order_items"), before.line_item_count);
+  assert.deepEqual(itemsAfter, itemsBefore, "an order line was rewritten by a cancellation");
+  assert.deepEqual(sqlite.prepare("SELECT * FROM price_quotes").get(), quoteBefore);
+
+  // BIS Reg. 5(11) content, and every money column, is untouched. Only the
+  // workflow columns moved.
+  const untouched = Object.keys(before).filter(
+    (column) =>
+      ![
+        "status",
+        "updated_at",
+        "cancelled_at",
+        "cancelled_by",
+        "cancellation_reason_code",
+        "cancellation_note",
+      ].includes(column)
+  );
+  for (const column of untouched) {
+    assert.deepEqual(after[column], before[column], `${column} changed on cancellation`);
+  }
+  assert.equal(after.total_paise, before.total_paise);
+  assert.equal(after.payment_status, "unpaid");
+
+  // And the torn-write detector still passes, so the order remains readable by
+  // every reader that owes the assertion.
+  const intact = await assertOrderIntact(db, placed.orderId, before.line_item_count);
+  assert.deepEqual(intact, { ok: true, found: before.line_item_count });
+
+  sqlite.close();
+});
+
+test("a cancelled piece is buyable again, all the way through checkout", async () => {
+  const { sqlite, db } = freshOrders();
+  const placed = await placedOrder(sqlite, db);
+
+  // The piece is off the wall, and the shop's own cart layer says so — this is
+  // the state that used to be permanent.
+  const refused = await addToCart(db, { token: null, slug: HAAR });
+  assert.equal(refused.ok, false);
+  assert.equal(refused.reason, "sold_out");
+
+  const cancelled = await cancelOrder(db, { orderNumber: placed.orderNumber, ...CANCELLATION });
+  assert.equal(cancelled.ok, true);
+
+  // And now it can be sold — which is the whole point, asserted through the
+  // production resolution path rather than by reading the column back.
+  const third = await addToCart(db, { token: null, slug: HAAR });
+  const open = await resolveCheckout(db, { token: third.cartId, shopStateCode: SHOP_STATE });
+  assert.equal(open.ok, true, JSON.stringify(open));
+
+  const second = await placeOrder(db, open.checkout, PICKUP_DETAILS, {
+    shopStateCode: SHOP_STATE,
+  });
+  assert.equal(second.ok, true);
+  assert.notEqual(second.orderNumber, placed.orderNumber);
+  assert.equal(stockOf(sqlite), 0);
+  assert.equal(count(sqlite, "SELECT count(*) AS c FROM orders"), 2);
+  sqlite.close();
+});
+
+test("a multi-line order gives every piece back, once each", async () => {
+  const { sqlite, db } = freshOrders();
+
+  makePriceable(sqlite, { slug: HAAR, variantId: HAAR_VARIANT });
+  makePriceable(sqlite, { slug: CHOKER, variantId: "var_polki-choker" });
+  const added = await addToCart(db, { token: null, slug: HAAR });
+  await addToCart(db, { token: added.cartId, slug: CHOKER });
+
+  const resolution = await resolveCheckout(db, {
+    token: added.cartId,
+    shopStateCode: SHOP_STATE,
+  });
+  assert.equal(resolution.ok, true);
+  const placed = await placeOrder(db, resolution.checkout, PICKUP_DETAILS, {
+    shopStateCode: SHOP_STATE,
+  });
+  assert.equal(placed.ok, true);
+  assert.equal(stockOf(sqlite), 0);
+  assert.equal(stockOf(sqlite, "var_polki-choker"), 0);
+
+  const cancelled = await cancelOrder(db, { orderNumber: placed.orderNumber, ...CANCELLATION });
+  assert.equal(cancelled.ok, true);
+  assert.equal(cancelled.restored.length, 2);
+  assert.equal(stockOf(sqlite), 1);
+  assert.equal(stockOf(sqlite, "var_polki-choker"), 1);
+  sqlite.close();
+});
+
+test("a torn order is not cancelled on a guess at what it took", async () => {
+  const { sqlite, db } = freshOrders();
+  const placed = await placedOrder(sqlite, db);
+
+  // The line item is lost — the case db/schema.ts compensation (5) exists for.
+  sqlite.prepare("DELETE FROM order_items WHERE order_id = ?").run(placed.orderId);
+
+  const refused = await cancelOrder(db, { orderNumber: placed.orderNumber, ...CANCELLATION });
+  assert.equal(refused.ok, false);
+  assert.equal(refused.reason, "torn");
+  assert.equal(refused.expected, 1);
+  assert.equal(refused.found, 0);
+
+  // Nothing was written and nothing was restored: what this order took off the
+  // wall is not knowable from it, so a person has to look.
+  assert.equal(sqlite.prepare("SELECT status AS s FROM orders").get().s, "pending_payment");
+  assert.equal(stockOf(sqlite), 0);
+  assert.equal(count(sqlite, "SELECT count(*) AS c FROM webhook_events WHERE event_type = 'order.cancelled'"), 0);
+  sqlite.close();
+});
+
+test("a cancellation nobody is named for is refused before it is written", async () => {
+  const { sqlite, db } = freshOrders();
+  const placed = await placedOrder(sqlite, db);
+
+  // A false or absent audit trail is worse than none, because it is what gets
+  // produced in evidence. These are caller errors, so they throw.
+  for (const bad of [
+    { ...CANCELLATION, actor: "  " },
+    { ...CANCELLATION, note: "" },
+    { ...CANCELLATION, reasonCode: "because" },
+  ]) {
+    await assert.rejects(() => cancelOrder(db, { orderNumber: placed.orderNumber, ...bad }));
+  }
+
+  // An unknown order is a result, not a throw — a UI has to render it.
+  const missing = await cancelOrder(db, { orderNumber: newOrderNumber(), ...CANCELLATION });
+  assert.equal(missing.ok, false);
+  assert.equal(missing.reason, "not_found");
+
+  assert.equal(sqlite.prepare("SELECT status AS s FROM orders").get().s, "pending_payment");
+  assert.equal(stockOf(sqlite), 0);
+  sqlite.close();
+});
+
+test("the reservation stays consumed — it is a checkout lock, not inventory", async () => {
+  const { sqlite, db } = freshOrders();
+  const placed = await placedOrder(sqlite, db);
+
+  const cancelled = await cancelOrder(db, { orderNumber: placed.orderNumber, ...CANCELLATION });
+  assert.equal(cancelled.ok, true);
+
+  // `stock_reservations_active_idx` permits one LIVE hold per variant, so
+  // putting this spent hold back to 'held' would take the piece straight off
+  // sale again and block the next buyer until it expired. The inventory fact
+  // is `variants.stock_quantity`, and that is what was restored.
+  assert.equal(count(sqlite, "SELECT count(*) AS c FROM stock_reservations WHERE status = 'held'"), 0);
+  assert.equal(count(sqlite, "SELECT count(*) AS c FROM stock_reservations WHERE status = 'consumed'"), 1);
+  // Which is why the piece is claimable by the next cart at once.
+  const next = await addToCart(db, { token: null, slug: HAAR });
+  assert.equal(next.ok, true);
+  assert.equal(count(sqlite, "SELECT count(*) AS c FROM stock_reservations WHERE status = 'held'"), 1);
   sqlite.close();
 });
 
@@ -1322,7 +2009,9 @@ test("POST places one real order and claims no payment whatsoever", async () => 
   assert.equal(body.ok, true);
   assert.equal(body.placed, true);
   assert.ok(isOrderNumber(body.orderNumber));
-  assert.equal(body.complaintTicketNumber, ticketNumberFor(body.orderNumber));
+  // No complaint ticket number is issued with a purchase any more, and the
+  // response does not carry one: the order number is the reference to quote.
+  assert.equal(body.complaintTicketNumber, undefined);
   assert.equal(body.lineItemCount, 1);
   assert.ok(body.totalPaise > 0);
 
@@ -1519,7 +2208,6 @@ test("the confirmation states what happened and does not dress it up", async () 
   assert.equal((html.match(/<h1[\s>]/g) ?? []).length, 1);
   assert.ok(html.includes("Your order is recorded."));
   assert.ok(html.includes(placed.body.orderNumber));
-  assert.ok(html.includes(placed.body.complaintTicketNumber));
 
   // THE SENTENCE THE WHOLE FLAG EXISTS FOR.
   assert.ok(html.includes("No payment has been taken"));
@@ -1547,7 +2235,6 @@ test("a stranger holding the order number sees nothing of the order", async () =
 
   const html = await checkoutHtml(newCartToken(), `?ref=${placed.body.orderNumber}`);
   assert.ok(!html.includes("Meera Sharma"), "a stranger was shown the buyer's name");
-  assert.ok(!html.includes(placed.body.complaintTicketNumber));
   assert.ok(!html.includes("Your order is recorded."));
 });
 

@@ -12,12 +12,13 @@
       ]
     },
     "adminAuth": {
-      "choice": "password-plus-signed-session",
-      "detail": "Owner-set password, signed cookie session using WebCrypto. No dependency on the shop owner holding a ChatGPT or Google account.",
+      "choice": "password-plus-pepper",
+      "recordedOn": "2026-08-09",
+      "detail": "Password kept so the owner needs no external account, but the passphrase is GENERATED (~100 bits, never owner-chosen) and an env-secret pepper sits outside the database. Workers caps PBKDF2 at 100k iterations with no Argon2/bcrypt, so the KDF cannot carry this alone \u2014 a weak KDF over a strong generated secret is sound, and a D1-only leak then yields nothing crackable.",
       "implications": [
-        "Password must be stored hashed, never in source or site-config.",
-        "Sessions must work on the Workers runtime with no Node built-ins.",
-        "SIWC (app/chatgpt-auth.ts) is NOT used for admin; the README warns it proves identity, not authorisation."
+        "Store algo/iterations/salt as columns so the work factor can be raised later.",
+        "crypto.timingSafeEqual IS available on this runtime, contra the comment in app/api/gold-rate/route.ts.",
+        "Measure the KDF on the deployed runtime first: on the Free plan's 10ms CPU ceiling even 100k may be killed. Plan tier is UNVERIFIED."
       ]
     },
     "content": {
@@ -36,6 +37,17 @@
         "Design direction is approved before ~20 commerce screens are built on top of it.",
         "Storefront and admin inherit the approved design system rather than defining their own."
       ]
+    },
+    "adminAttribution": {
+      "choice": "one-credential-per-person",
+      "recordedOn": "2026-08-09",
+      "detail": "Shops share passwords with a son or a counter assistant. With one shared credential the audit log records something untrue about who read a customer's PAN, and a false audit trail is worse than none because it is produced in evidence. adminUsers already has seats."
+    },
+    "certInLogging": {
+      "choice": "mirror-to-india-sink",
+      "recordedOn": "2026-08-09",
+      "detail": "CERT-In Direction (iv) requires 180 days of logs within Indian jurisdiction; D1 has no India region. Mirror audit and access logs to an India-hosted endpoint, reusing the LEAD_WEBHOOK_URL pattern. Also closes the tamper-proofing gap: an off-box copy is the only record the owner cannot quietly edit.",
+      "needsFromClient": "An India-hosted endpoint URL. Until supplied, the mirror is built but unconfigured and the exposure stands."
     }
   },
   "brandBrief": "Rich Indian heritage craft, run by modern people. Must read as neither a dusty traditional gold-shop site nor a generic minimal DTC startup.",

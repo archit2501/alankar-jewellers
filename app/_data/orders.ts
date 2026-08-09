@@ -17,11 +17,10 @@
  *
  * What is NOT gated, and is genuinely written on every placement: the
  * `price_quotes` row, the `orders` row, one `order_items` row per line, the
- * `payments` row, the stock decrement, the reservation consumption, the cart
- * conversion, and the `support_tickets` row that carries the Rule 7(1)(f)
- * ticket number. The order is a real commercial record from day one; the money
- * step is the only inert part, and it is inert in a way the customer is told
- * about in plain words rather than dressed up. See `paymentStanding()`.
+ * `payments` row, the stock decrement, the reservation consumption and the
+ * cart conversion. The order is a real commercial record from day one; the
+ * money step is the only inert part, and it is inert in a way the customer is
+ * told about in plain words rather than dressed up. See `paymentStanding()`.
  *
  * NOTHING HERE MAY SAY OR IMPLY THAT MONEY WAS RECEIVED. `orders.status` is
  * `pending_payment`, `orders.paymentStatus` is `unpaid`, `advancePaidPaise` is
@@ -86,23 +85,20 @@
  *   5  INSERT payments            provider `manual`, status `created`.
  *   6  UPDATE variants            the decrement. See (7).
  *   7  UPDATE stock_reservations  this cart's hold, `held` -> `consumed`.
- *   8  INSERT support_tickets     the Rule 7(1)(f) ticket. See below.
- *   9  UPDATE carts               `open` -> `converted`.
+ *   8  UPDATE carts               `open` -> `converted`.
  *
- * TWO DEVIATIONS FROM THE SCHEMA'S LIST, BOTH DELIBERATE:
+ * ONE DEVIATION FROM THE SCHEMA'S LIST, DELIBERATE: `price_quotes` is INSERTED
+ * here rather than being inserted earlier and marked `consumed` here. With no
+ * gateway in the loop there is no interval between quoting and ordering to
+ * protect, and writing it in the same transaction means a quote can never
+ * outlive a placement that failed. It is written with `status = 'consumed'` for
+ * the same reason. When the gateway goes live the row moves back to "proceed to
+ * pay" and statement 2 becomes the UPDATE the schema describes; nothing else in
+ * this list changes.
  *
- *   `price_quotes` is INSERTED here rather than being inserted earlier and
- *   marked `consumed` here. With no gateway in the loop there is no interval
- *   between quoting and ordering to protect, and writing it in the same
- *   transaction means a quote can never outlive a placement that failed. It is
- *   written with `status = 'consumed'` for the same reason. When the gateway
- *   goes live the row moves back to "proceed to pay" and statement 2 becomes
- *   the UPDATE the schema describes; nothing else in this list changes.
- *
- *   `support_tickets` is added to the list. `orders.complaintTicketNumber` is a
- *   denormalised copy under a UNIQUE index, so a ticket written outside this
- *   transaction could leave an order quoting a ticket number that names no
- *   ticket. One more statement in the same transaction removes that state.
+ * AND ONE STATEMENT THAT USED TO BE HERE AND IS NOT: a `support_tickets` row.
+ * See (10) — a purchase is not a grievance, and every row in that table
+ * asserts two statutory deadlines against the shop.
  *
  * ===========================================================================
  * 5. IDEMPOTENCY IS THE ROLLBACK
@@ -126,10 +122,10 @@
  * 6. THE 100-BOUND-PARAMETER CAP
  * ===========================================================================
  * One INSERT per line item, never a multi-row VALUES. The widest statement here
- * binds 47 parameters (`orders`); a line item binds 37. Two line items in one
+ * binds 46 parameters (`orders`); a line item binds 37. Two line items in one
  * statement would be 74 and would pass; six would be 222 and would fail where a
  * two-item cart passed. `MAX_CHECKOUT_LINES` additionally bounds the batch at
- * 9 + 3N statements.
+ * 5 + 3N statements.
  *
  * ===========================================================================
  * 7. THE DECREMENT CARRIES NO `WHERE stock_quantity >= ?` GUARD, ON PURPOSE
@@ -160,6 +156,77 @@
  * services). `orders_no_cod_ck` makes a cash-owing shipped order unrepresentable
  * and this module never offers one: a shipped order is `full_prepaid`, and a
  * balance may exist only on a `booking_advance` order collected in store.
+ *
+ * ===========================================================================
+ * 9. CANCELLATION — THE ONLY WAY A PIECE GOES BACK ON THE WALL
+ * ===========================================================================
+ * `DECREMENT_STOCK` above was for a long time the ONLY statement in this
+ * application that touched `variants.stockQuantity`, and it only ever
+ * subtracted. With capture off, every order is unpaid by construction, so an
+ * abandoned order retired a one-of-a-kind piece permanently and the shop had no
+ * way to put it back. `cancelOrder()` is that way, and it is ONE `db.batch()`:
+ *
+ *   1  INSERT webhook_events   `manual:order:<id>:cancelled`. See below.
+ *   2  UPDATE orders           the transition, gated by the DATABASE.
+ *   3  UPDATE variants × N     the restore, one statement per variant.
+ *   4  INSERT admin_audit_log  who, what, and why, as a machine record.
+ *
+ * IDEMPOTENCY IS STRUCTURAL, NOT CHECKED. Statement 1 is the same device
+ * placement uses: a primary key that a second attempt collides on, inserted
+ * INSIDE the batch it protects, so a second "Cancel" click discards the whole
+ * duplicate cancellation — including the second restore — rather than adding a
+ * second copy of a piece there is only one of. Nothing here reads the status
+ * first and trusts what it read, because between that read and the write
+ * anything may happen.
+ *
+ * WHICH STATES MAY BE CANCELLED IS ALSO DECIDED BY THE DATABASE. Statement 2 is
+ *
+ *     SET status = CASE WHEN <cancellable> THEN 'cancelled' ELSE NULL END
+ *
+ * and `orders.status` is NOT NULL. An order that has shipped therefore does not
+ * fail a WHERE clause and quietly change nothing — it violates a constraint and
+ * ABORTS THE WHOLE BATCH, so the restore in statement 3 can never run against
+ * a piece that has already left the shop. This is (7) again, one table over:
+ * the guard is not written as a WHERE clause, it is relocated into a constraint
+ * where a violation destroys the transaction instead of skipping a row.
+ *
+ * `stock_reservations` IS LEFT `consumed`. It is a checkout lock with a TTL,
+ * not an inventory record: its partial unique index permits one *live* hold per
+ * variant, so moving a spent hold back to `held` would take the freshly
+ * restored piece off sale again and block the next buyer until it expired. The
+ * inventory fact is `variants.stockQuantity`, and that is what is restored.
+ *
+ * NOTHING IS DELETED. See `db/schema.ts` compensation (7): the order stays, its
+ * statutory snapshot stays untouched to the paise, and `cancelled_at`,
+ * `cancelled_by` and `cancellation_reason_code` say who ended it and why —
+ * which is what Rule 4(8) and any subsequent dispute turn on.
+ *
+ * ===========================================================================
+ * 10. A PURCHASE IS NOT A COMPLAINT
+ * ===========================================================================
+ * `placeOrder()` used to write a `support_tickets` row for every order, with
+ * `acknowledgeDueAt = placedAt + 48h`. Consumer Protection (E-Commerce)
+ * Rule 4(5)'s clocks run from the receipt of a CONSUMER COMPLAINT, and
+ * Rule 7(1)(f)'s ticket number is issued per COMPLAINT LODGED. A purchase is
+ * neither. Three things followed and all three were real:
+ *
+ *   Within two days of launch the database asserted a breached acknowledgement
+ *   deadline on every order the shop had ever taken. A record of a breach that
+ *   did not happen is worse than no record, because it is what gets produced in
+ *   a consumer-commission proceeding.
+ *
+ *   `support_tickets_status_due_idx` exists so an overdue queue is one indexed
+ *   query. With every order in it, the one genuinely angry customer is
+ *   invisible.
+ *
+ *   `orders.complaintTicketNumber` is a single column under a UNIQUE index and
+ *   was consumed at placement by a `kind='query'` row. When a real complaint
+ *   arrived there was nowhere to record its Rule 7(1)(f) number.
+ *
+ * So placement opens no ticket and leaves `complaintTicketNumber` NULL, and
+ * `lodgeComplaint()` is the one and only producer of a `support_tickets` row.
+ * The customer already has a reference to quote — the order number — and the
+ * confirmation page prints that when there is no ticket.
  */
 
 import { env } from "cloudflare:workers";
@@ -229,11 +296,11 @@ export const QUOTE_TTL_MINUTES = 30;
  */
 export const MAX_CHECKOUT_LINES = 20;
 
-/** Consumer Protection (E-Commerce) Rule 4(5): acknowledge within 48 hours. */
+/**
+ * Consumer Protection (E-Commerce) Rule 4(5): acknowledge within 48 hours OF
+ * THE RECEIPT OF A CONSUMER COMPLAINT. Not of a purchase — see (10).
+ */
 export const TICKET_ACKNOWLEDGE_HOURS = 48;
-
-/** Rule 4(5): redress within one month of receipt. */
-export const TICKET_REDRESS_DAYS = 30;
 
 /**
  * DPDP s.6(10) puts the burden of proving consent on us, so the version of the
@@ -387,14 +454,23 @@ export function newOrderNumber(nowMs: number = Date.now()): string {
 }
 
 /**
- * The complaint ticket number for an order, E-Commerce Rule 7(1)(f).
+ * A complaint ticket number, E-Commerce Rule 7(1)(f).
  *
- * Derived from the order number rather than drawn separately, so the two are
- * visibly the same purchase on the invoice and so the ticket inherits the order
- * number's uniqueness instead of needing its own collision story.
+ * DRAWN, NOT DERIVED FROM THE ORDER. An earlier version of this function
+ * returned `orderNumber.replace("AJ-", "AJ-C-")`, which is a bijection with the
+ * order and therefore permits exactly one ticket per order — while Rule 7(1)(f)
+ * is a number per COMPLAINT LODGED, and one order can legitimately generate a
+ * second complaint. `support_tickets_ticket_number_unique` would have refused
+ * that second one. Same alphabet, same shape and the same collision story as
+ * `newOrderNumber()`: the unique index aborts the batch on the collision that
+ * will not happen.
  */
-export function ticketNumberFor(orderNumber: string): string {
-  return orderNumber.replace(/^AJ-/, "AJ-C-");
+export function newTicketNumber(nowMs: number = Date.now()): string {
+  return newOrderNumber(nowMs).replace(/^AJ-/, "AJ-C-");
+}
+
+export function isTicketNumber(value: unknown): value is string {
+  return typeof value === "string" && TICKET_NUMBER_PATTERN.test(value);
 }
 
 export function isOrderNumber(value: unknown): value is string {
@@ -1196,10 +1272,10 @@ const INSERT_ORDER = `
      currency, place_of_supply_state_code, payment_plan, fulfilment_mode,
      advance_due_paise, advance_paid_paise, balance_due_paise,
      status, payment_status, fulfilment_status,
-     complaint_ticket_number, line_item_count, notes, placed_at, updated_at)
+     line_item_count, notes, placed_at, updated_at)
   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'IN', 1, NULL, ?, ?,
           ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'INR', ?, ?, ?,
-          ?, 0, ?, 'pending_payment', 'unpaid', 'unfulfilled', ?, ?, ?, ?, ?)`;
+          ?, 0, ?, 'pending_payment', 'unpaid', 'unfulfilled', ?, ?, ?, ?)`;
 
 const INSERT_ORDER_ITEM = `
   INSERT INTO order_items
@@ -1236,13 +1312,6 @@ const CONSUME_RESERVATION = `
   UPDATE stock_reservations
   SET status = 'consumed'
   WHERE cart_id = ? AND variant_id = ? AND status = 'held'`;
-
-const INSERT_SUPPORT_TICKET = `
-  INSERT INTO support_tickets
-    (id, ticket_number, order_id, customer_id, contact_name, contact_phone,
-     contact_email, kind, subject, body, status, assigned_to,
-     acknowledge_due_at, redress_due_at, created_at, updated_at)
-  VALUES (?, ?, ?, ?, ?, ?, ?, 'query', ?, ?, 'open', NULL, ?, ?, ?, ?)`;
 
 const CONVERT_CART = `
   UPDATE carts SET status = 'converted', updated_at = ? WHERE id = ? AND status = 'open'`;
@@ -1294,7 +1363,6 @@ export type PlacementResult =
       readonly ok: true;
       readonly orderId: string;
       readonly orderNumber: string;
-      readonly ticketNumber: string;
       readonly totalPaise: number;
       readonly advanceDuePaise: number;
       readonly balanceDuePaise: number;
@@ -1384,9 +1452,7 @@ export async function placeOrder(
   const orderId = crypto.randomUUID();
   const quoteId = crypto.randomUUID();
   const paymentId = crypto.randomUUID();
-  const ticketId = crypto.randomUUID();
   const orderNumber = newOrderNumber(nowMs);
-  const ticketNumber = ticketNumberFor(orderNumber);
 
   // IGST Act s.10(1)(a): the place of supply is where the movement terminates
   // for delivery. For a store pickup there is no movement, so it is the shop's
@@ -1499,7 +1565,6 @@ export async function placeOrder(
       details.fulfilmentMode,
       legs.advanceDuePaise,
       legs.balanceDuePaise,
-      ticketNumber,
       checkout.lineItemCount,
       details.notes,
       now,
@@ -1593,29 +1658,10 @@ export async function placeOrder(
     });
   }
 
-  // 8. The Rule 7(1)(f) ticket, with the Rule 4(5) clocks already running.
-  statements.push({
-    sql: INSERT_SUPPORT_TICKET,
-    params: [
-      ticketId,
-      ticketNumber,
-      orderId,
-      customerId,
-      details.name,
-      details.phone,
-      details.email,
-      `Order ${orderNumber}`,
-      PAYMENT_CAPTURE_ENABLED
-        ? `Order ${orderNumber} placed online.`
-        : `Order ${orderNumber} placed online with no payment taken. The shop is to contact the customer to settle it.`,
-      isoAt(nowMs, TICKET_ACKNOWLEDGE_HOURS * 60),
-      isoAt(nowMs, TICKET_REDRESS_DAYS * 24 * 60),
-      now,
-      now,
-    ],
-  });
-
-  // 9. The cart is spent.
+  // 8. The cart is spent.
+  //
+  //    NO `support_tickets` ROW. A purchase is not a consumer complaint and
+  //    must not start Rule 4(5)'s clocks; see (10) and `lodgeComplaint()`.
   statements.push({ sql: CONVERT_CART, params: [now, checkout.cartId] });
 
   let results: readonly { changes: number }[];
@@ -1658,7 +1704,6 @@ export async function placeOrder(
     ok: true,
     orderId,
     orderNumber,
-    ticketNumber,
     totalPaise: quote.totalPaise,
     advanceDuePaise: legs.advanceDuePaise,
     balanceDuePaise: legs.balanceDuePaise,
@@ -1724,6 +1769,685 @@ export async function assertOrderIntact(
   const rows = await db.all(COUNT_ORDER_ITEMS, [orderId]);
   const found = rows[0] === undefined ? 0 : (asInt(rows[0], "lineItems") ?? 0);
   return { ok: found === lineItemCount, found };
+}
+
+/* =========================================================================
+ * Cancellation — one batch, and the only path that puts a piece back
+ * ====================================================================== */
+
+/**
+ * THE STATES AN ORDER MAY BE CANCELLED FROM.
+ *
+ * The question this list answers is physical, not financial: IS THE PIECE
+ * STILL IN THE SHOP? If it is, cancelling puts it back on the wall and that is
+ * simply true. `shipped` and `delivered` are therefore absent — the piece has
+ * gone, and restoring stock would advertise something the shop does not have,
+ * which for a one-of-a-kind item is the unrecoverable error. Those orders need
+ * a return, and a return is a different act with a different record.
+ *
+ * `cancelled` is absent because a second cancellation must change nothing, and
+ * `refunded` is absent because it is a terminal money state whose stock
+ * restoration belongs to the refund path that will exist when capture does.
+ *
+ * `advance_paid` and `paid` ARE here, though neither is reachable while
+ * `PAYMENT_CAPTURE_ENABLED` is false. Withholding cancellation from a paid but
+ * unshipped order would strand the piece off sale for as long as the money
+ * question took to settle, which is the very failure this function exists to
+ * end. The money is not forgotten: `CancellationResult` carries
+ * `refundDuePaise`, and a non-zero value is an obligation on the caller.
+ *
+ * `fulfilment_status` is checked separately and must be `unfulfilled`: a
+ * partially fulfilled multi-line order would otherwise restore stock for a
+ * piece already handed over.
+ */
+export const CANCELLABLE_ORDER_STATUSES = [
+  "pending_payment",
+  "advance_paid",
+  "paid",
+  "confirmed",
+  "in_production",
+  "ready_for_pickup",
+  "failed",
+] as const;
+
+export type CancellableOrderStatus = (typeof CANCELLABLE_ORDER_STATUSES)[number];
+
+/**
+ * WHY an order was cancelled. A closed set, because Rule 4(8) and any
+ * subsequent dispute turn on who ended the order and on what footing — "the
+ * customer asked" and "the shop declined" are not the same fact, and a free
+ * text box is not a queryable answer to which of them happened.
+ *
+ * The human sentence goes in `cancellationNote` alongside it. Both are
+ * required at the call site.
+ */
+export const CANCELLATION_REASON_CODES = [
+  /** The customer asked. Rule 4(8): with nothing captured, nothing is charged. */
+  "customer_request",
+  /** The shop called to settle payment and could not reach the customer. */
+  "not_reachable",
+  /** The shop declines the order. The customer is told, and pays nothing. */
+  "shop_declined",
+  /** The piece cannot be supplied — promised elsewhere, damaged, mis-listed. */
+  "piece_unavailable",
+  /** Placed in error and re-placed correctly. See research/06 §3.4. */
+  "placed_in_error",
+  /** Recorded rather than guessed at. The note carries the truth. */
+  "other",
+] as const;
+
+export type CancellationReasonCode = (typeof CANCELLATION_REASON_CODES)[number];
+
+/** A SQL literal list built from our own compile-time constants. */
+const CANCELLABLE_SQL_LIST = CANCELLABLE_ORDER_STATUSES.map(
+  (status) => `'${status}'`
+).join(", ");
+
+/**
+ * THE TRANSITION, GATED BY A CONSTRAINT RATHER THAN BY A WHERE CLAUSE.
+ *
+ * `orders.status` is NOT NULL. An order that is not in a cancellable state
+ * therefore does not fail a `WHERE` and quietly change nothing — it writes NULL
+ * into a NOT NULL column, which raises a constraint error and ABORTS THE WHOLE
+ * BATCH, taking the stock restore with it. This is exactly the argument in (7)
+ * for the decrement: a guard expressed as a WHERE clause turns a violation into
+ * a silent no-op, and a silent no-op here would put a shipped piece back on
+ * sale. SQLite evaluates every SET expression against the pre-UPDATE row, so
+ * the CASE reads the state as it was when the batch began.
+ */
+const CANCEL_ORDER = `
+  UPDATE orders
+  SET status = CASE
+        WHEN status IN (${CANCELLABLE_SQL_LIST}) AND fulfilment_status = 'unfulfilled'
+        THEN 'cancelled'
+        ELSE NULL
+      END,
+      cancelled_at = ?,
+      cancelled_by = ?,
+      cancellation_reason_code = ?,
+      cancellation_note = ?,
+      updated_at = ?
+  WHERE id = ?`;
+
+/**
+ * THE RESTORE. The mirror of `DECREMENT_STOCK`, and it carries no guard of its
+ * own for the same reason that one does not: `variants_unique_piece_stock_ck`
+ * (`is_unique_piece = 0 OR stock_quantity <= 1`) means a restore that would put
+ * two of a one-of-a-kind piece on the wall aborts the batch instead of
+ * corrupting the shop's inventory quietly.
+ */
+const RESTORE_STOCK = `
+  UPDATE variants
+  SET stock_quantity = stock_quantity + ?, updated_at = ?
+  WHERE id = ?`;
+
+/**
+ * The machine record of the act. `diff_json` is ALLOWLISTED: the status
+ * transition, the reason CODE, and what was given back. Never the note, never
+ * a name, a phone number or an address — research/06 §4.3 — because the audit
+ * table is outside the reach of the erasure job.
+ */
+const INSERT_CANCELLATION_AUDIT = `
+  INSERT INTO admin_audit_log (id, actor_email, action, entity_type, entity_id, diff_json, created_at)
+  VALUES (?, ?, 'order.cancelled', 'order', ?, ?, ?)`;
+
+const SELECT_ORDER_TO_CANCEL = `
+  SELECT id                  AS "orderId",
+         order_number        AS "orderNumber",
+         status              AS "status",
+         fulfilment_status   AS "fulfilmentStatus",
+         payment_status      AS "paymentStatus",
+         advance_paid_paise  AS "advancePaidPaise",
+         line_item_count     AS "lineItemCount",
+         cancelled_at        AS "cancelledAt"
+  FROM orders
+  WHERE order_number = ?
+  LIMIT 1`;
+
+/** What has to go back on the wall, one row per variant however many lines. */
+const SELECT_ORDER_STOCK_LINES = `
+  SELECT variant_id     AS "variantId",
+         sum(quantity)  AS "quantity"
+  FROM order_items
+  WHERE order_id = ? AND variant_id IS NOT NULL
+  GROUP BY variant_id
+  ORDER BY variant_id ASC`;
+
+export class OrderCancellationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "OrderCancellationError";
+  }
+}
+
+export type RestoredStockLine = {
+  readonly variantId: string;
+  readonly quantity: number;
+};
+
+export type CancellationFailure =
+  | { readonly reason: "not_found" }
+  /** Already cancelled. Nothing was restored a second time. */
+  | { readonly reason: "already_cancelled"; readonly cancelledAt: string | null }
+  /** The piece has gone, or part of the order has. A return, not a cancel. */
+  | {
+      readonly reason: "not_cancellable";
+      readonly status: string;
+      readonly fulfilmentStatus: string;
+    }
+  /** The order does not reconcile against its own count. A human must look. */
+  | { readonly reason: "torn"; readonly expected: number; readonly found: number }
+  | { readonly reason: "write_failed"; readonly message: string };
+
+export type CancellationResult =
+  | {
+      readonly ok: true;
+      readonly orderId: string;
+      readonly orderNumber: string;
+      readonly cancelledAt: string;
+      /** One entry per variant put back. Empty only for a line-less order. */
+      readonly restored: readonly RestoredStockLine[];
+      /**
+       * Money already captured against this order, which cancelling does NOT
+       * return. Zero for every order this shop can currently take; a non-zero
+       * value is a refund the caller now owes and must not swallow.
+       */
+      readonly refundDuePaise: number;
+    }
+  | ({ readonly ok: false } & CancellationFailure);
+
+export type CancelOrderInput = {
+  readonly orderNumber: string;
+  /** Who is cancelling. An admin email, or `system:<job>` for a sweep. */
+  readonly actor: string;
+  readonly reasonCode: CancellationReasonCode;
+  /** The human sentence. Rule 4(8) turns on it; it is not optional. */
+  readonly note: string;
+  readonly nowMs?: number;
+};
+
+/**
+ * CANCEL AN ORDER AND PUT ITS PIECES BACK. One `db.batch()`, which is one
+ * transaction, and the only increment of `variants.stockQuantity` there is.
+ *
+ * ORDER OF THE BATCH, and why each statement is where it is:
+ *
+ *   1  INSERT webhook_events   `manual:order:<id>:cancelled`. THE IDEMPOTENCY.
+ *      A primary key, inserted inside the batch it protects, exactly as
+ *      placement does it: a second cancellation collides here and the whole
+ *      duplicate — including a second restore of a one-of-a-kind piece — is
+ *      discarded by SQLite rather than by a status check that might have read
+ *      a stale row. The `already_cancelled` branch below is a courtesy that
+ *      produces a better message; it is NOT what makes this safe.
+ *
+ *   2  UPDATE orders           the transition. See `CANCEL_ORDER`: an
+ *      ineligible state aborts the batch on a NOT NULL violation, so the
+ *      restore below cannot run against a piece that has left the shop.
+ *
+ *   3  UPDATE variants × N     the restore, one statement per variant.
+ *
+ *   4  INSERT admin_audit_log  actor, action, allowlisted diff.
+ *
+ * The order row is not deleted, its statutory snapshot is not touched, and no
+ * `order_items` row is altered — `db/schema.ts` compensation (7).
+ */
+export async function cancelOrder(
+  db: CartDb,
+  input: CancelOrderInput
+): Promise<CancellationResult> {
+  const actor = trimmed(input.actor);
+  const note = trimmed(input.note);
+
+  // A cancellation nobody is named for is a false audit trail, and a false
+  // audit trail is worse than none because it gets produced in evidence. This
+  // is a caller error, not a customer outcome, so it throws rather than
+  // returning a failure the UI would render.
+  if (actor === "" || actor.length > 190) {
+    throw new OrderCancellationError(
+      "cancelOrder needs an actor: who cancelled this order must be recorded, not inferred"
+    );
+  }
+  if (note === "" || note.length > 2000) {
+    throw new OrderCancellationError(
+      "cancelOrder needs a reason in words as well as a code; Rule 4(8) turns on why the order ended"
+    );
+  }
+  if (!CANCELLATION_REASON_CODES.includes(input.reasonCode)) {
+    throw new OrderCancellationError(
+      `cancelOrder was given the reason code "${String(input.reasonCode)}", which is not one this shop publishes`
+    );
+  }
+  if (!isOrderNumber(input.orderNumber)) {
+    return { ok: false, reason: "not_found" };
+  }
+
+  const nowMs = input.nowMs ?? Date.now();
+  const now = isoAt(nowMs);
+
+  const [row] = await db.all(SELECT_ORDER_TO_CANCEL, [input.orderNumber]);
+  if (row === undefined) return { ok: false, reason: "not_found" };
+
+  const orderId = asText(row, "orderId");
+  const orderNumber = asText(row, "orderNumber");
+  const status = asText(row, "status") ?? "";
+  const fulfilmentStatus = asText(row, "fulfilmentStatus") ?? "";
+  const lineItemCount = asInt(row, "lineItemCount") ?? 0;
+  if (orderId === null || orderNumber === null) return { ok: false, reason: "not_found" };
+
+  // Both of these are REPORTS, not gates. The gates are statements 1 and 2 of
+  // the batch, and they are enforced by the database. Reading first only buys
+  // a truthful message and avoids burning the idempotency key on an order that
+  // was never going to be cancellable.
+  if (status === "cancelled") {
+    return { ok: false, reason: "already_cancelled", cancelledAt: asText(row, "cancelledAt") };
+  }
+  if (
+    !(CANCELLABLE_ORDER_STATUSES as readonly string[]).includes(status) ||
+    fulfilmentStatus !== "unfulfilled"
+  ) {
+    return { ok: false, reason: "not_cancellable", status, fulfilmentStatus };
+  }
+
+  // `db/schema.ts` compensation (5). A torn order does not reconcile against
+  // its own line count, so what it took off the wall is not knowable from it;
+  // restoring the rows that happen to exist would be a guess at inventory. A
+  // person has to look at it first.
+  const intact = await assertOrderIntact(db, orderId, lineItemCount);
+  if (!intact.ok) {
+    console.error(
+      `[orders] refusing to cancel ${orderNumber}: it is TORN — line_item_count says ${lineItemCount}, ${intact.found} rows exist.`
+    );
+    return { ok: false, reason: "torn", expected: lineItemCount, found: intact.found };
+  }
+
+  const lineRows = await db.all(SELECT_ORDER_STOCK_LINES, [orderId]);
+  const restored: RestoredStockLine[] = [];
+  for (const line of lineRows) {
+    const variantId = asText(line, "variantId");
+    const quantity = asInt(line, "quantity") ?? 0;
+    if (variantId === null || quantity <= 0) continue;
+    restored.push({ variantId, quantity });
+  }
+
+  const statements: CartStatement[] = [];
+
+  // 1. IDEMPOTENCY FIRST. See the function comment.
+  statements.push({
+    sql: INSERT_WEBHOOK_EVENT,
+    params: [
+      `manual:order:${orderId}:cancelled`,
+      "manual",
+      "order.cancelled",
+      // No PII and no note: this row exists to be collided with.
+      JSON.stringify({
+        kind: "order.cancelled",
+        orderNumber,
+        reasonCode: input.reasonCode,
+        restoredVariants: restored.length,
+      }),
+      now,
+      now,
+    ],
+  });
+
+  // 2. The transition, which the database refuses if the state forbids it.
+  statements.push({
+    sql: CANCEL_ORDER,
+    params: [now, actor, input.reasonCode, note, now, orderId],
+  });
+
+  // 3. The pieces go back on the wall.
+  for (const line of restored) {
+    statements.push({ sql: RESTORE_STOCK, params: [line.quantity, now, line.variantId] });
+  }
+
+  // 4. The machine record. No note, no name, no number: research/06 §4.3.
+  statements.push({
+    sql: INSERT_CANCELLATION_AUDIT,
+    params: [
+      crypto.randomUUID(),
+      actor,
+      orderId,
+      JSON.stringify({
+        orderNumber,
+        status: { from: status, to: "cancelled" },
+        reasonCode: input.reasonCode,
+        restored,
+      }),
+      now,
+    ],
+  });
+
+  let results: readonly { changes: number }[];
+  try {
+    results = await db.batch(statements);
+  } catch (error) {
+    return await classifyCancellationFailure(db, input.orderNumber, error);
+  }
+
+  // The transition must have moved exactly one row. Zero means the order was
+  // deleted between the read and the commit — which cannot happen through this
+  // application, and is worth saying loudly if it ever does.
+  if ((results[1]?.changes ?? 0) !== 1) {
+    console.error(
+      `[orders] ${orderNumber}: the cancellation transition changed no row, yet the batch committed.`
+    );
+    return {
+      ok: false,
+      reason: "write_failed",
+      message: "the order vanished between the read and the write",
+    };
+  }
+
+  // Every restore should have found its variant. A missing one cannot oversell
+  // — the piece is not in the catalogue to be bought — but it does mean the
+  // shop is one piece short of what it thinks it has, so it is not swallowed.
+  for (const [index, line] of restored.entries()) {
+    if ((results[2 + index]?.changes ?? 0) !== 1) {
+      console.error(
+        `[orders] ${orderNumber}: stock restore for variant ${line.variantId} changed no row.`
+      );
+    }
+  }
+
+  return {
+    ok: true,
+    orderId,
+    orderNumber,
+    cancelledAt: now,
+    restored,
+    refundDuePaise: asInt(row, "advancePaidPaise") ?? 0,
+  };
+}
+
+/**
+ * Work out what a failed cancellation batch was, by looking rather than by
+ * parsing — the same discipline `classifyPlacementFailure()` applies. The
+ * authoritative question is "is this order cancelled now?", and the error text
+ * is consulted only after the database has answered it.
+ */
+async function classifyCancellationFailure(
+  db: CartDb,
+  orderNumber: string,
+  error: unknown
+): Promise<CancellationResult> {
+  const message = error instanceof Error ? error.message : String(error);
+
+  try {
+    const [row] = await db.all(SELECT_ORDER_TO_CANCEL, [orderNumber]);
+    if (row !== undefined) {
+      const status = asText(row, "status") ?? "";
+      if (status === "cancelled") {
+        // The idempotency key collided. The duplicate cancellation — including
+        // its second stock restore — went with it.
+        console.warn(`[orders] duplicate cancellation for ${orderNumber}; it stands as it was.`);
+        return {
+          ok: false,
+          reason: "already_cancelled",
+          cancelledAt: asText(row, "cancelledAt"),
+        };
+      }
+      if (/NOT NULL constraint failed: orders\.status/i.test(message)) {
+        // The state gate refused it: the order moved on between the read above
+        // and the batch. Nothing was written, and nothing was restored.
+        return {
+          ok: false,
+          reason: "not_cancellable",
+          status,
+          fulfilmentStatus: asText(row, "fulfilmentStatus") ?? "",
+        };
+      }
+    }
+  } catch (lookupError) {
+    console.error("[orders] could not re-read the order after a failed cancellation:", lookupError);
+  }
+
+  console.error("[orders] the cancellation batch did not commit:", error);
+  return { ok: false, reason: "write_failed", message };
+}
+
+/* =========================================================================
+ * Complaints — the ONLY producer of a support_tickets row
+ * ====================================================================== */
+
+/**
+ * ONE CALENDAR MONTH LATER, reckoned by the British calendar.
+ *
+ * Rule 4(5) says "within one month from the date of receipt". General Clauses
+ * Act 1897 s.3(35) defines a month by the British calendar, so one month from
+ * 31 January expires on 28 February — twenty-eight days, not thirty. The
+ * previous fixed `+30 days` was therefore LATER than the statutory deadline in
+ * every short month, which is the direction that loses a case.
+ *
+ * The arithmetic is done on the IST calendar, because that is the calendar the
+ * shop and the consumer both read, and a day-of-month that does not exist in
+ * the target month clamps to its last day (31 March -> 30 April).
+ */
+export function oneCalendarMonthAfter(ms: number): number {
+  const ist = new Date(ms + IST_OFFSET_MS);
+  const year = ist.getUTCFullYear();
+  const month = ist.getUTCMonth();
+  // Day 0 of month+2 is the last day of month+1, and Date.UTC rolls the year.
+  const lastDayOfNextMonth = new Date(Date.UTC(year, month + 2, 0)).getUTCDate();
+
+  return (
+    Date.UTC(
+      year,
+      month + 1,
+      Math.min(ist.getUTCDate(), lastDayOfNextMonth),
+      ist.getUTCHours(),
+      ist.getUTCMinutes(),
+      ist.getUTCSeconds(),
+      ist.getUTCMilliseconds()
+    ) - IST_OFFSET_MS
+  );
+}
+
+/**
+ * What a ticket is about. `support_tickets.kind` has NO database default any
+ * more, precisely so this is stated rather than assumed — it used to default
+ * to `complaint`, and an insert that forgot the column filed a grievance
+ * against the shop with two statutory clocks attached.
+ */
+export const SUPPORT_TICKET_KINDS = [
+  "complaint",
+  "return",
+  "exchange",
+  "query",
+  "other",
+] as const;
+
+export type SupportTicketKind = (typeof SUPPORT_TICKET_KINDS)[number];
+
+export class ComplaintError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ComplaintError";
+  }
+}
+
+const INSERT_SUPPORT_TICKET = `
+  INSERT INTO support_tickets
+    (id, ticket_number, order_id, customer_id, contact_name, contact_phone,
+     contact_email, kind, subject, body, status, assigned_to,
+     acknowledge_due_at, redress_due_at, created_at, updated_at)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', NULL, ?, ?, ?, ?)`;
+
+/**
+ * The Rule 7(1)(f) number on the order, for the order page and the invoice.
+ *
+ * `WHERE complaint_ticket_number IS NULL` and the column's UNIQUE index
+ * together mean the FIRST complaint takes the slot and a later one cannot
+ * dislodge it or collide with it. A no-op here is the correct outcome for a
+ * second complaint, not a failure: `support_tickets` is authoritative and its
+ * `order_id` has always supported many complaints against one order.
+ */
+const ATTACH_TICKET_TO_ORDER = `
+  UPDATE orders
+  SET complaint_ticket_number = ?, updated_at = ?
+  WHERE id = ? AND complaint_ticket_number IS NULL`;
+
+const SELECT_ORDER_FOR_TICKET = `
+  SELECT id            AS "orderId",
+         order_number  AS "orderNumber",
+         customer_id   AS "customerId",
+         contact_name  AS "contactName",
+         contact_phone AS "contactPhone",
+         contact_email AS "contactEmail"
+  FROM orders
+  WHERE order_number = ?
+  LIMIT 1`;
+
+export type LodgeComplaintInput = {
+  /** The order complained about, or null: a complaint may stand alone. */
+  readonly orderNumber: string | null;
+  readonly kind: SupportTicketKind;
+  readonly subject: string;
+  readonly body?: string | null;
+  /**
+   * WHEN THE COMPLAINT WAS RECEIVED, which is what Rule 4(5)'s two clocks run
+   * from — not when it was typed in. A complaint that arrives by telephone on
+   * Monday and is entered on Wednesday is acknowledged from Monday.
+   */
+  readonly receivedAtMs: number;
+  /** Taken from the order when it is not given and an order is named. */
+  readonly contactName?: string | null;
+  readonly contactPhone?: string | null;
+  readonly contactEmail?: string | null;
+  readonly nowMs?: number;
+};
+
+export type ComplaintResult =
+  | {
+      readonly ok: true;
+      readonly ticketId: string;
+      readonly ticketNumber: string;
+      readonly orderId: string | null;
+      readonly acknowledgeDueAt: string;
+      readonly redressDueAt: string;
+      /** True when this ticket took `orders.complaintTicketNumber`. */
+      readonly isFirstOnOrder: boolean;
+    }
+  | { readonly ok: false; readonly reason: "order_not_found" }
+  | { readonly ok: false; readonly reason: "write_failed"; readonly message: string };
+
+/**
+ * LODGE A COMPLAINT, and issue the number Rule 7(1)(f) requires.
+ *
+ * This is the only function in the codebase that writes a `support_tickets`
+ * row, and it is one `db.batch()` so that `orders.complaintTicketNumber` can
+ * never name a ticket that does not exist — which is the sound half of the
+ * reasoning that used to put a ticket in the placement batch.
+ *
+ * Not idempotent, and deliberately so: a second complaint about the same order
+ * is a real thing that gets its own number and its own clocks. Double-submit
+ * protection belongs to the form that calls this, not here.
+ */
+export async function lodgeComplaint(
+  db: CartDb,
+  input: LodgeComplaintInput
+): Promise<ComplaintResult> {
+  // `support_tickets.kind` carries no CHECK — nothing the database guarantees
+  // depends on the value — and it no longer carries a default either, so the
+  // only thing standing between a mis-typed kind and the table is this. The
+  // door is closed for a caller TypeScript never saw, exactly as `placeOrder()`
+  // closes it for a `.mjs` script.
+  if (!SUPPORT_TICKET_KINDS.includes(input.kind)) {
+    throw new ComplaintError(
+      `a ticket must say what it is; "${String(input.kind)}" is not one of ${SUPPORT_TICKET_KINDS.join(", ")}`
+    );
+  }
+  if (!Number.isFinite(input.receivedAtMs)) {
+    // Rule 4(5)'s two clocks both run from this instant. Guessing it is
+    // guessing a statutory deadline.
+    throw new ComplaintError("a complaint needs the time it was RECEIVED, not merely typed in");
+  }
+
+  const nowMs = input.nowMs ?? Date.now();
+  const now = isoAt(nowMs);
+
+  let orderId: string | null = null;
+  let customerId: string | null = null;
+  let contactName = trimmed(input.contactName);
+  let contactPhone = trimmed(input.contactPhone);
+  let contactEmail = trimmed(input.contactEmail);
+
+  if (input.orderNumber !== null) {
+    if (!isOrderNumber(input.orderNumber)) return { ok: false, reason: "order_not_found" };
+
+    const [row] = await db.all(SELECT_ORDER_FOR_TICKET, [input.orderNumber]);
+    if (row === undefined) return { ok: false, reason: "order_not_found" };
+
+    orderId = asText(row, "orderId");
+    customerId = asText(row, "customerId");
+    // Snapshotted from the order, so the thread stays answerable after any
+    // redaction of the customer row — `db/schema.ts` on `supportTickets`.
+    contactName = contactName || (asText(row, "contactName") ?? "");
+    contactPhone = contactPhone || (asText(row, "contactPhone") ?? "");
+    contactEmail = contactEmail || (asText(row, "contactEmail") ?? "");
+  }
+
+  const subject = trimmed(input.subject);
+  if (subject === "" || subject.length > 190) {
+    throw new ComplaintError("a complaint needs a subject line to be findable by");
+  }
+  if (contactName === "") {
+    // `contact_name` is NOT NULL, and a complaint nobody can be called back on
+    // is not one that can be redressed within a month.
+    throw new ComplaintError(
+      "a complaint needs someone to answer to: give a contact name, or an order to take one from"
+    );
+  }
+
+  const ticketId = crypto.randomUUID();
+  const ticketNumber = newTicketNumber(nowMs);
+  const acknowledgeDueAt = isoAt(input.receivedAtMs, TICKET_ACKNOWLEDGE_HOURS * 60);
+  const redressDueAt = isoAt(oneCalendarMonthAfter(input.receivedAtMs));
+
+  const statements: CartStatement[] = [
+    {
+      sql: INSERT_SUPPORT_TICKET,
+      params: [
+        ticketId,
+        ticketNumber,
+        orderId,
+        customerId,
+        contactName,
+        contactPhone || null,
+        contactEmail || null,
+        input.kind,
+        subject,
+        trimmed(input.body) || null,
+        acknowledgeDueAt,
+        redressDueAt,
+        now,
+        now,
+      ],
+    },
+  ];
+
+  if (orderId !== null) {
+    statements.push({ sql: ATTACH_TICKET_TO_ORDER, params: [ticketNumber, now, orderId] });
+  }
+
+  let results: readonly { changes: number }[];
+  try {
+    results = await db.batch(statements);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("[orders] a complaint could not be recorded:", error);
+    return { ok: false, reason: "write_failed", message };
+  }
+
+  return {
+    ok: true,
+    ticketId,
+    ticketNumber,
+    orderId,
+    acknowledgeDueAt,
+    redressDueAt,
+    isFirstOnOrder: orderId !== null && (results[1]?.changes ?? 0) === 1,
+  };
 }
 
 /* =========================================================================
