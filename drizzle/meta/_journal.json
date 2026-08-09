@@ -15,6 +15,13 @@
       "when": 1786286349464,
       "tag": "0001_dusty_famine",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1786297603714,
+      "tag": "0002_strange_nocturne",
+      "breakpoints": true
     }
   ]
 }

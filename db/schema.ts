@@ -1423,42 +1423,282 @@ export const supportTickets = sqliteTable(
  * ---------------------------------------------------------------------- */
 
 /**
- * The authorisation allowlist. Identity comes from the platform's sign-in;
- * this table decides who is allowed to do what. Store the email lowercased and
- * compare lowercased — a case mismatch here is a silent lockout.
+ * WHO MAY SIGN IN, AND WITH WHAT.
+ *
+ * This table was written as an authorisation ALLOWLIST for a world where
+ * identity came from the platform's sign-in. That is no longer true: the
+ * recorded decision (`.claude-protocol/decisions.json` -> `adminAuth`) is a
+ * password the shop owns, so this table is now a CREDENTIAL STORE as well, and
+ * the columns below are what a login actually needs.
+ *
+ * Store the email lowercased and compare lowercased — a case mismatch here is a
+ * silent lockout. That used to be a comment and is now a CHECK.
+ *
+ * ---------------------------------------------------------------------------
+ * ONE CREDENTIAL PER PERSON — `.claude-protocol/decisions.json` -> adminAttribution
+ * ---------------------------------------------------------------------------
+ * Shops share passwords with a son or a counter assistant. The moment that
+ * happens `admin_audit_log.actor_email` asserts something UNTRUE about who read
+ * a customer's PAN, and a false audit trail is worse than none because it gets
+ * produced in evidence. So this table has seats, and adding a second person is
+ * an INSERT rather than a redesign. Nothing in the auth code assumes one row.
+ *
+ * ---------------------------------------------------------------------------
+ * WHY THE KDF PARAMETERS ARE COLUMNS AND NOT CONSTANTS
+ * ---------------------------------------------------------------------------
+ * Cloudflare Workers has no Argon2 and no bcrypt, caps PBKDF2 at 100,000
+ * iterations, and on the Free plan gives a request 10 ms of CPU. So the work
+ * factor cannot be raised to where OWASP would want it, and it will have to
+ * move once the plan tier is known. `password_algo`, `password_iterations` and
+ * `password_salt` are therefore stored PER ROW: the count can be raised, or the
+ * algorithm replaced, by rehashing on the next successful sign-in — never by a
+ * migration that would lock everyone out of a live shop.
+ *
+ * The security does not rest on the KDF and is not supposed to. It rests on a
+ * passphrase that is GENERATED at ~100 bits and never chosen by a human, and on
+ * an env-held pepper that never touches this database — so a D1-only leak
+ * yields nothing crackable at any iteration count. See `app/_admin/auth.ts`.
+ *
+ * ---------------------------------------------------------------------------
+ * THE CHECKS, AND WHY THEY ARE ADDED NOW
+ * ---------------------------------------------------------------------------
+ * Migrations here are forward-only, and SQLite cannot add a CHECK to a table
+ * without RECREATING it (create -> copy -> drop -> rename). This table is empty
+ * today and stops being empty at the first sign-in, so the window in which
+ * these constraints are free closes permanently at that moment. All three are
+ * therefore added in the same migration as the credential columns:
+ *
+ *   email is lower-cased    the doc comment always SAID this and nothing
+ *                           enforced it.
+ *   role is a closed set    authorisation is a database guarantee, not a
+ *                           presentational enum (see ENUMS at the head of this
+ *                           file for when a CHECK is warranted).
+ *   the credential is whole a half-written credential — a hash with no salt, a
+ *                           salt with no iteration count — must be impossible,
+ *                           because verification would then either throw or,
+ *                           worse, silently compare against a default.
  */
-export const adminUsers = sqliteTable("admin_users", {
-  id: text("id").primaryKey(),
-  email: text("email").notNull().unique(),
-  displayName: text("display_name"),
-  role: text("role", { enum: ["owner", "manager", "staff"] })
-    .notNull()
-    .default("staff"),
-  isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
-  lastSeenAt: text("last_seen_at"),
-  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
-});
+export const adminUsers = sqliteTable(
+  "admin_users",
+  {
+    id: text("id").primaryKey(),
+    email: text("email").notNull().unique(),
+    displayName: text("display_name"),
+    role: text("role", { enum: ["owner", "manager", "staff"] })
+      .notNull()
+      .default("staff"),
+    isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+    lastSeenAt: text("last_seen_at"),
+    createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+
+    /* --- the credential. All four are set together or none of them is. --- */
+
+    /** base64url of the derived bits. NULL = this seat has no password yet. */
+    passwordHash: text("password_hash"),
+    /** base64url of 16 CSPRNG bytes, unique per row. */
+    passwordSalt: text("password_salt"),
+    /** e.g. `pbkdf2-sha256-pepper-v1`. Named so the KDF can be replaced. */
+    passwordAlgo: text("password_algo"),
+    /** Stored per row so the work factor can be raised without a migration. */
+    passwordIterations: integer("password_iterations"),
+    passwordUpdatedAt: text("password_updated_at"),
+
+    /* --- throttling. There is no KV and no Durable Object on this plan, so
+     * the counter lives here: one read and one UPDATE per attempt.
+     * Deliberately NOT a permanent lockout — with few accounts a hard lockout
+     * is an attacker-triggerable denial of the shop's own order book. The
+     * backoff has a ceiling and clears itself. See `app/_admin/auth.ts`. --- */
+
+    failedLoginCount: integer("failed_login_count").notNull().default(0),
+    /** ISO-8601 UTC. NULL = not throttled. */
+    lockedUntil: text("locked_until"),
+
+    /** Distinct from `lastSeenAt`: when a session was last MINTED, not used. */
+    lastLoginAt: text("last_login_at"),
+  },
+  (t) => [
+    check("admin_users_email_lower_ck", sql`${t.email} = lower(${t.email})`),
+    check("admin_users_role_ck", sql`${t.role} in ('owner', 'manager', 'staff')`),
+    check(
+      "admin_users_credential_complete_ck",
+      sql`(${t.passwordHash} is null and ${t.passwordSalt} is null and ${t.passwordAlgo} is null and ${t.passwordIterations} is null)
+       or (${t.passwordHash} is not null and ${t.passwordSalt} is not null and ${t.passwordAlgo} is not null and ${t.passwordIterations} is not null and ${t.passwordIterations} > 0)`
+    ),
+  ]
+);
 
 /**
- * Not optional polish. Two admins, one metal rate and real money moving means
- * "who changed the 916 rate at 4pm, and why did that order price differ?" is a
- * question that will be asked and must be answerable. It is also the record of
- * who accessed customer data, which is the defensible answer under DPDP.
+ * SERVER-SIDE SESSIONS. The cookie carries an opaque bearer token; everything
+ * that decides what its holder may do is read from here and from `admin_users`
+ * on every single request.
+ *
+ * ---------------------------------------------------------------------------
+ * WHY A TABLE RATHER THAN A SELF-CONTAINED SIGNED COOKIE
+ * ---------------------------------------------------------------------------
+ * A stateless `{email, role, exp}` cookie cannot be revoked before it expires.
+ * Sign-out becomes advisory, a stolen cookie stays valid, and setting
+ * `admin_users.is_active = 0` on a departed employee does nothing until the
+ * cookie ages out. Revocation on the next request is the whole point of an
+ * allowlist, and a stateless cookie destroys exactly that property. One indexed
+ * D1 read per admin request buys it back, which at this shop's volume is free.
+ *
+ * ---------------------------------------------------------------------------
+ * WHAT IS STORED IS A HASH, NOT THE TOKEN
+ * ---------------------------------------------------------------------------
+ * `token_hash` is SHA-256 of the bearer token, so a database dump does not hand
+ * over live sessions. The cookie additionally carries an HMAC over the token,
+ * so a forged or truncated cookie is refused BEFORE D1 is touched — the same
+ * discipline `isWellFormedCartToken()` applies to the cart cookie.
+ *
+ * NO AUTHORISATION DATA IS CARRIED IN THE COOKIE AT ALL. There is nothing in it
+ * to forge except an opaque id that must exist in this table, and role and
+ * active-status are re-read from `admin_users` every time, so a downgrade takes
+ * effect on the next request rather than at expiry.
+ *
+ * ---------------------------------------------------------------------------
+ * TWO CLOCKS
+ * ---------------------------------------------------------------------------
+ * `expires_at` is the ABSOLUTE lifetime — a session dies at it however busy the
+ * shop is. `idle_expires_at` slides forward on use and kills a terminal that
+ * was left alone. A counter terminal in a jewellery shop is visible to the
+ * public; the cart's thirty-day cookie is right for a cart and wrong here.
+ *
+ * `created_at` has NO `CURRENT_TIMESTAMP` default, which is a deliberate
+ * departure from the TIMES convention at the head of this file.
+ * `CURRENT_TIMESTAMP` renders `YYYY-MM-DD HH:MM:SS` — no `T`, no zone — and the
+ * window CHECK below compares these columns LEXICOGRAPHICALLY. Mixing the two
+ * formats would make `'2026-08-09T09:00:00.000Z' > '2026-08-09 23:00:00'` true,
+ * which is nonsense. So the shape is constrained by the CHECK and written by
+ * the application, in one format, always.
+ */
+export const adminSessions = sqliteTable(
+  "admin_sessions",
+  {
+    id: text("id").primaryKey(),
+    /**
+     * The one place a cascade is right: a deleted admin's sessions must die
+     * with them, in the same statement, rather than outliving the row that
+     * authorises them.
+     */
+    adminUserId: text("admin_user_id")
+      .notNull()
+      .references(() => adminUsers.id, { onDelete: "cascade" }),
+    /** SHA-256 of the bearer token, base64url. NEVER the token itself. */
+    tokenHash: text("token_hash").notNull().unique(),
+    /** ISO-8601 UTC, written by the application. See the note above. */
+    createdAt: text("created_at").notNull(),
+    /** Absolute lifetime. */
+    expiresAt: text("expires_at").notNull(),
+    /** Idle timeout; slides forward on use, clamped to `expires_at`. */
+    idleExpiresAt: text("idle_expires_at").notNull(),
+    lastSeenAt: text("last_seen_at"),
+    /** Set on sign-out and on "sign out everywhere". Never a DELETE. */
+    revokedAt: text("revoked_at"),
+    /** Why: `signed_out`, `superseded`, `password_changed`, `deactivated`. */
+    revokedReason: text("revoked_reason"),
+    /**
+     * Loosely useful for "these are your active sessions". Deliberately NOT a
+     * binding condition — Indian mobile networks re-NAT constantly, and a
+     * session bound to an IP is a support burden wearing a control.
+     */
+    userAgent: text("user_agent"),
+    /**
+     * The ADMIN's own address, which is the shop's operator rather than a
+     * customer. `app/api/appointments/route.ts` declines to store VISITOR IPs
+     * and that rule is untouched by this column.
+     */
+    ip: text("ip"),
+  },
+  (t) => [
+    index("admin_sessions_user_idx").on(t.adminUserId, t.revokedAt),
+    index("admin_sessions_expiry_idx").on(t.expiresAt),
+    check(
+      "admin_sessions_window_ck",
+      sql`${t.createdAt} like '____-__-__T__:__:__%Z'
+       and ${t.expiresAt} > ${t.createdAt}
+       and ${t.idleExpiresAt} <= ${t.expiresAt}`
+    ),
+  ]
+);
+
+/**
+ * Not optional polish, and not merely wise: REQUIRED.
+ *
+ * DPDP Rule 6(1)(c) obliges "visibility on the accessing of such personal data,
+ * through appropriate logs, monitoring and review, for enabling detection of
+ * unauthorised access", and CERT-In direction (iv) obliges logs of all ICT
+ * systems for a rolling 180 days — the latter in force TODAY. It is also the
+ * answer to "who changed the 916 rate at 4pm, and why did that order price
+ * differ?", which will be asked.
+ *
+ * ---------------------------------------------------------------------------
+ * READS ARE LOGGED, NOT ONLY WRITES
+ * ---------------------------------------------------------------------------
+ * Rule 6(1)(c) is about ACCESS. It is also the difference between a breach
+ * notification that names eleven customers and one that must go to every
+ * customer in the database, because a system that cannot say which records a
+ * compromised session actually read has to assume all of them.
+ *
+ * ---------------------------------------------------------------------------
+ * `diff_json` IS ALLOWLIST-DRIVEN AND HAS EXACTLY ONE WRITER
+ * ---------------------------------------------------------------------------
+ * A naive whole-row diff of an `orders` or `customers` update would write a
+ * name, a phone, a full address and a PAN into this table — a second,
+ * unmanaged copy of the exact data the log exists to protect, sitting outside
+ * the erasure job's reach. So a value is recorded only when its column is on
+ * the allowlist in `app/_admin/audit.ts`; everything else is recorded as the
+ * indicator `"changed"`. Never a PAN, a password, a hash, a salt, the pepper, a
+ * session id, a CSRF token, an ingest token or a raw gateway payload.
+ *
+ * ---------------------------------------------------------------------------
+ * APPEND-ONLY, AND HONESTLY DESCRIBED
+ * ---------------------------------------------------------------------------
+ * No admin code path may UPDATE or DELETE a row here. That stops accidents and
+ * stops a compromised session; it does NOT stop whoever holds the D1
+ * credentials, who is realistically the same person the log describes. The only
+ * real answer is the off-box mirror in `app/_admin/audit.ts` (also the CERT-In
+ * Indian-jurisdiction answer), and until it is configured this log is evidence
+ * the shop keeps for itself, not a control over the shop.
  */
 export const adminAuditLog = sqliteTable(
   "admin_audit_log",
   {
     id: text("id").primaryKey(),
+    /**
+     * A string rather than an FK, deliberately, so the record survives the
+     * admin row being deleted. With one credential per person it is true; with
+     * a shared credential it would be a lie, which is why the credential is
+     * per person.
+     */
     actorEmail: text("actor_email").notNull(),
+    /**
+     * The row this actor was, when there was one. NULL for events with no
+     * authenticated actor — a refused sign-in naming an address that has no
+     * seat, for instance.
+     */
+    actorAdminUserId: text("actor_admin_user_id"),
     /** Dotted action name: "order.status_changed", "rate.updated". */
     action: text("action").notNull(),
     entityType: text("entity_type").notNull(),
     entityId: text("entity_id"),
     diffJson: text("diff_json"),
+    /**
+     * REFUSED attempts are the half of the record that matters most: the
+     * 6-hour CERT-In clock has nothing to start from unless a failed sign-in
+     * leaves a trace. Defaulted so the ALTER needs no table rebuild.
+     */
+    result: text("result", { enum: ["ok", "refused"] })
+      .notNull()
+      .default("ok"),
+    /** The ADMIN's own address. Visitor IPs are still not stored anywhere. */
+    ip: text("ip"),
+    userAgent: text("user_agent"),
     createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   },
   (t) => [
     index("admin_audit_created_idx").on(t.createdAt),
     index("admin_audit_entity_idx").on(t.entityType, t.entityId),
+    /** "What did this person do, most recent first" — the forensic query. */
+    index("admin_audit_actor_idx").on(t.actorEmail, t.createdAt),
   ]
 );
