@@ -1259,6 +1259,7 @@ function discoverAdminRoutes() {
  */
 const DYNAMIC_SAMPLES = {
   "/admin/orders/[id]": "/admin/orders/AJ-2608-7QW2XF",
+  "/admin/pieces/[sku]": "/admin/pieces/AJ-P-2608-4KX9P2",
 };
 
 test("the enumeration finds the routes that exist, and every dynamic one is requestable", () => {

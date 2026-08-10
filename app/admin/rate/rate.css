@@ -1,0 +1,552 @@
+/* ------------------------------------------------------------------------- *
+ * THE GOLD RATE SCREEN.
+ *
+ * Adds only what this screen has and `app/admin/admin.css` does not: the panel
+ * that holds the rate in force, the purity board, the pills on the entry form,
+ * and the trail. Everything shared — the field contract, the alert colour, the
+ * focus ring, dark mode, print, reduced motion — is inherited from that sheet
+ * and is deliberately not restated.
+ *
+ * ===========================================================================
+ * THE COLOUR RULE, WHICH THIS SCREEN OBEYS EXACTLY
+ * ===========================================================================
+ * On --plaster #ede3d0: --ink 14.08 · --ink-2 7.80 · --ink-3 3.96 (captions
+ * only) · --sindoor 6.48 · --brass 2.85 · --gold 1.90.
+ *
+ *   --brass IS NEVER A LETTERFORM here. It appears once, as a hairline.
+ *   --gold IS BANNED on this field. Not text, not a border, not a dot.
+ *   --sindoor IS THE ONE ACCENT, and it means "this is wrong or late". It is
+ *   on the alarm, on the correction marks, and nowhere else — if it meant
+ *   anything else the eye would stop finding it.
+ *
+ * There is no green anywhere, in either mode. `validate_palette.js` puts
+ * emerald against sindoor at ΔE 4.0 under protanopia, so a colourblind owner
+ * could not tell "good" from "late". "Everything is fine" needs no colour.
+ *
+ * ===========================================================================
+ * PHONE FIRST
+ * ===========================================================================
+ * 390px is the target. Every tap target is 48px, 56px on the primary action of
+ * a form, 8px apart. Nothing scrolls sideways: the figures are right-aligned
+ * inside 358px and the LABELS wrap, never the numbers.
+ * ------------------------------------------------------------------------- */
+
+.rate {
+  color: var(--adm-ink);
+}
+
+.rate__back {
+  display: inline-block;
+  min-height: 48px;
+  padding: var(--s-3) 0;
+  color: var(--adm-alert);
+  font-size: var(--t-sm);
+  text-underline-offset: 0.2em;
+}
+
+.rate__title {
+  margin: 0 0 var(--s-4);
+  color: var(--adm-head);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: var(--leading-tight);
+}
+
+.rate__section {
+  margin: var(--s-6) 0 0;
+}
+
+.rate__section-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  margin: 0 0 var(--s-3);
+  color: var(--adm-head);
+  font-size: var(--t-lg);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+}
+
+.rate__p {
+  margin: 0 0 var(--s-3);
+  max-width: 42ch;
+  font-size: var(--t-sm);
+}
+
+/* The one hairline this design permits outside a data table: it separates the
+   rule from what it is a rule about. --brass, and it carries no letterform. */
+.rate__p--rule {
+  margin-top: var(--s-5);
+  padding-top: var(--s-4);
+  border-top: var(--rule-hair) solid var(--adm-hair);
+}
+
+.rate__mono {
+  margin: 0 0 var(--s-3);
+  color: var(--adm-ink);
+  font-family: var(--font-data);
+  font-size: var(--t-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.rate__link {
+  color: var(--adm-alert);
+  font-size: var(--t-sm);
+  text-underline-offset: 0.2em;
+}
+
+/* Colour is never the only channel: a marked thing carries a filled square AND
+   a word. */
+.rate__mark {
+  flex: none;
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: var(--s-2);
+  background: var(--adm-alert);
+}
+
+.rate__wrong {
+  color: var(--adm-alert);
+  font-weight: 600;
+}
+
+/* --- Notices ------------------------------------------------------------ */
+
+.rate__notice {
+  margin: 0 0 var(--s-4);
+  padding: var(--s-3) var(--s-4);
+  background: var(--adm-raised);
+  font-size: var(--t-sm);
+}
+
+.rate__notice--problem {
+  border-left: var(--rule-heavy) solid var(--adm-alert);
+}
+
+/* --- The alarm: the prominence rule made visible ------------------------ */
+
+.rate__alarm {
+  margin: 0 0 var(--s-5);
+  padding: var(--s-4);
+  border-left: var(--rule-heavy) solid var(--adm-alert);
+  background: var(--adm-raised);
+}
+
+.rate__alarm-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  margin: 0 0 var(--s-3);
+  color: var(--adm-alert);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: var(--leading-tight);
+}
+
+.rate__alarm-p {
+  margin: 0 0 var(--s-3);
+  max-width: 42ch;
+  font-size: var(--t-sm);
+}
+
+/* --- The rate in force: the biggest number in the whole panel ----------- */
+
+.rate__panel {
+  margin: 0 0 var(--s-5);
+  padding: var(--s-4);
+  background: var(--adm-raised);
+}
+
+.rate__panel-head {
+  margin: 0 0 var(--s-3);
+  color: var(--adm-alert);
+  font-family: var(--font-body);
+  font-size: var(--t-2xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.rate__panel-figure {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-2) var(--s-3);
+  margin: 0 0 var(--s-3);
+}
+
+/*
+ * 28px, and it is the largest thing anywhere in this panel — the one number
+ * the whole shop hangs off. Proportional figures would look loose beside the
+ * purity, and this one sits in a column with the board below it, so it is
+ * tabular like every other figure here.
+ */
+.rate__lead {
+  color: var(--adm-head);
+  font-family: var(--font-data);
+  font-size: 1.75rem;
+  font-variant-numeric: tabular-nums;
+  line-height: var(--leading-tight);
+}
+
+.rate__figure {
+  color: var(--adm-head);
+  font-family: var(--font-data);
+  font-size: var(--t-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.rate__unit {
+  color: var(--adm-meta);
+  font-size: var(--t-2xs);
+  white-space: nowrap;
+}
+
+.rate__purity {
+  color: var(--adm-head);
+  font-family: var(--font-data);
+  font-size: var(--t-sm);
+  font-weight: 600;
+}
+
+.rate__panel-note {
+  margin: 0 0 var(--s-2);
+  max-width: 42ch;
+  color: var(--adm-ink);
+  font-size: var(--t-sm);
+}
+
+/* --- The other purities ------------------------------------------------- */
+
+.rate__board {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The one place a hairline belongs: between two rows of tabular data. */
+.rate__board-row {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: var(--s-1) var(--s-3);
+  padding: var(--s-3) 0;
+  border-top: var(--rule-hair) solid var(--adm-line);
+}
+
+.rate__board-row:first-child {
+  border-top: 0;
+}
+
+.rate__board-when {
+  grid-column: 2;
+  color: var(--adm-meta);
+  font-size: var(--t-2xs);
+}
+
+/* --- Buttons and actions ------------------------------------------------ */
+
+.rate__acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin: var(--s-4) 0 0;
+}
+
+.rate__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  min-width: 7.5rem;
+  padding: 0 var(--s-4);
+  border: var(--rule-hair) solid var(--adm-hair);
+  background: var(--adm-raised);
+  color: var(--adm-head);
+  font-family: var(--font-data);
+  font-size: var(--t-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.rate__btn--primary {
+  min-height: 56px;
+  border-color: var(--adm-alert);
+  background: var(--adm-alert);
+  color: var(--adm-on-alert);
+}
+
+/* --- Forms -------------------------------------------------------------- */
+
+.rate__field {
+  margin: var(--s-4) 0 0;
+}
+
+.rate__label {
+  display: block;
+  margin: 0 0 var(--s-2);
+  max-width: 42ch;
+  color: var(--adm-head);
+  font-size: var(--t-sm);
+  font-weight: 600;
+}
+
+.rate__input {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 var(--s-3);
+  border: var(--rule-hair) solid var(--adm-hair);
+  background: var(--adm-ground);
+  color: var(--adm-head);
+  font-family: var(--font-body);
+  font-size: var(--t-md);
+}
+
+/* The figure is the one field a mistake in is expensive, so it is the biggest
+   thing on the form and it is mono, which makes a transposed digit visible. */
+.rate__input--figure {
+  min-height: 56px;
+  font-family: var(--font-data);
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.rate__pills {
+  margin: var(--s-4) 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.rate__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 48px;
+  margin: 0 var(--s-2) var(--s-2) 0;
+  padding: 0 var(--s-3);
+  border: var(--rule-hair) solid var(--adm-hair);
+  background: var(--adm-raised);
+  cursor: pointer;
+}
+
+.rate__pill-face {
+  display: flex;
+  flex-direction: column;
+}
+
+.rate__pill-name {
+  color: var(--adm-head);
+  font-family: var(--font-data);
+  font-size: var(--t-sm);
+  font-weight: 600;
+}
+
+.rate__pill-now {
+  color: var(--adm-meta);
+  font-family: var(--font-data);
+  font-size: var(--t-2xs);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The checked pill is marked by a rule as well as by the radio itself, never
+   by colour alone. */
+.rate__pill:has(input:checked) {
+  border-color: var(--adm-alert);
+  border-left-width: var(--rule-heavy);
+}
+
+.rate__reasons {
+  margin: var(--s-4) 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.rate__reason {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 48px;
+  font-size: var(--t-sm);
+  cursor: pointer;
+}
+
+.rate__confirm {
+  margin: var(--s-4) 0 0;
+  max-width: 42ch;
+  font-size: var(--t-sm);
+}
+
+.rate__confirm label {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  min-height: 48px;
+  cursor: pointer;
+}
+
+.rate__confirm input {
+  margin-top: var(--s-2);
+  flex: none;
+}
+
+/* --- The orders billed from a rate -------------------------------------- */
+
+.rate__billed {
+  margin: var(--s-5) 0 0;
+  padding: var(--s-4);
+  border-left: var(--rule-heavy) solid var(--adm-alert);
+  background: var(--adm-raised);
+}
+
+.rate__orders {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rate__order {
+  padding: var(--s-4) 0;
+  border-top: var(--rule-hair) solid var(--adm-line);
+}
+
+.rate__order:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+/* The customer's name is the largest thing on the row. The owner recognises
+   people; they do not recognise rate ids. */
+.rate__order-name {
+  margin: 0;
+  color: var(--adm-head);
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: var(--leading-tight);
+}
+
+.rate__order-meta {
+  margin: var(--s-2) 0 0;
+  color: var(--adm-meta);
+  font-family: var(--font-data);
+  font-size: var(--t-2xs);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- The trail ---------------------------------------------------------- */
+
+.rate__history {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rate__event {
+  padding: var(--s-4) 0;
+  border-top: var(--rule-hair) solid var(--adm-line);
+}
+
+.rate__event:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.rate__event-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-2) var(--s-3);
+  margin: 0;
+}
+
+.rate__event-when {
+  color: var(--adm-ink);
+  font-size: var(--t-sm);
+}
+
+.rate__event-meta {
+  margin: var(--s-2) 0 0;
+  color: var(--adm-meta);
+  font-size: var(--t-2xs);
+}
+
+/* A correction against the row it corrects. This is the append-only rule made
+   visible: the wrong figure is still above it and it always will be. */
+.rate__event-fix {
+  margin: var(--s-2) 0 0;
+  max-width: 42ch;
+  color: var(--adm-alert);
+  font-size: var(--t-xs);
+}
+
+.rate__event-acts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-4);
+  margin: var(--s-2) 0 0;
+  min-height: 48px;
+}
+
+.rate__link--wrong {
+  font-weight: 600;
+}
+
+.rate__filters {
+  margin: var(--s-4) 0 0;
+  font-size: var(--t-sm);
+}
+
+.rate__filter {
+  display: inline-block;
+  min-height: 48px;
+  padding: var(--s-3) var(--s-1);
+  color: var(--adm-alert);
+  text-underline-offset: 0.2em;
+}
+
+.rate__filter[aria-current="true"] {
+  color: var(--adm-head);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.rate__sep {
+  color: var(--adm-meta);
+}
+
+/* --- Desktop is the phone layout with more air -------------------------- */
+
+@media (min-width: 56rem) {
+  .rate__lead {
+    font-size: 2rem;
+  }
+
+  .rate__board-row {
+    grid-template-columns: 6rem 1fr auto;
+  }
+
+  .rate__board-when {
+    grid-column: 3;
+    text-align: right;
+  }
+}
+
+/* --- Print: the chrome goes, the record stays --------------------------- */
+
+@media print {
+  .rate__acts,
+  .rate__btn,
+  .rate__filters {
+    display: none;
+  }
+
+  .rate__panel,
+  .rate__alarm,
+  .rate__billed {
+    background: transparent;
+  }
+}

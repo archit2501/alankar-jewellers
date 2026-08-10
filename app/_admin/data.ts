@@ -699,7 +699,7 @@ export async function readSetupGaps(db: CartDb): Promise<SetupGap[]> {
           title: "There are no pieces on the website",
           detail:
             "Nothing is listed to buy or to enquire about. A piece needs a name and a craft to start; everything else can be filled in afterwards.",
-          href: null,
+          href: "/admin/pieces?add=1",
           resolved: false,
         }
       : {
@@ -712,7 +712,7 @@ export async function readSetupGaps(db: CartDb): Promise<SetupGap[]> {
             priceablePieces > 0
               ? "They carry a weight and a purity, so the website can price them."
               : "Every one of them shows “price on request”, which is the truth rather than a placeholder. A piece needs its net metal weight and its purity before the website can put a figure on it.",
-          href: null,
+          href: "/admin/pieces",
           resolved: priceablePieces > 0,
         };
 
@@ -731,7 +731,7 @@ export async function readSetupGaps(db: CartDb): Promise<SetupGap[]> {
       title: "No gold rate has been recorded",
       detail:
         "Nothing on the website can show a price until one is. Every piece shows “price on request”, and nobody can check out. That is deliberate — a wrong price is worse than no price.",
-      href: null,
+      href: "/admin/rate",
       resolved: rateRows > 0,
     },
     {

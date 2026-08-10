@@ -185,7 +185,7 @@
           ],
           "estimateHours": 14,
           "criticalPath": true,
-          "status": "todo"
+          "status": "done"
         },
         {
           "id": "3.2",
@@ -214,7 +214,7 @@
           ],
           "estimateHours": 6,
           "criticalPath": false,
-          "status": "todo"
+          "status": "done"
         },
         {
           "id": "4.2",
@@ -226,7 +226,7 @@
           ],
           "estimateHours": 6,
           "criticalPath": false,
-          "status": "todo"
+          "status": "done"
         }
       ]
     }

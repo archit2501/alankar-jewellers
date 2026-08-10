@@ -1,0 +1,560 @@
+/**
+ * THE PIECES SCREENS — the stockroom, not the shop window.
+ *
+ * ===========================================================================
+ * WHICH REGISTER THIS IS
+ * ===========================================================================
+ * research/05-admin-ux.md §1: the admin is the HAVELI register — plaster
+ * ground, ink, sindoor, brass hairlines. The Darbar ornament of the storefront
+ * (oxblood fields, gold rules, multifoil arches, the flip) is discarded here.
+ *
+ * ORNAMENT MARKS THE STATUTORY, and nothing in this screen is statutory. The
+ * bill on the order page is a BIS Reg. 5(11) document and carries the brass
+ * brackets; a piece being entered is a working note and carries none. Nothing
+ * below imports `_ornament.css` and nothing below draws a motif.
+ *
+ * ===========================================================================
+ * MEASURED, NOT ASSUMED (research/05 §2)
+ * ===========================================================================
+ *   --ink     on --plaster  14.08:1   headings, names, figures
+ *   --ink-2   on --plaster   7.80:1   body, secondary lines
+ *   --ink-3   on --plaster   3.96:1   captions and mono metadata ONLY — never
+ *                                     body text, and never the sole carrier of
+ *                                     a fact
+ *   --sindoor on --plaster   6.48:1   the one accent: missing, wrong, blocked
+ *   --brass   on --plaster   2.85:1   ORNAMENT ONLY. NEVER A LETTERFORM, which
+ *                                     is why every rule below that uses it sets
+ *                                     a border and never a `color`.
+ *   --gold    on --plaster   1.90:1   banned outright on this field
+ *
+ * ===========================================================================
+ * PHONE FIRST, AT 390px, STANDING UP
+ * ===========================================================================
+ * The owner is at a counter with a piece in one hand. Every control is at least
+ * 48px and the two that decide something — "Start this piece" and "Yes, save
+ * it" — are 56px. Radio pills are labels wrapping a real `input`, so the whole
+ * pill is the hit target and the native control still carries the semantics for
+ * a screen reader and for the keyboard.
+ *
+ * ===========================================================================
+ * NO JAVASCRIPT
+ * ===========================================================================
+ * Sections are pages. The weight confirmation is a page. Every action is a POST
+ * form and every navigation is a link. Nothing below styles a control that
+ * needs a bundle to work, and nothing below hides a field that the server does
+ * not also ignore — a `disabled` attribute is a client-side promise, and the
+ * pricing section keeps its guarantee on the server instead.
+ */
+
+.pcs {
+  --pcs-ink: var(--adm-ink, var(--ink-2));
+  --pcs-head: var(--adm-head, var(--ink));
+  --pcs-meta: var(--adm-meta, var(--ink-3));
+  --pcs-raised: var(--adm-raised, var(--plaster-lift));
+  --pcs-sunk: var(--adm-sunk, var(--plaster-sunk));
+  --pcs-alert: var(--adm-alert, var(--sindoor));
+  --pcs-on-alert: var(--adm-on-alert, var(--plaster));
+  --pcs-hair: var(--adm-hair, rgba(125, 108, 91, 0.28));
+  --pcs-focus: var(--field-focus, var(--oxblood-deep));
+  --pcs-label: var(--field-label, var(--sindoor));
+
+  color: var(--pcs-ink);
+  font-family: var(--font-body);
+}
+
+.pcs *,
+.pcs *::before,
+.pcs *::after {
+  box-sizing: border-box;
+}
+
+.pcs :focus-visible {
+  outline: 2px solid var(--pcs-focus);
+  outline-offset: 2px;
+}
+
+/* --- Type ---------------------------------------------------------------- */
+
+.pcs__title {
+  margin: 0 0 var(--s-4);
+  color: var(--pcs-head);
+  font-family: var(--font-body);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: var(--leading-tight);
+}
+
+.pcs__label {
+  display: block;
+  margin: 0 0 var(--s-2);
+  color: var(--pcs-label);
+  font-family: var(--font-body);
+  font-size: var(--t-2xs);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.pcs__lede {
+  margin: 0 0 var(--s-3);
+  max-width: 42ch;
+}
+
+/* --ink-3 carries metadata and never a fact on its own. */
+.pcs__mono {
+  margin: var(--s-1) 0 0;
+  color: var(--pcs-meta);
+  font-family: var(--font-data);
+  font-size: var(--t-2xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.pcs__hint {
+  margin: var(--s-2) 0 0;
+  max-width: 44ch;
+  font-size: var(--t-sm);
+}
+
+/* The one accent. It always carries a word as well as a colour: colour is never
+   the only channel, and the mark has a shape as well as a hue. */
+.pcs__alert {
+  color: var(--pcs-alert);
+  font-weight: 600;
+}
+
+/* --- Notices ------------------------------------------------------------- */
+
+.pcs__notice {
+  margin: 0 0 var(--s-5);
+  padding: var(--s-3) var(--s-4);
+  max-width: 48ch;
+  border-left: var(--rule-heavy) solid var(--field-metal, var(--brass));
+  background: var(--pcs-raised);
+  color: var(--pcs-head);
+}
+
+.pcs__notice--problem {
+  border-left-color: var(--pcs-alert);
+}
+
+/* Where a photograph would go. It is a sentence and not a broken control:
+   research/05 and the M3 plan both say the upload is blocked, and a disabled
+   button invites a retry that can never succeed. */
+.pcs__blocked {
+  margin: var(--s-3) 0 0;
+  padding: var(--s-4);
+  max-width: 48ch;
+  border: var(--rule-hair) dashed var(--pcs-hair);
+  background: var(--pcs-sunk);
+  color: var(--pcs-head);
+  font-size: var(--t-sm);
+}
+
+/* --- The list ------------------------------------------------------------ */
+
+.pcs__group {
+  margin: var(--s-6) 0 0;
+  padding: var(--s-5) 0 0;
+  border-top: var(--rule-hair) solid var(--pcs-hair);
+}
+
+.pcs__grouphead {
+  margin: 0 0 var(--s-3);
+  color: var(--pcs-head);
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: var(--leading-tight);
+}
+
+.pcs__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pcs__row {
+  padding: var(--s-4) 0;
+  border-bottom: var(--rule-hair) solid var(--pcs-hair);
+}
+
+.pcs__name {
+  margin: 0;
+  color: var(--pcs-head);
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: var(--leading-tight);
+}
+
+.pcs__name a {
+  color: inherit;
+}
+
+/* A piece with no name yet is named as such, in the caption colour, so the row
+   does not read as though a title had been entered and lost. */
+.pcs__name--none {
+  color: var(--pcs-meta);
+  font-style: italic;
+}
+
+.pcs__what {
+  margin: var(--s-1) 0 0;
+  max-width: 44ch;
+}
+
+/* "Still needs:" — the whole safety mechanism, visible from the list, so the
+   owner never has to open a draft to find out what is missing. */
+.pcs__needs {
+  margin: var(--s-2) 0 0;
+  max-width: 44ch;
+  color: var(--pcs-alert);
+  font-size: var(--t-sm);
+  font-weight: 500;
+}
+
+/* --- Sections on the piece page ------------------------------------------ */
+
+.pcs__section {
+  margin: var(--s-6) 0 0;
+  padding: var(--s-5) 0 0;
+  border-top: var(--rule-hair) solid var(--pcs-hair);
+}
+
+.pcs__sectionhead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+/* The checklist. It is a list of facts, and every one of them is a link to the
+   place that resolves it — except the photograph, which nothing can. */
+.pcs__check {
+  margin: var(--s-4) 0 0;
+  padding: var(--s-4) var(--s-5);
+  background: var(--pcs-sunk);
+}
+
+.pcs__checklist {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pcs__checkrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-3);
+  align-items: baseline;
+  padding: var(--s-2) 0;
+}
+
+/* The tick and the dot are decorative: the WORD beside them carries the state,
+   and both are aria-hidden in the markup. */
+.pcs__tick {
+  color: var(--pcs-head);
+  font-weight: 600;
+}
+
+.pcs__dot {
+  color: var(--pcs-alert);
+  font-weight: 600;
+}
+
+.pcs__checkword {
+  flex: 1 1 12rem;
+  color: var(--pcs-head);
+}
+
+/* --- Forms --------------------------------------------------------------- */
+
+.pcs__field {
+  margin: 0 0 var(--s-5);
+}
+
+.pcs__input {
+  display: block;
+  width: 100%;
+  max-width: 18rem;
+  min-height: 56px;
+  padding: var(--s-2) var(--s-3);
+  border: var(--rule-hair) solid var(--pcs-hair);
+  border-radius: 0;
+  background: var(--pcs-raised);
+  color: var(--pcs-head);
+  font-family: var(--font-data);
+  font-size: var(--t-md);
+}
+
+.pcs__input--text {
+  max-width: 26rem;
+  font-family: var(--font-body);
+}
+
+.pcs__unit {
+  display: inline-block;
+  margin: var(--s-2) 0 0;
+  color: var(--pcs-ink);
+  font-size: var(--t-sm);
+}
+
+.pcs__fieldset {
+  margin: 0 0 var(--s-5);
+  padding: 0;
+  border: 0;
+}
+
+.pcs__fieldset legend {
+  margin: 0 0 var(--s-3);
+  padding: 0;
+  color: var(--pcs-head);
+  font-size: var(--t-md);
+  font-weight: 600;
+}
+
+/* Radio pills. The label wraps the input, so the whole 48px pill is the hit
+   target and the native control keeps the semantics. */
+.pcs__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+.pcs__pill {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 0 var(--s-4);
+  border: var(--rule-hair) solid var(--pcs-hair);
+  background: var(--pcs-raised);
+  color: var(--pcs-head);
+  font-size: var(--t-sm);
+  cursor: pointer;
+}
+
+/* Both labels on every purity pill, because Reg. 5(11) needs carat AND
+   fineness — and because 995 has no carat at all. */
+.pcs__pillsub {
+  color: var(--pcs-ink);
+  font-family: var(--font-data);
+  font-size: var(--t-2xs);
+}
+
+.pcs__choice {
+  display: flex;
+  gap: var(--s-3);
+  align-items: flex-start;
+  min-height: 48px;
+  padding: var(--s-2) 0;
+}
+
+.pcs__choice input {
+  margin-top: 0.35em;
+}
+
+.pcs__choicebody {
+  flex: 1 1 auto;
+}
+
+.pcs__choicewhy {
+  display: block;
+  margin: var(--s-1) 0 0;
+  max-width: 42ch;
+  color: var(--pcs-ink);
+  font-size: var(--t-sm);
+}
+
+/* --- Controls ------------------------------------------------------------ */
+
+.pcs__acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin: var(--s-4) 0 0;
+}
+
+.pcs__acts form {
+  margin: 0;
+}
+
+.pcs__btn {
+  display: inline-flex;
+  min-width: 10rem;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--s-4);
+  border: var(--rule-hair) solid var(--pcs-hair);
+  background: var(--pcs-raised);
+  color: var(--pcs-head);
+  font-family: var(--font-body);
+  font-size: var(--t-sm);
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* The controls that decide something are 56px, not 48px. */
+.pcs__btn--primary {
+  min-height: 56px;
+  border-color: var(--pcs-alert);
+  background: var(--pcs-alert);
+  color: var(--pcs-on-alert);
+  font-size: var(--t-md);
+}
+
+.pcs__link {
+  color: var(--pcs-alert);
+}
+
+.pcs__back {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  color: var(--pcs-alert);
+}
+
+/* --- The echo confirmation ----------------------------------------------- */
+/* The one screen in this panel worth an extra tap. Everything on it is large,
+   because it exists to be read and not skimmed. */
+
+.pcs__echo {
+  margin: 0 0 var(--s-5);
+  padding: var(--s-5);
+  background: var(--pcs-raised);
+}
+
+.pcs__echowords {
+  margin: 0 0 var(--s-4);
+  max-width: 30ch;
+  color: var(--pcs-head);
+  font-size: 1.0625rem;
+  line-height: var(--leading-body);
+}
+
+/* The money line. Mono and large, because a figure that is the point of the
+   screen should not be set in the same face as the sentence about it. */
+.pcs__echomoney {
+  margin: 0;
+  color: var(--pcs-head);
+  font-family: var(--font-data);
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- The price preview --------------------------------------------------- */
+/* research/05 §9: the most valuable element on the screen, because a wrong
+   weight, a wrong making mode and a wrong purity all become obvious here and
+   nowhere else. */
+
+.pcs__preview {
+  width: 100%;
+  margin: var(--s-3) 0 0;
+  border-collapse: collapse;
+  font-family: var(--font-data);
+  font-size: var(--t-2xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.pcs__preview caption {
+  margin: 0 0 var(--s-2);
+  color: var(--pcs-ink);
+  font-family: var(--font-body);
+  font-size: var(--t-sm);
+  text-align: left;
+}
+
+.pcs__preview th {
+  padding: var(--s-1) var(--s-3) var(--s-1) 0;
+  color: var(--pcs-ink);
+  font-weight: 400;
+  text-align: left;
+}
+
+.pcs__preview td {
+  padding: var(--s-1) 0;
+  color: var(--pcs-head);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.pcs__preview tfoot th,
+.pcs__preview tfoot td {
+  padding-top: var(--s-2);
+  border-top: var(--rule-hair) solid var(--pcs-hair);
+  font-size: var(--t-md);
+  font-weight: 600;
+}
+
+/* --- Wider screens ------------------------------------------------------- */
+/* research/05 §9 puts the checklist in a sticky column at >= 1000px, because it
+   is a persistent reference rather than content. The sections stay in the
+   reading column: split into a gutter, a form and its explanation come apart. */
+
+@media (min-width: 62.5rem) {
+  .pcs__title {
+    font-size: 1.75rem;
+  }
+
+  .pcs__check {
+    position: sticky;
+    top: var(--s-5);
+  }
+
+  .pcs__columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 20rem;
+    gap: var(--s-7);
+    align-items: start;
+  }
+}
+
+/* --- Motion -------------------------------------------------------------- */
+/* There is almost none to reduce. This is here so a future addition inherits
+   the rule rather than being exempt from it. */
+
+@media (prefers-reduced-motion: reduce) {
+  .pcs *,
+  .pcs *::before,
+  .pcs *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* --- Print --------------------------------------------------------------- */
+/* Nothing here is a document. A piece being entered prints as the plain facts
+   about it, with every control dropped, so a sheet can go in the tray with the
+   piece while it is being weighed. */
+
+@media print {
+  .pcs {
+    color: #000;
+  }
+
+  .pcs__acts,
+  .pcs__back,
+  .pcs__btn,
+  .pcs__notice,
+  .pcs form {
+    display: none !important;
+  }
+
+  .pcs__check,
+  .pcs__blocked,
+  .pcs__echo {
+    background: #fff;
+    color: #000;
+  }
+
+  .pcs__title,
+  .pcs__name,
+  .pcs__grouphead,
+  .pcs__checkword,
+  .pcs__preview th,
+  .pcs__preview td {
+    color: #000;
+  }
+}

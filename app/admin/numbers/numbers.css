@@ -1,0 +1,349 @@
+/* ------------------------------------------------------------------------- *
+ * THE NUMBERS SCREEN — and the only two chart colours in this application.
+ *
+ * ===========================================================================
+ * THE PALETTE, VALIDATED RATHER THAN CHOSEN
+ * ===========================================================================
+ * Every chart on this screen is SINGLE-SERIES, so there is no categorical
+ * palette here at all — which is fortunate, because the brand's jewel notes
+ * fail as one. For the record, `dataviz/scripts/validate_palette.js`:
+ *
+ *   "#1f3a6e,#8c2f23,#1b4d3e,#8a6b18" --mode light --surface "#ede3d0"
+ *     [FAIL] CVD separation   worst adjacent emerald↔sindoor ΔE 4.0 (protan)
+ *
+ * A colourblind owner could not tell "good" from "late", which is why there is
+ * no green anywhere in this admin: "everything is fine" needs no colour, and
+ * the only coloured state is the exception.
+ *
+ * The two colours that do exist were then validated as a pair, in both modes,
+ * and every check passes:
+ *
+ *   "#2f5591,#8c2f23" --mode light --surface "#ede3d0"
+ *     PASS lightness · PASS chroma · PASS CVD ΔE 17.7 protan · PASS normal
+ *     ΔE 21.6 · PASS contrast
+ *   "#5b86c9,#d0674f" --mode dark  --surface "#241409"
+ *     PASS × 5 · CVD ΔE 18.0 protan · normal ΔE 23.3
+ *
+ *   --num-data  #2f5591 light (5.83:1 on plaster) / #5b86c9 dark (4.83:1 on
+ *               teak-deep). A lift of --lapis, the block-print blue. It
+ *               appears NOWHERE else in this admin, so a mark in this colour
+ *               can only mean "data".
+ *   the alert   is --adm-alert, inherited, and is not used on a chart.
+ *
+ * GOLD, GOLD-LEAF AND BRASS APPEAR ON NO CHART, IN NO MODE. 1.90:1 on plaster.
+ *
+ * ===========================================================================
+ * TEXT NEVER WEARS THE DATA COLOUR
+ * ===========================================================================
+ * The bars carry the hue. Values, row labels and axis text wear text tokens —
+ * --adm-head and --adm-meta — because a mark beside a label is what carries
+ * identity, and a coloured letterform on this ground is a contrast problem
+ * waiting to be measured.
+ *
+ * ===========================================================================
+ * NO SCRIPT
+ * ===========================================================================
+ * Both charts are inline SVG rendered on the server. There is no hover layer
+ * and no tooltip, because there is no hover on a phone; the values live in a
+ * real table under each chart, which is also the screen-reader path and the
+ * print path.
+ * ------------------------------------------------------------------------- */
+
+.num {
+  /* The one data hue. Declared here rather than in tokens.css because it is
+     used on exactly one screen and it must not become available to anything
+     that is not a chart mark. */
+  --num-data: #2f5591;
+  --num-grid: rgba(125, 108, 91, 0.35);
+
+  color: var(--adm-ink);
+}
+
+.num__back {
+  display: inline-block;
+  min-height: 48px;
+  padding: var(--s-3) 0;
+  color: var(--adm-alert);
+  font-size: var(--t-sm);
+  text-underline-offset: 0.2em;
+}
+
+.num__title {
+  margin: 0 0 var(--s-4);
+  color: var(--adm-head);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: var(--leading-tight);
+}
+
+.num__lede {
+  margin: 0 0 var(--s-3);
+  max-width: 42ch;
+  color: var(--adm-head);
+  font-size: var(--t-lg);
+  line-height: var(--leading-body);
+}
+
+/* The sentence that must never be separated from a rupee figure. It is set at
+   full body contrast, not as a footnote: a disclaimer nobody reads is the same
+   as no disclaimer. */
+.num__disclaimer {
+  margin: 0 0 var(--s-4);
+  max-width: 42ch;
+  color: var(--adm-ink);
+  font-size: var(--t-sm);
+}
+
+.num__amount {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.num__link {
+  color: var(--adm-alert);
+  text-underline-offset: 0.2em;
+}
+
+.num__note {
+  margin: var(--s-6) 0 0;
+  color: var(--adm-meta);
+  font-size: var(--t-2xs);
+}
+
+.num__notice {
+  margin: 0 0 var(--s-4);
+  padding: var(--s-3) var(--s-4);
+  background: var(--adm-raised);
+  font-size: var(--t-sm);
+}
+
+.num__notice--problem {
+  border-left: var(--rule-heavy) solid var(--adm-alert);
+}
+
+/* Colour is never the only channel: a filled square AND a word. */
+.num__wrong {
+  display: flex;
+  align-items: baseline;
+  margin: 0 0 var(--s-4);
+  max-width: 42ch;
+  color: var(--adm-alert);
+  font-size: var(--t-sm);
+  font-weight: 600;
+}
+
+.num__mark {
+  flex: none;
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: var(--s-2);
+  background: var(--adm-alert);
+}
+
+/* --- One filter row, above everything it scopes ------------------------- */
+
+.num__windows {
+  margin: 0 0 var(--s-5);
+  font-size: var(--t-sm);
+}
+
+.num__window {
+  display: inline-block;
+  min-height: 48px;
+  padding: var(--s-3) var(--s-1);
+  color: var(--adm-alert);
+  text-underline-offset: 0.2em;
+}
+
+.num__window[aria-current="true"] {
+  color: var(--adm-head);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.num__sep {
+  color: var(--adm-meta);
+}
+
+/* --- A chart ------------------------------------------------------------ */
+
+.num__chart {
+  margin: 0 0 var(--s-6);
+}
+
+.num__chart-head {
+  margin: 0;
+  color: var(--adm-head);
+  font-size: var(--t-lg);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+}
+
+/* --ink-3 is 3.96:1 and is a CAPTION colour, never body. This is a caption. */
+.num__chart-sub {
+  margin: var(--s-1) 0 var(--s-3);
+  color: var(--adm-meta);
+  font-size: var(--t-xs);
+}
+
+/*
+ * The SVG scales with the column and keeps its aspect ratio, so nothing is
+ * distorted and the container grows to include the axis band — a fixed height
+ * that excluded it is how a chart card ends up with a tiny nested scrollbar.
+ */
+.num__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0 0 var(--s-3);
+  overflow: visible;
+}
+
+/* Thin marks. The data is the only thing allowed to be loud. */
+.num__bar {
+  fill: var(--num-data);
+}
+
+/* One solid hairline, one shade off the surface. Never dashed: dashing reads
+   as "projection" or "threshold" when it is just a grid. */
+.num__grid {
+  stroke: var(--num-grid);
+  stroke-width: 1;
+}
+
+/* Values and axis text wear TEXT tokens, never the series colour. */
+.num__value {
+  fill: var(--adm-head);
+  font-family: var(--font-data);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.num__row-label {
+  fill: var(--adm-head);
+  font-family: var(--font-data);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.num__axis {
+  fill: var(--adm-meta);
+  font-family: var(--font-data);
+  font-size: 11px;
+}
+
+.num__total {
+  margin: 0 0 var(--s-3);
+  color: var(--adm-head);
+  font-size: var(--t-sm);
+}
+
+/* --- The figures: the table every chart carries ------------------------- */
+
+.num__figures {
+  margin: 0;
+  font-size: var(--t-sm);
+}
+
+.num__figures summary {
+  min-height: 48px;
+  padding: var(--s-3) 0;
+  color: var(--adm-alert);
+  cursor: pointer;
+}
+
+/* Wide content scrolls inside its own box. The PAGE never scrolls sideways. */
+.num__scroll {
+  overflow-x: auto;
+}
+
+.num__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t-xs);
+}
+
+.num__table caption {
+  margin: 0 0 var(--s-2);
+  color: var(--adm-meta);
+  font-size: var(--t-2xs);
+  text-align: left;
+}
+
+.num__table th,
+.num__table td {
+  padding: var(--s-2) var(--s-3) var(--s-2) 0;
+  border-bottom: var(--rule-hair) solid var(--adm-line);
+  text-align: left;
+}
+
+.num__table thead th {
+  color: var(--adm-head);
+  font-family: var(--font-body);
+  font-size: var(--t-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.num__table tbody th {
+  color: var(--adm-ink);
+  font-family: var(--font-data);
+  font-weight: 400;
+}
+
+/* A column of numbers is the one place tabular figures belong. */
+.num__cell {
+  color: var(--adm-head);
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* --- Dark mode is a SELECTION, not an inversion -------------------------- */
+/*
+ * The data hue is re-stepped from the same ramp and validated against
+ * --teak-deep, not lightened automatically. Declared under both the media
+ * query and a [data-theme] scope so a manual toggle wins in both directions.
+ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .num {
+    --num-data: #5b86c9;
+    --num-grid: rgba(237, 227, 208, 0.3);
+  }
+}
+
+:root[data-theme="dark"] .num {
+  --num-data: #5b86c9;
+  --num-grid: rgba(237, 227, 208, 0.3);
+}
+
+/* --- Forced colours: the bars stop being colour and become shapes -------- */
+
+@media (forced-colors: active) {
+  .num__bar {
+    fill: CanvasText;
+  }
+
+  .num__grid {
+    stroke: CanvasText;
+  }
+}
+
+/* --- Print: the table is the chart -------------------------------------- */
+
+@media print {
+  .num__windows {
+    display: none;
+  }
+
+  /* A closed <details> cannot be forced open from CSS — the UA hides its
+     contents, not a box this sheet can reach. The 30-day table is rendered
+     `open`, so it prints; the second one prints only if it was opened, which
+     is the honest limit rather than a rule that looks like it works. */
+
+  .num__bar {
+    fill: #000;
+  }
+}

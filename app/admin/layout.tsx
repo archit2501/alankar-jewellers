@@ -90,6 +90,9 @@ export const dynamic = "force-dynamic";
 const DESTINATIONS: readonly { href: string; label: string }[] = [
   { href: "/admin", label: "Today" },
   { href: "/admin/orders", label: "Orders" },
+  { href: "/admin/pieces", label: "Pieces" },
+  { href: "/admin/rate", label: "Rate" },
+  { href: "/admin/numbers", label: "Numbers" },
 ];
 
 export default async function AdminLayout({
