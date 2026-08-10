@@ -16,7 +16,10 @@ npm run dev
 npm run build
 ```
 
-This starter does not use `wrangler.jsonc`.
+This project DOES use `wrangler.jsonc` — `vinext deploy` generated it, and it
+declares the `ASSETS` and `IMAGES` bindings. `vite.config.ts` customises that
+base rather than replacing it, so D1 and R2 merge in on top. Check
+`dist/server/wrangler.json` after a build for what is really bound.
 
 ## Included Shape
 

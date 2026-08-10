@@ -1,10 +1,22 @@
 /* eslint-disable @next/next/no-img-element --
- * This site is served from Cloudflare Workers via vinext. `next/image` cannot
- * work here: worker/index.ts routes /_vinext/image through `env.IMAGES`, but
- * vite.config.ts declares no such binding, so the optimizer throws before its
- * own error handling runs (research/01-codebase.md). Every <img> below therefore
- * takes its intrinsic width/height and srcSet from the generated manifest in
- * app/_media/images.ts, which keeps cumulative layout shift at zero.
+ * Raw <img> is a DELIBERATE CHOICE here, not a forced one. That distinction
+ * used to be the other way round and the comment this replaces was, by the end,
+ * simply false.
+ *
+ * The original reason was real: there was no wrangler.jsonc, vite.config.ts
+ * declared neither ASSETS nor IMAGES, and /_vinext/image threw on an undefined
+ * binding. Then `vinext deploy` generated a wrangler.jsonc declaring both, it
+ * was committed, and the optimizer started working -- verified by driving it
+ * through the built Worker with both bindings supplied: 200 image/webp at every
+ * allowed width.
+ *
+ * We keep build-time sizing anyway, for reasons that stand on their own:
+ * scripts/build-images.mjs emits every derivative ahead of time and generates
+ * app/_media/images.ts, so each <img> carries intrinsic width/height and a real
+ * srcSet. Layout shift is structurally zero rather than merely usually zero,
+ * and no request pays for a transform. Switching to next/image would trade that
+ * for per-request work and a runtime dependency on a binding this project has
+ * already watched appear and disappear once.
  */
 
 /**

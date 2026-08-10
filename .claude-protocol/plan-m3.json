@@ -2,7 +2,7 @@
   "version": "2.0",
   "feature": "M3 \u2014 Admin panel",
   "scope": "large",
-  "status": "AWAITING APPROVAL \u2014 no code written",
+  "status": "APPROVED 2026-08-09 \u2014 in progress",
   "researchInputs": [
     "research/04-admin-integration.md",
     "research/05-admin-ux.md",
@@ -88,7 +88,7 @@
           ],
           "estimateHours": 2,
           "criticalPath": false,
-          "status": "todo"
+          "status": "done"
         }
       ]
     },

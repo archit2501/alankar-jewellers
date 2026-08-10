@@ -46,18 +46,20 @@
     }
   ],
   "hazards": [
+    "CORRECTED 2026-08-10: next/image is NOT unusable. That hazard was true when written (no wrangler.jsonc, neither ASSETS nor IMAGES declared), then `vinext deploy` GENERATED a wrangler.jsonc declaring both and it was committed unnoticed, so the build's capabilities changed underneath the documentation. Verified by driving /_vinext/image through the built Worker: 200 image/webp at every allowed width. Build-time sizing via scripts/build-images.mjs is kept as a deliberate choice (structurally zero CLS, no per-request transform), not a forced one. LESSON: re-test a hazard before trusting it; a deploy can change the facts.",
+    "MIGRATIONS MUST BE APPLIED TO A DATABASE COPY BEFORE BEING TRUSTED. drizzle-kit emitted TWO independent defects in migration 0002: the rebuild's INSERT selected new columns out of the old table, and every CHECK was qualified with the TEMPORARY table name so the rename left dangling references and SQLite refused the table. Neither was visible in code review, in 307 passing tests, or in db:generate reporting no drift. Migrations here are forward-only and applied by the control plane on deploy.",
     "BIS certificate is a HARD PREREQUISITE for Razorpay/Cashfree activation on jewellery. Sequence is BIS -> gateway KYC -> flip the payment flag; weeks-to-months, so the client should start now. Jewellery is not prohibited, just extra-underwritten.",
     "Recommend NO COD. Rs 2,00,000 arrives from three directions (NPCI UPI cap, Income-tax Act 2025 s.186 with a 100% penalty aggregating per person per day AND per occasion, couriers banning jewellery). Booking advance + balance in store avoids all three.",
     "Gold rate must come from IBJA (free, twice daily, 916 = 22K pre-GST). MCX costs ~Rs 2.6 lakh/yr AND its licence forbids public website display. Do NOT derive from XAU spot \u2014 import duty moved 6% -> 15% in May 2026.",
     "SCHEMA FIXES REQUIRED BEFORE THE FIRST MIGRATION (they are forward-only): purity must be fineness not karat (995 has no karat equivalent and would collapse onto 24K); IBJA quotes per 10g vs the ratePerGramPaise column; hallmarking default should be Rs 45/article and must invoice separately (BIS Reg. 5(11)); add a complaint ticket number (E-Commerce Rule 7(1)(f)) and a PAN field on orders; DPDP Rule 8(3) sets a one-year retention floor after account deletion, so purge must soft-delete and must not touch the order snapshot.",
-    "next/image is UNUSABLE: worker/index.ts uses env.IMAGES/env.ASSETS but vite.config.ts declares neither, so /_vinext/image 500s. All sizing is build-time via scripts/build-images.mjs.",
     "R2 is now enabled as MEDIA and verified in dist/server/wrangler.json. Uploading is unblocked; RENDERING uploads is not \u2014 the optimizer resolves via env.ASSETS and needs a worker/index.ts change first.",
     "Do NOT copy the appointments route's dual-sink rule for orders \u2014 it must be inverted (a webhook-only order with no D1 row is a lost order), and its throttle would silently no-op a customer's legitimate second order.",
     "Nothing is prerendered and no KV binding is available, so every product page SSRs and hits D1 per request.",
     "gpt-image-bridge: the --size flag is NOT binding; state pixel dimensions in the prompt body or output comes back at the wrong aspect ratio.",
-    "Needs Indian counsel before launch: whether Legal Metrology treats shipped jewellery as a pre-packaged commodity requiring an MRP (near-unworkable on a daily-repriced article), and whether BIS's premises-based 'certified sales outlets' language accommodates online sale."
+    "Needs Indian counsel before launch: whether Legal Metrology treats shipped jewellery as a pre-packaged commodity requiring an MRP (near-unworkable on a daily-repriced article), and whether BIS's premises-based 'certified sales outlets' language accommodates online sale.",
+    "Two flaky SECURITY tests were fixed 2026-08-10, both the same root cause: a 32-byte token is 256 bits but 43 base64url chars carry 258, so the final character has 2 bits of slack and A/B/C/D decode identically. Tampering with the last character produced a VALID token ~6.25% of runs. When tampering in a test, change bytes, not characters."
   ],
-  "lastUpdated": "2026-07-27",
+  "lastUpdated": "2026-08-10",
   "baseline": {
     "branch": "redesign/meena-reverse",
     "main": "453457c \u2014 untouched fallback",
