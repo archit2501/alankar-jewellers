@@ -190,6 +190,30 @@ const PRESENTATION: Readonly<Record<string, Presentation>> = {
     altBack: null,
     spec: "Chased vine · hinged clasp · no stones",
   },
+
+  /* --- Bridal demonstration pieces. See (3a). --------------------------- */
+
+  "rani-haar": {
+    mediaKey: { front: "rani-haar-front", back: "rani-haar-reverse" },
+    alt: "Three-strand rani haar of carved ruby and emerald beads and pearls, hung with seven kundan-set polki medallions and a drop",
+    altBack:
+      "The same haar turned over: a pink and green lotus enamelled on the back of every medallion and on the drop",
+    spec: "Three strands · carved ruby and emerald · kundan medallions",
+  },
+  "bridal-tikka": {
+    mediaKey: { front: "bridal-tikka-front", back: "bridal-tikka-reverse" },
+    alt: "Bridal maang tikka: a kundan-set polki medallion hung with carved emerald and ruby drops, on a pearl and gold chain",
+    altBack:
+      "The same tikka turned over: a red and green lotus enamelled across the back of the medallion",
+    spec: "Kundan-set polki · carved bead drops · pearl chain",
+  },
+  "jadau-kangan": {
+    mediaKey: { front: "jadau-kangan-front", back: "jadau-kangan-reverse" },
+    alt: "Wide bridal jadau kangan of polki flowerheads bedded in gold, rimmed in seed pearls with carved emerald beads",
+    altBack:
+      "The same kangan turned over: a red and green flowering vine enamelled right round the inner face",
+    spec: "Jadau flowerheads · seed-pearl rim · carved emerald",
+  },
 };
 
 /* =========================================================================
@@ -595,6 +619,92 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
     saleMode: "buy_online",
     position: 90,
   },
+
+  /* =======================================================================
+   * BRIDAL DEMONSTRATION STOCK.
+   *
+   * The four pieces above are everyday work and belong to no occasion, which
+   * left two entries in the collection control -- Headpieces and Bridal --
+   * with nothing behind them once a shopper also chose a purity. Since only
+   * priced pieces carry a fineness, and every priced piece was everyday, those
+   * two filters returned "0 of 9" against a wall that visibly had pieces on it.
+   *
+   * These three are bridal by construction rather than by filing: a tikka IS a
+   * headpiece and a rani haar IS bridal, so the collections below describe them
+   * instead of being assigned to fill a gap. All three are stone-set, so QCO
+   * cl. 2(3) exempts them and `hallmarkingPaise` is 0 -- unlike the plain gold
+   * pieces above, which pay the fee.
+   * ==================================================================== */
+
+  {
+    piece: demoPiece({
+      slug: "rani-haar",
+      title: "Rani haar",
+      subtitle: "Necklace",
+      craft: "polki",
+      description:
+        "Three strands, seven medallions, and a lotus fired onto the back of every one of them. Long enough to sit below a choker.",
+      collections: ["necklaces", "jadau-polki", "meenakari", "bridal"],
+      fineness: 916,
+      netMetalWeightMg: 42_000,
+      grossWeightMg: 58_400, // carved beads and pearls carry the difference
+      makingChargeType: "percent",
+      makingChargeValue: 1500,
+      stoneValuePaise: 8_500_000, // carved ruby and emerald, polki, pearls
+      hallmarkingPaise: 0, // QCO cl. 2(3): polki, exempt
+    }),
+    variantId: "var_rani-haar",
+    sku: "AJ-RANI-HAAR-01",
+    status: "active",
+    saleMode: "buy_online",
+    position: 100,
+  },
+  {
+    piece: demoPiece({
+      slug: "bridal-tikka",
+      title: "Bridal tikka",
+      subtitle: "Headpiece",
+      craft: "kundan",
+      description:
+        "It sits where the parting starts. The side nobody sees faces the hair, and it is enamelled anyway.",
+      collections: ["headpieces", "kundan", "meenakari", "bridal"],
+      fineness: 916,
+      netMetalWeightMg: 9_600,
+      grossWeightMg: 11_200,
+      makingChargeType: "percent",
+      makingChargeValue: 1700,
+      stoneValuePaise: 1_450_000,
+      hallmarkingPaise: 0, // QCO cl. 2(3): kundan-set, exempt
+    }),
+    variantId: "var_bridal-tikka",
+    sku: "AJ-TIKKA-01",
+    status: "active",
+    saleMode: "buy_online",
+    position: 110,
+  },
+  {
+    piece: demoPiece({
+      slug: "jadau-kangan",
+      title: "Jadau kangan",
+      subtitle: "Bangle",
+      craft: "jadau",
+      description:
+        "Stones pressed into gold rather than gripped by it. Wide enough that the vine on the inside takes a week.",
+      collections: ["bangles", "jadau-polki", "meenakari", "bridal"],
+      fineness: 916,
+      netMetalWeightMg: 28_500,
+      grossWeightMg: 33_100,
+      makingChargeType: "percent",
+      makingChargeValue: 1600,
+      stoneValuePaise: 4_200_000,
+      hallmarkingPaise: 0, // QCO cl. 2(3): jadau, exempt
+    }),
+    variantId: "var_jadau-kangan",
+    sku: "AJ-KANGAN-01",
+    status: "active",
+    saleMode: "buy_online",
+    position: 120,
+  },
 ];
 
 /** The five pieces as the storefront sees them. */
@@ -615,6 +725,9 @@ export const DEMONSTRATION_SLUGS: readonly string[] = [
   "polki-ring",
   "lotus-pendant",
   "slim-kada",
+  "rani-haar",
+  "bridal-tikka",
+  "jadau-kangan",
 ];
 
 /** True for a piece whose figures are invented for demonstration. See (3a). */

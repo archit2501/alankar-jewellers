@@ -121,6 +121,9 @@ test("serves the compiled seed when D1 is unreachable", async () => {
       "polki-ring",
       "lotus-pendant",
       "slim-kada",
+      "rani-haar",
+      "bridal-tikka",
+      "jadau-kangan",
     ],
     "the fallback must serve the seed in wall order, heirlooms before demonstration stock"
   );
@@ -430,18 +433,66 @@ test("filters the catalogue by collection and by metal", async () => {
     ["chandbali-earrings", "gold-jhumka"]
   );
 
-  // Bridal is the five heirloom pieces. The demonstration stock is everyday
-  // work and deliberately belongs to no occasion.
+  // Bridal holds the five heirloom pieces plus the three demonstration pieces
+  // that are bridal BY CONSTRUCTION — a tikka is a headpiece and a rani haar is
+  // bridal, so the collection describes them rather than being a place they
+  // were filed to fill a gap.
+  //
+  // The rule that still holds, and is what this asserts: the four EVERYDAY
+  // demonstration pieces stay out. A jhumka small enough for a working day does
+  // not become bridal because the filter looked empty.
   const bridal = await listPricedCatalogue({ collection: "bridal" });
-  assert.equal(bridal.length, 5);
+  const everyday = ["gold-jhumka", "polki-ring", "lotus-pendant", "slim-kada"];
+  for (const slug of everyday) {
+    assert.ok(
+      !bridal.some((piece) => piece.slug === slug),
+      `${slug} is everyday work and must not be filed under an occasion`
+    );
+  }
   assert.ok(
-    bridal.every((piece) => !isDemonstrationPiece(piece.slug)),
-    "demonstration stock must not be filed under an occasion it was never made for"
+    bridal.some((piece) => isDemonstrationPiece(piece.slug)),
+    "Bridal has no priced piece, so choosing it with a purity returns nothing"
   );
 
   assert.equal((await listPricedCatalogue({ metal: "gold" })).length, CATALOGUE_SEED.length);
   assert.equal((await listPricedCatalogue({ metal: "silver" })).length, 0);
 });
+
+/**
+ * EVERY COLLECTION THE CONTROL OFFERS MUST SURVIVE A PURITY FILTER.
+ *
+ * The bug this exists for, seen on the live site: choosing Gold + 916 fineness
+ * + Headpieces returned "Showing 0 of 9 pieces" on a wall that plainly had nine
+ * pieces on it. Nothing was broken — a fineness only exists on a priced piece,
+ * every priced piece happened to be everyday, and so both Headpieces and Bridal
+ * were empty the moment a shopper touched Purity.
+ *
+ * That is indistinguishable from a broken filter, and a shopper who gets an
+ * empty wall twice stops using the control. So a collection is only allowed
+ * into the dropdown if something behind it can actually be found.
+ */
+test("no collection in the control is empty once a purity is chosen", async () => {
+  const finenesses = catalogueFacets(await listCatalogue()).finenesses;
+  assert.ok(finenesses.length > 0, "no fineness is offered, so this proves nothing");
+
+  const empty = [];
+  for (const collection of CATALOGUE_COLLECTIONS) {
+    for (const purity of finenesses) {
+      const matches = await listPricedCatalogue({
+        collection: collection.slug,
+        fineness: purity,
+      });
+      if (matches.length === 0) empty.push(`${collection.slug} + ${purity}`);
+    }
+  }
+
+  assert.deepEqual(
+    empty,
+    [],
+    `these collection/purity combinations show an empty wall: ${empty.join(", ")}`
+  );
+});
+
 
 test("facets are derived from the data, never hard-coded", async () => {
   const facets = catalogueFacets(await listCatalogue());

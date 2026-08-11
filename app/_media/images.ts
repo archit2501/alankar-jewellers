@@ -13,6 +13,18 @@ export type ImageAsset = {
 };
 
 export const images = {
+  "bridal-tikka-front": {
+    "src": "/images/catalogue/bridal-tikka-front-1400.webp",
+    "width": 1400,
+    "height": 1750,
+    "srcSet": "/images/catalogue/bridal-tikka-front-400.webp 400w, /images/catalogue/bridal-tikka-front-800.webp 800w, /images/catalogue/bridal-tikka-front-1400.webp 1400w"
+  },
+  "bridal-tikka-reverse": {
+    "src": "/images/catalogue/bridal-tikka-reverse-1400.webp",
+    "width": 1400,
+    "height": 1750,
+    "srcSet": "/images/catalogue/bridal-tikka-reverse-400.webp 400w, /images/catalogue/bridal-tikka-reverse-800.webp 800w, /images/catalogue/bridal-tikka-reverse-1400.webp 1400w"
+  },
   "chandbali-earrings-front": {
     "src": "/images/catalogue/chandbali-earrings-front-1400.webp",
     "width": 1400,
@@ -66,6 +78,18 @@ export const images = {
     "width": 1400,
     "height": 1750,
     "srcSet": "/images/catalogue/jadau-haar-reverse-400.webp 400w, /images/catalogue/jadau-haar-reverse-800.webp 800w, /images/catalogue/jadau-haar-reverse-1400.webp 1400w"
+  },
+  "jadau-kangan-front": {
+    "src": "/images/catalogue/jadau-kangan-front-1400.webp",
+    "width": 1400,
+    "height": 1750,
+    "srcSet": "/images/catalogue/jadau-kangan-front-400.webp 400w, /images/catalogue/jadau-kangan-front-800.webp 800w, /images/catalogue/jadau-kangan-front-1400.webp 1400w"
+  },
+  "jadau-kangan-reverse": {
+    "src": "/images/catalogue/jadau-kangan-reverse-1400.webp",
+    "width": 1400,
+    "height": 1750,
+    "srcSet": "/images/catalogue/jadau-kangan-reverse-400.webp 400w, /images/catalogue/jadau-kangan-reverse-800.webp 800w, /images/catalogue/jadau-kangan-reverse-1400.webp 1400w"
   },
   "kundan-kada-front": {
     "src": "/images/catalogue/kundan-kada-front-1400.webp",
