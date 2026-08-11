@@ -423,11 +423,13 @@ export default async function ShopPage({
                 <p>
                   The four smaller pieces you can add to a bag are a{" "}
                   <strong>demonstration</strong>. Their weights and making
-                  charges are invented so that the pricing, the bag and the
-                  checkout can be walked through end to end before the real
-                  stock exists. No hallmark number is shown against any of them,
-                  because a made-up one would be a forged credential rather than
-                  a placeholder.
+                  charges are invented, and so is the gold rate they are costed
+                  against — <strong>every figure shown against them is made up</strong>,
+                  so that the pricing, the bag and the checkout can be walked
+                  through end to end before the real stock exists. Do not read
+                  any of it as a quotation. No hallmark number is shown against
+                  them either, because a made-up one would be a forged
+                  credential rather than a placeholder.
                 </p>
                 <p>
                   <Link className="text-action" href="/#visit">
