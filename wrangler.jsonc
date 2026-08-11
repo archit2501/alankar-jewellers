@@ -1,7 +1,14 @@
 {
+  // compatibility_date is PINNED, not current. `vinext deploy` generated this
+  // file stamped with the day it ran (2026-08-07), which the local workerd
+  // binary does not support -- `npm run dev` failed with "requires
+  // compatibility date 2026-08-07, but the newest date supported by this server
+  // binary is 2026-05-22". 2026-05-15 is what this project actually built and
+  // ran its 426 tests against. Raising it is a deliberate decision that needs a
+  // wrangler upgrade first, not a side effect of the date a deploy happened.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "alankar-jewellers",
-  "compatibility_date": "2026-08-07",
+  "compatibility_date": "2026-05-15",
   "compatibility_flags": [
     "nodejs_compat"
   ],

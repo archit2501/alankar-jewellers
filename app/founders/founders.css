@@ -8,13 +8,22 @@
  *
  * Field order, top to bottom:
  *   lintel       darbar-deep   the bar, ruled in gold
- *   opener       darbar        one sentence, jali-veiled, no image
- *   founder 1    haveli        a portrait hung on a plaster wall
+ *   opener       darbar        one sentence + the page's own shape, jali-veiled
+ *   the person   haveli        one portrait hung on a plaster wall
  *   the niches   vitrine       five lit arches in the teak almirah
- *   founder 2    haveli        mirrored
  *   what changed haveli, sunk  a recess, ruled like a bahi-khata
  *   close        darbar        the invitation, centred
  *   colophon     darbar-deep   the threshold out
+ *
+ * THIS PAGE HELD TWO PORTRAITS UNTIL 2026-08-12, mirrored either side of the
+ * niches, the second of them a stand-in. The shop then confirmed there is no
+ * second person, so the second mount came off the wall entirely rather than
+ * being left hanging empty. What replaces it is not more sections: the one
+ * portrait grew from five columns to six, the column beside it now carries a
+ * record card with answers in it instead of three pending lines, and the
+ * opening statement says out loud that there is one person — so a single face
+ * reads as the point of the page rather than as the half of a pair that got
+ * built first. `.f-founder--mirrored` is gone with the block it mirrored.
  *
  * This file styles composition only. Colour comes from the field variables that
  * globals.css declares (--field, --field-ink, --field-head, --field-label,
@@ -191,6 +200,18 @@
   max-width: 17ch;
 }
 
+/* The three confirmed facts, stated on the Darbar field before the page shows
+   a face. It is set at lede weight rather than body weight because it is doing
+   structural work — it is what stops one portrait reading as an unfinished
+   pair — and --plaster on --oxblood is 12.11:1. */
+.f-opener__fact {
+  max-width: 38ch;
+  margin-top: var(--s-7);
+  color: var(--field-ink);
+  font-size: var(--t-lg);
+  line-height: 1.55;
+}
+
 /* A Darbar field cannot simply be half empty, so the disclosure this page has
    to carry anyway is set beside the sentence as a ruled panel — the one piece
    of copy that is certain to exist while everything else is pending. */
@@ -204,7 +225,7 @@
   font-size: var(--t-sm);
 }
 
-/* ---- 2 / 5. HAVELI — the two founders ----------------------------------- */
+/* ---- 2. HAVELI — the one person ----------------------------------------- */
 
 .f-founder__grid {
   display: grid;
@@ -259,9 +280,11 @@
   margin-block: var(--s-5);
 }
 
-/* The record card. With no name and no recorded words, a heading and two
-   paragraphs leave a hole beside a tall portrait; the shop's own record card is
-   a full object, and a form waiting to be filled in is honest by its shape. */
+/* The record card. It was invented as a way to be honest about a column with
+   nothing in it — a form waiting to be filled in is a full object even when
+   every line is blank. Two of its three lines are now answered, which is the
+   real repair to the void: the card stopped being a shape standing in for
+   content and became content. The third line stays open, and looks it. */
 .f-record {
   margin: 0;
 }
@@ -532,29 +555,28 @@
     margin-top: var(--s-6);
   }
 
+  /* The portrait no longer has a twin to share the page's weight with, so the
+     field around it is opened to the macro step. Emptiness above and below a
+     single face reads as intent; the same face in the default section rhythm
+     reads as a row that lost its partner. */
+  .f-founder {
+    padding-block: var(--m-4);
+  }
+
   .f-founder__grid {
     align-items: center;
     gap: var(--s-7);
     grid-template-columns: repeat(12, minmax(0, 1fr));
   }
 
+  /* Six columns, not the five it shared with a mirrored twin. There is one
+     face on this page now, and it is allowed to be the largest thing on it. */
   .f-portrait {
-    grid-column: 1 / span 5;
+    grid-column: 1 / span 6;
   }
 
   .f-founder__words {
-    grid-column: 7 / -1;
-  }
-
-  /* Mirrored, so the two portraits read as a pair rather than as a list. */
-  .f-founder--mirrored .f-portrait {
     grid-column: 8 / -1;
-    grid-row: 1;
-  }
-
-  .f-founder--mirrored .f-founder__words {
-    grid-column: 1 / span 6;
-    grid-row: 1;
   }
 
   .f-changed__list {

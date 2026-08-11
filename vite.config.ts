@@ -28,7 +28,13 @@ const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
 
 const localBindingConfig = {
   main: "./worker/index.ts",
-  compatibility_flags: ["nodejs_compat"],
+  // NOT compatibility_flags. wrangler.jsonc already declares nodejs_compat, and
+  // @cloudflare/vite-plugin's `config` is a CUSTOMIZER that merges over that
+  // base rather than replacing it -- so declaring it here too produced
+  // "Compatibility flag specified multiple times: nodejs_compat" and workerd
+  // refused to start. That broke `npm run dev` the moment `vinext deploy`
+  // generated wrangler.jsonc, which is the same root cause as the stale
+  // next/image hazard: the deploy changed the base underneath this file.
   d1_databases: d1
     ? [
         {

@@ -89,6 +89,87 @@ export const site = {
   },
 } as const;
 
+/**
+ * THE ONE PERSON AT ALANKAR JEWELLERS.
+ *
+ * Gated the same way as `known` above, but deliberately kept OUT of it:
+ * `known` is enumerated wholesale by `_seo/structured-data.ts` and
+ * `_components/appointment.tsx` (`Record<keyof typeof known, boolean>`), and
+ * those are about the shop's contactability, not about a person.
+ *
+ * Supplied by the shop on 2026-08-12, and recorded here at exactly the width it
+ * was given. Three facts arrived, and this is all three of them:
+ *
+ *   1. he is the third generation OF THE FAMILY BUSINESS
+ *   2. he oversees everything — all of the operations
+ *   3. there is no second person
+ *
+ * ⚠️  WHAT IS DELIBERATELY ABSENT, AND MUST STAY ABSENT.
+ *
+ * The house dates to 1980 and he is the third generation. Those are two facts,
+ * not one: "third generation of the family business" is an ordinal within a
+ * family, and a family can trade before it opens a shop. Multiplying the two
+ * together to get a grandfather who founded Alankar in 1980 is arithmetic, not
+ * evidence, and it is the single most tempting sentence on this page. So there
+ * is no grandfather here, no father, no year he took over, and no stated
+ * relationship between him and the 1980 opening. Nobody supplied any of it.
+ *
+ * Still pending below, and rendered as visibly unanswered rather than guessed:
+ * his own words, where in the shop to find him, and his email.
+ */
+export const founder = {
+  /** Which facts about him the shop has actually supplied. */
+  known: {
+    name: true, // supplied 2026-08-11
+    generation: true, // supplied 2026-08-12
+    oversees: true, // supplied 2026-08-12
+    soleOperator: true, // supplied 2026-08-12
+    whereabouts: false,
+    words: false,
+    quote: false,
+    email: false,
+    joined: false, // no date of joining, and none may be inferred from 1980
+  },
+
+  /** As he wants it written. */
+  name: "Saksham Goel" as string | null,
+
+  /**
+   * The ordinal on its own, because it is only ever printed beside the scope it
+   * belongs to — the record card's own label, "In the family business". Kept
+   * apart so that the ordinal can never be set loose next to the shop's 1980
+   * opening and quietly become "the third generation since 1980", which is a
+   * different and unevidenced claim. See the warning above.
+   */
+  generation: "The third generation." as string | null,
+
+  /**
+   * The role as a verb rather than a job title, which is Part E's grammar and
+   * also, here, the client's own phrasing: he oversees everything.
+   */
+  oversees: "Oversees everything — all of the operations." as string | null,
+
+  /**
+   * The same fact cut to caption length, for Part E's "Name — verb." grammar
+   * under a portrait. Kept here rather than sliced out of the sentence above,
+   * so that both phrasings are things the shop said rather than things a
+   * component derived.
+   */
+  overseesShort: "oversees everything" as string | null,
+
+  /** "there is no second person." The reason this page carries one portrait. */
+  soleOperator: true,
+
+  /** TODO: where in the shop a customer actually finds him. */
+  whereabouts: null as string | null,
+  /** TODO: two or three short paragraphs, recorded in the first person. */
+  words: [] as string[],
+  /** TODO: one line, in his own words. Set without quotation marks. */
+  quote: null as string | null,
+  /** TODO: his own address, if he wants one published. */
+  email: null as string | null,
+};
+
 /** Formatted one-line address for display. */
 export function formattedAddress() {
   const { street, locality, city, region, postalCode } = site.address;
