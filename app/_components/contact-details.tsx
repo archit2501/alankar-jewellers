@@ -1,24 +1,50 @@
-import { SITE_DETAILS_PENDING, formattedAddress, site, whatsappUrl } from "../site-config";
+import { formattedAddress, known, site, whatsappUrl } from "../site-config";
 
 /**
  * Server component — no interactivity, no client JS.
  *
- * Every value comes from `app/site-config.ts`. While `SITE_DETAILS_PENDING` is
- * true the placeholders are shown but never wired into `tel:` / `wa.me` / maps
- * links, because a dead call button converts worse than an honest "not live
- * yet" label. Flipping the single boolean in site-config turns all of them into
- * real links. That gating behaviour is unchanged by the redesign — only the
- * styling moved.
+ * Every value comes from `app/site-config.ts`, and every value is gated on its
+ * OWN `known.*` flag rather than on one shared boolean.
  *
- * One behavioural fix: the pending address used to be underlined with a dashed
- * rule, which is exactly what a link looks like, so people tapped it. Pending
- * values now carry no link affordance at all.
+ * That change is the whole point of this file. The shop supplied a working
+ * phone number long before it supplied a street address, and under the old
+ * all-or-nothing flag the live number stayed behind a dead "opening soon"
+ * label — the site was hiding a fact it actually had in order to avoid
+ * publishing facts it did not. Now the call and WhatsApp buttons are real
+ * while the address and the opening hours are still openly unanswered.
+ *
+ * Two rules survive intact:
+ *
+ *  1. An unknown fact is never printed. Not greyed out, not dashed, not shown
+ *     as a placeholder string. `site.address` still contains "Shop address
+ *     line 1 / Locality / City / State / 000000" and `site.hours` still
+ *     contains an assumed schedule; neither reaches the page while its flag is
+ *     false, because a visitor cannot tell a styled placeholder from a real
+ *     value that happens to look odd, and a wrong opening time sends someone to
+ *     a closed shutter.
+ *  2. Nothing unknown is given a link affordance. The pending address used to
+ *     be underlined with a dashed rule, which is what a link looks like, so
+ *     people tapped it.
+ *
+ * The one thing the pending slots gained: they can now point at a real phone
+ * number, which is a far better answer than "coming soon".
  */
 export function ContactDetails() {
-  const detailsPending: boolean = SITE_DETAILS_PENDING;
-  const telHref = detailsPending ? null : `tel:${site.phone}`;
-  const waHref = detailsPending ? null : whatsappUrl();
-  const mapsHref = detailsPending || !site.mapsUrl ? null : site.mapsUrl;
+  // Widened so both branches of every gate stay type-checked while the flags
+  // in site-config are literals.
+  const has: Record<keyof typeof known, boolean> = { ...known };
+
+  const telHref = has.phone ? `tel:${site.phone}` : null;
+  const waHref = has.whatsapp ? whatsappUrl() : null;
+  const mapsHref = has.maps && site.mapsUrl ? site.mapsUrl : null;
+
+  // What the visitor is still owed. Listed rather than summarised, so the
+  // notice cannot go on claiming the phone line is pending after it went live.
+  const outstanding = [
+    has.address ? null : "a street address",
+    has.hours ? null : "opening hours",
+    has.email ? null : "an email address",
+  ].filter((item): item is string => item !== null);
 
   return (
     <div className="contact">
@@ -32,12 +58,13 @@ export function ContactDetails() {
           <h2>Come and see them in person.</h2>
         </div>
 
-        {detailsPending ? (
+        {outstanding.length > 0 ? (
           <p className="contact__notice grained">
             <span className="contact__tag">Details pending</span>
-            Our shop number, WhatsApp line and street address are being
-            finalised. The values below are placeholders and are not yet live —
-            please use the appointment request above and we will call you back.
+            The phone and WhatsApp numbers below are live — please use them.
+            We have not published {listSentence(outstanding)} yet, and rather
+            than print a guess we have left {outstanding.length > 1 ? "those lines" : "that line"}{" "}
+            open until the shop confirms {outstanding.length > 1 ? "them" : "it"}.
           </p>
         ) : null}
       </div>
@@ -53,7 +80,7 @@ export function ContactDetails() {
             </a>
           ) : (
             <span className="contact__value contact__value--pending">
-              {site.phoneDisplay}
+              Number pending
             </span>
           )}
           <p className="contact__meta">
@@ -80,13 +107,18 @@ export function ContactDetails() {
           <h3 className="label" id="contact-address">
             The salon
           </h3>
-          <address
-            className={`contact__value contact__value--address${
-              detailsPending ? " contact__value--pending" : ""
-            }`}
-          >
-            {formattedAddress()}
-          </address>
+          {has.address ? (
+            <address className="contact__value contact__value--address">
+              {formattedAddress()}
+            </address>
+          ) : (
+            /* No <address> element at all: an <address> containing an excuse is
+               still an <address>, and it is a machine-readable one. */
+            <p className="contact__value contact__value--address contact__value--pending">
+              <span className="contact__tag">Pending</span>
+              We have not published the street address yet.
+            </p>
+          )}
           <p className="contact__meta">
             Private viewings are held in the inner salon, away from the counter.
           </p>
@@ -101,7 +133,9 @@ export function ContactDetails() {
             </a>
           ) : (
             <span className="contact__meta contact__action">
-              Directions coming soon.
+              {telHref
+                ? "Call or message us and we will send you the directions."
+                : "Directions coming soon."}
             </span>
           )}
         </section>
@@ -110,18 +144,40 @@ export function ContactDetails() {
           <h3 className="label" id="contact-hours">
             Opening hours
           </h3>
-          {/* Tabular, so this is one of the two places on the page where a
-              hairline is allowed to exist. */}
-          <dl className="contact__hours">
-            {site.hours.map((entry) => (
-              <div key={entry.days}>
-                <dt>{entry.days}</dt>
-                <dd>{entry.time}</dd>
-              </div>
-            ))}
-          </dl>
+          {has.hours ? (
+            /* Tabular, so this is one of the two places on the page where a
+               hairline is allowed to exist. */
+            <dl className="contact__hours">
+              {site.hours.map((entry) => (
+                <div key={entry.days}>
+                  <dt>{entry.days}</dt>
+                  <dd>{entry.time}</dd>
+                </div>
+              ))}
+            </dl>
+          ) : (
+            <>
+              <p className="contact__value contact__value--pending">
+                <span className="contact__tag">Pending</span>
+                Not confirmed yet.
+              </p>
+              <p className="contact__meta">
+                The shop has not given us its hours, and an approximate one sends
+                somebody to a closed shutter.{" "}
+                {telHref
+                  ? "Call before you set out and we will tell you when we are open."
+                  : "We will publish them here as soon as they are confirmed."}
+              </p>
+            </>
+          )}
         </section>
       </div>
     </div>
   );
+}
+
+/** "a, b and c" — the Oxford-free form the rest of the site's copy uses. */
+function listSentence(items: string[]): string {
+  if (items.length <= 1) return items[0] ?? "";
+  return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 }

@@ -37,6 +37,12 @@ export const images = {
     "height": 1125,
     "srcSet": "/images/catalogue/founder-portrait-b-400.webp 400w, /images/catalogue/founder-portrait-b-900.webp 900w"
   },
+  "founder-saksham-goel": {
+    "src": "/images/catalogue/founder-saksham-goel-900.webp",
+    "width": 900,
+    "height": 1125,
+    "srcSet": "/images/catalogue/founder-saksham-goel-400.webp 400w, /images/catalogue/founder-saksham-goel-900.webp 900w"
+  },
   "jadau-haar-front": {
     "src": "/images/catalogue/jadau-haar-front-1400.webp",
     "width": 1400,

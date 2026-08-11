@@ -1,3 +1,5 @@
+const { known } = await import("../app/site-config.ts");
+
 /**
  * TODAY — the queue, the empty state, the torn order, and the read log.
  *
@@ -987,7 +989,22 @@ test("signed in with nothing waiting, Today is a to-do list for opening the shop
   // The screen that matters most: the four real gaps, in words, with the fact
   // that makes each one true.
   assert.match(html, /Before the shop can take orders/);
-  assert.match(html, /no phone number or address/);
+
+  // The contact gap reports the state it is ACTUALLY in. It used to collapse
+  // "we have a phone but no address" into the same sentence as "we have
+  // nothing", which is how an owner who has already supplied a number is told
+  // the site still has none — and stops trusting the list. Asserted off the
+  // real flags so this keeps meaning something as facts arrive.
+  if (known.phone && !known.address) {
+    assert.match(html, /has a phone number, but no address/);
+    assert.doesNotMatch(
+      html,
+      /no phone number or address/,
+      "a supplied number must not still be reported as missing"
+    );
+  } else if (!known.phone) {
+    assert.match(html, /no phone number or address/);
+  }
   assert.match(html, /weighed or assayed/);
   assert.match(html, /No gold rate has been recorded/);
   assert.match(html, /Card and UPI are switched off/);

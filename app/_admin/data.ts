@@ -63,7 +63,7 @@ import {
   paymentStanding,
 } from "../_data/orders";
 import { classifyRate, type RateLookup, type RateRow } from "../_pricing/rates";
-import { SITE_DETAILS_PENDING } from "../site-config";
+import { known } from "../site-config";
 import { ADMIN_ACTIONS, searchDiff, writeAudit } from "./audit";
 import { getAdminDb, requireAdmin, type AdminIdentity } from "./session";
 import type {
@@ -719,11 +719,17 @@ export async function readSetupGaps(db: CartDb): Promise<SetupGap[]> {
   return [
     {
       id: "contact_details",
-      title: "The website has no phone number or address yet",
-      detail:
-        "It says so on the page rather than inventing them. They are filled in once, in the site’s own settings, by whoever looks after the website.",
+      // Each fact is now known or not on its own, so this reports the state it
+      // is actually in rather than collapsing "phone but no address" into the
+      // same sentence as "nothing at all".
+      title: known.phone
+        ? "The website has a phone number, but no address or opening hours"
+        : "The website has no phone number or address yet",
+      detail: known.phone
+        ? "The number is live and people can ring it. The address and the opening hours are still missing, and the page says so rather than inventing them — someone will otherwise arrive at a closed shutter."
+        : "It says so on the page rather than inventing them. They are filled in once, in the site’s own settings, by whoever looks after the website.",
       href: null,
-      resolved: !SITE_DETAILS_PENDING,
+      resolved: known.phone && known.address && known.hours,
     },
     catalogue,
     {

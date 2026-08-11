@@ -25,23 +25,137 @@ test("appears in the sitemap", async () => {
   assert.match(await sitemap.text(), /<loc>https:\/\/[^<]*\/founders<\/loc>/);
 });
 
-test("invents no biographical facts while details are pending", async () => {
-  const body = await html();
+/** The one supplied fact about a person on this page. */
+const NAMED = "Saksham Goel";
 
-  // The two portraits are AI-generated stand-ins. Until real people are
-  // supplied, the page may carry structure but must not carry a fabricated
-  // life story -- and it must say so rather than quietly implying the images
-  // depict the actual proprietors.
-  if (body.includes("pending") || body.includes("Pending")) {
-    assert.match(
-      body,
-      /stand-?in|not (yet )?been taken|placeholder|pending/i,
-      "pending state must be visible to the reader"
+/** Language that may only ever describe a placeholder. */
+const STAND_IN = /stand-?in|placeholder|not (yet )?been taken|not a photograph of a real person/i;
+
+/**
+ * Claims this page has NOT been given: a role, a title, a relationship to the
+ * 1980 founding, a date. The shop opened in 1980 and the man in the photograph
+ * is plainly much younger, so "founder" is an inference — a likely one, which
+ * is exactly why it needs a guard rather than a judgement call.
+ */
+const UNSUPPLIED_CLAIM =
+  /\b(founder|co-?founder|founded|proprietor|owner|owns|runs|director|partner|son|grandson|daughter|father|nephew|heir|successor|since|generation|19\d{2}|20\d{2})\b/i;
+
+/** Rendered text only: markup, script and style stripped, whitespace collapsed. */
+function visibleText(body) {
+  return body
+    .replace(/<script[\s\S]*?<\/script>/g, " ")
+    .replace(/<style[\s\S]*?<\/style>/g, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&#x27;|&rsquo;|&#39;/g, "'")
+    .replace(/&amp;/g, "&")
+    .replace(/&mdash;/g, "—")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** The `<img>` whose source is the named asset — the face, not the reverse. */
+function imgFor(body, assetKey) {
+  const tag = (body.match(/<img\b[^>]*>/g) ?? []).find((t) => t.includes(`/${assetKey}-`));
+  assert.ok(tag, `no <img> rendered for ${assetKey}`);
+  return tag;
+}
+
+function altFor(body, assetKey) {
+  const match = imgFor(body, assetKey).match(/\balt="([^"]*)"/);
+  assert.ok(match, `no alt text on the ${assetKey} image`);
+  return match[1];
+}
+
+/** The caption printed under a portrait. */
+function captionFor(body, assetKey) {
+  const from = body.indexOf(assetKey);
+  assert.notEqual(from, -1, `${assetKey} does not appear in the page`);
+  const match = body
+    .slice(from)
+    .match(/<figcaption class="flip__caption">([\s\S]*?)<\/figcaption>/);
+  assert.ok(match, `no caption under ${assetKey}`);
+  return visibleText(match[1]);
+}
+
+/**
+ * The honesty guard, now per person rather than per page.
+ *
+ * It used to lean on one site-wide flag, so every portrait was a stand-in and
+ * every field was blank together. One real name and one real photograph have
+ * arrived while everything around them is still unsupplied, so the page has to
+ * hold a real person beside a placeholder without either contaminating the
+ * other: the placeholder must still confess, and the real man must not be
+ * handed a title to fill the silence where his role should be.
+ *
+ * Deliberately NOT asserted: that he is the founder, the son of the founder,
+ * or anything else. Nobody told us, and the guard's job is to keep it that way.
+ */
+test("names the one person it was given, and claims nothing else about him", async () => {
+  const body = await html();
+  const text = visibleText(body);
+
+  // The supplied fact must actually be live — hiding it would be its own
+  // failure, the same way an unpublished verified phone number was.
+  assert.ok(text.includes(NAMED), "the supplied name must appear in the rendered page");
+
+  // His photograph is real, so none of the stand-in language may attach to it.
+  const realAlt = altFor(body, "founder-saksham-goel");
+  assert.doesNotMatch(realAlt, STAND_IN, `a real photograph described as a placeholder: ${realAlt}`);
+  assert.doesNotMatch(realAlt, UNSUPPLIED_CLAIM, `alt text asserts an unsupplied claim: ${realAlt}`);
+
+  // The caption beside it carries the name and nothing appended to it.
+  assert.equal(
+    captionFor(body, "founder-saksham-goel"),
+    NAMED,
+    "his caption must be his name alone — no title, relationship or date"
+  );
+
+  // Nowhere on the page may a claim sit in the same sentence as his name.
+  const sentences = text.split(/(?<=[.!?])\s+/);
+  for (const sentence of sentences) {
+    if (!sentence.includes(NAMED)) continue;
+    assert.doesNotMatch(
+      sentence,
+      UNSUPPLIED_CLAIM,
+      `an unsupplied claim is attached to his name: ${sentence}`
     );
   }
 
+  // What is genuinely unknown about him stays visibly unanswered.
+  assert.ok(text.includes("a verb, not a job title"), "his role must still read as pending");
+  assert.ok(text.includes("counter, bench or both"), "his whereabouts must still read as pending");
+});
+
+test("keeps the unsupplied second portrait marked as a placeholder", async () => {
+  const body = await html();
+
+  // Nothing about the second mount was supplied — not a name, not a picture.
+  const placeholderAlt = altFor(body, "founder-portrait-b");
+  assert.match(
+    placeholderAlt,
+    STAND_IN,
+    `an unsupplied portrait must say so in its alt text: ${placeholderAlt}`
+  );
+  assert.match(
+    captionFor(body, "founder-portrait-b"),
+    STAND_IN,
+    "an unsupplied portrait must say so in its caption"
+  );
+
+  // The stand-in disclaimer must be worn by the placeholder alone. Two would
+  // mean it had spread back onto the real photograph. Counted over rendered
+  // text rather than raw HTML: client-component props are also serialised into
+  // the RSC flight payload, so every caption appears twice in the source.
+  const disclaimers = visibleText(body).match(/Not a photograph of a real person/g) ?? [];
+  assert.equal(disclaimers.length, 1, "exactly one portrait on this page is a stand-in");
+});
+
+test("invents no dates", async () => {
+  const body = await html();
+
   // 1980 is the one date this business can evidence. Nothing else numeric
-  // should be asserted as history.
+  // should be asserted as history -- and a named person is not a licence to
+  // start dating anything.
   const years = [...body.matchAll(/\b(19|20)\d{2}\b/g)].map((m) => m[0]);
   const invented = years.filter((y) => y !== "1980" && y !== String(new Date().getFullYear()));
   assert.deepEqual(invented, [], `page asserts unverified years: ${invented.join(", ")}`);

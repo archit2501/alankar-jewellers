@@ -10,7 +10,7 @@ import {
   useState,
 } from "react";
 import type { FormEvent, ReactNode } from "react";
-import { SITE_DETAILS_PENDING, site, whatsappUrl } from "../site-config";
+import { known, site, whatsappUrl } from "../site-config";
 
 export const INTEREST_OPTIONS = [
   "Jadau and Polki",
@@ -32,11 +32,13 @@ const FOCUSABLE_SELECTOR = [
   '[tabindex]:not([tabindex="-1"])',
 ].join(", ");
 
-/** `SITE_DETAILS_PENDING` is a literal `true` today; widening it to `boolean`
- *  keeps both branches type-checked so flipping the flag is a one-line change. */
-const detailsPending: boolean = SITE_DETAILS_PENDING;
-const telHref = detailsPending ? null : `tel:${site.phone}`;
-const waHref = detailsPending ? null : whatsappUrl();
+/** Gated per fact, like the rest of the site: the phone and WhatsApp lines are
+ *  verified, so the fallback shown when the form fails is a route that actually
+ *  works. Widened to `boolean` so both branches stay type-checked while the
+ *  flags in site-config are literals. */
+const has: Record<keyof typeof known, boolean> = { ...known };
+const telHref = has.phone ? `tel:${site.phone}` : null;
+const waHref = has.whatsapp ? whatsappUrl() : null;
 
 type OpenAppointment = (
   interest?: Interest,

@@ -23,7 +23,7 @@ import Link from "next/link";
 import { AppointmentProvider, AppointmentTrigger } from "../_components/appointment";
 import { Flip } from "../_components/flip";
 import { images, type ImageKey } from "../_media/images";
-import { SITE_DETAILS_PENDING, site } from "../site-config";
+import { site } from "../site-config";
 import "./founders.css";
 
 export const metadata: Metadata = {
@@ -43,35 +43,42 @@ export const metadata: Metadata = {
 };
 
 /**
- * `SITE_DETAILS_PENDING` is a literal `true` today; widening it to `boolean`
- * keeps both branches type-checked, exactly as app/_components/appointment.tsx
- * and app/_components/contact-details.tsx do, so flipping the single flag in
- * site-config.ts is all that is needed to take this page live.
- */
-const detailsPending: boolean = SITE_DETAILS_PENDING;
-
-/**
- * THE ONE RULE ON THIS PAGE — unchanged by the redesign.
+ * THE ONE RULE ON THIS PAGE — unchanged in substance, changed in granularity.
  *
- * A fact is printed only when the flag is off AND somebody has actually filled
- * the value in. Nothing below is invented: there are no names, no biographies,
- * no quotes, no ages, no awards and no dates on this page, because none were
- * supplied. Every slot that is waiting for a real answer renders as visibly
- * unfinished instead of being filled with plausible-sounding copy.
+ * A fact is printed only when somebody actually supplied it. It used to be
+ * gated on the site-wide `SITE_DETAILS_PENDING` as well, which was a second
+ * lock on the same door and, once one real fact arrived, the wrong lock: the
+ * shop's street address has nothing to do with whether we know a person's
+ * name. The gate is now the value itself. `null` is what "not supplied" looks
+ * like, and nobody may write a value they were not given.
  *
- * The visual language changed completely. The honesty behaviour did not.
+ * So: one name is now real, and everything around it is still null — no role,
+ * no biography, no quote, no relationship to the 1980 founding, no dates. Every
+ * slot waiting for a real answer renders as visibly unfinished rather than
+ * being filled with plausible-sounding copy.
  */
 function publishable(value: string | null | undefined): value is string {
-  return !detailsPending && Boolean(value);
+  return Boolean(value);
 }
 
 type Founder = {
-  /** Generic scaffolding. Safe to print while the real name is unknown. */
-  standIn: string;
+  /**
+   * Generic scaffolding, printed ONLY while `name` is null. Deliberately null
+   * for anyone whose name we have: every stand-in label available here
+   * ("Founder", "Co-founder") is itself a claim about a person, and the point
+   * of knowing a name is that we no longer have to make one.
+   */
+  standIn: string | null;
   /** Which of the two mounts on the wall this is. Structure, not biography. */
   mount: string;
-  /** TODO: the proprietor's name, as they want it written. */
+  /** The proprietor's name, as they want it written. */
   name: string | null;
+  /**
+   * Is `portrait` a photograph of THIS person, or a stand-in for one that has
+   * not been taken? The page says so either way, and says nothing about a real
+   * person's picture that would be true only of a placeholder.
+   */
+  portraitIsReal: boolean;
   /** TODO: the role as a VERB, not a job title — "buys the stones". */
   doing: string | null;
   /** TODO: where in the shop a customer actually finds this person. */
@@ -80,7 +87,7 @@ type Founder = {
   words: string[];
   /** TODO: one line, in their own words. Set without quotation marks. */
   quote: string | null;
-  /** TODO: describe the finished photograph once it has been taken. */
+  /** Describes the photograph itself. Never the sitter's role or standing. */
   portraitAlt: string | null;
   portrait: ImageKey;
   reverse: ImageKey;
@@ -89,22 +96,35 @@ type Founder = {
 
 const founders: Founder[] = [
   {
-    standIn: "Founder",
+    // The one supplied fact about a person on this entire page.
+    //
+    // NOT SUPPLIED, AND NOT GUESSED AT: what he does, what he is called at the
+    // shop, and how he relates to the 1980 founding. The shop dates to 1980 and
+    // the photograph is plainly of a much younger man, so he is very likely the
+    // next generation rather than the founder — "very likely" is not a fact,
+    // and this page does not print inferences. `standIn` is therefore null
+    // rather than "Founder", and no line below implies he opened the shop.
+    standIn: null,
     mount: "First mount",
-    name: null,
+    name: "Saksham Goel",
+    portraitIsReal: true,
     doing: null,
     whereabouts: null,
     words: [],
     quote: null,
-    portraitAlt: null,
-    portrait: "founder-portrait-a",
+    // Describes what is in the frame and nothing else.
+    portraitAlt:
+      "Saksham Goel, photographed against a pale wood-panelled wall in a navy jacket with white contrast stitching over a light blue shirt",
+    portrait: "founder-saksham-goel",
     reverse: "workshop-bench",
     reverseAlt: "Turn over to see the workshop bench",
   },
   {
+    // Entirely unsupplied — no name, and no photograph. Unchanged treatment.
     standIn: "Co-founder",
     mount: "Second mount",
     name: null,
+    portraitIsReal: false,
     doing: null,
     whereabouts: null,
     words: [],
@@ -163,12 +183,38 @@ const changes: { label: string; claim: string | null }[] = [
   { label: "The reverse", claim: null },
 ];
 
+/**
+ * What the page is still waiting for, derived from the data above rather than
+ * from a flag. Both notices used to hang off `SITE_DETAILS_PENDING`, which
+ * meant that once a real photograph arrived the page would have gone on
+ * calling it a stand-in — the disclosure has to track the actual data or it
+ * becomes its own falsehood.
+ */
+const anythingPending =
+  founders.some(
+    (founder) =>
+      !founder.name ||
+      !founder.doing ||
+      !founder.whereabouts ||
+      founder.words.length === 0 ||
+      !founder.quote,
+  ) || changes.some((change) => !change.claim);
+
+/** True while any portrait on the wall is a placeholder for an untaken photo. */
+const anyPortraitIsAStandIn = founders.some((founder) => !founder.portraitIsReal);
+
 /* No signature block. Part E allows exactly one, and only if a real signature
    exists — a signature typeface standing in for a person's hand is the kind of
    thing this audience notices, and it costs more credibility than it earns. */
 
 export default function FoundersPage() {
   const lead = founders[0];
+  /**
+   * The closing line this page was built around, and the first time it has had
+   * a name to put in it. "Ask for X" is an instruction to the visitor, not a
+   * claim about X — it asserts no title, no role and no position behind the
+   * counter, all of which are still pending in the record card above.
+   */
   const askFor = publishable(lead.name) ? lead.name : null;
 
   return (
@@ -207,22 +253,25 @@ export default function FoundersPage() {
                 </h1>
               </div>
 
-              {detailsPending ? (
+              {anythingPending ? (
                 <aside className="panel--lift illuminated f-notice">
                   <p>
                     <span className="f-tag">Details pending</span>
                   </p>
                   <p>
-                    This page is built but not yet filled in. The names, the
-                    proprietors&rsquo; own words and the specific commitments
-                    below are being confirmed with the shop, and nothing has been
-                    written on their behalf.
+                    This page is being filled in one confirmed fact at a time.
+                    One name is now real. The roles, the proprietors&rsquo; own
+                    words and the specific commitments below are still being
+                    confirmed with the shop, and nothing has been written on
+                    their behalf in the meantime.
                   </p>
-                  <p>
-                    The photographs, including both portraits, are stand-ins for
-                    pictures that have not been taken yet. They are not
-                    photographs of the proprietors.
-                  </p>
+                  {anyPortraitIsAStandIn ? (
+                    <p>
+                      The second portrait is a stand-in for a photograph that has
+                      not been taken yet, and is not a picture of a real person.
+                      Every portrait on this page says which of the two it is.
+                    </p>
+                  ) : null}
                 </aside>
               ) : null}
             </div>
@@ -390,10 +439,28 @@ function FounderBlock({
   const doing = publishable(founder.doing) ? founder.doing : null;
   const whereabouts = publishable(founder.whereabouts) ? founder.whereabouts : null;
   const quote = publishable(founder.quote) ? founder.quote : null;
-  const words = detailsPending ? [] : founder.words;
+  const words = founder.words;
+
   const alt = publishable(founder.portraitAlt)
     ? founder.portraitAlt
-    : `Placeholder portrait standing in for a photograph of the ${founder.standIn.toLowerCase()}, which has not been taken yet`;
+    : `Placeholder portrait standing in for a photograph of the ${(
+        founder.standIn ?? "second proprietor"
+      ).toLowerCase()}, which has not been taken yet`;
+
+  /**
+   * The caption is where the real person and the placeholder sit closest
+   * together, so it is the line most likely to lie by symmetry.
+   *
+   * A stand-in must say it is one. A real photograph must NOT inherit that
+   * sentence — and must not be given a title to fill the gap where the
+   * stand-in's disclaimer used to be. With a name and no role, the caption is
+   * the name, full stop.
+   */
+  const caption = founder.portraitIsReal
+    ? name && doing
+      ? `${name} — ${doing}`
+      : (name ?? undefined)
+    : "Placeholder image. Not a photograph of a real person — turn it over for the workshop.";
 
   const record: { label: string; value: string | null; waiting: string }[] = [
     { label: "Name", value: name, waiting: "as they want it written" },
@@ -419,17 +486,15 @@ function FounderBlock({
             sizes="(max-width: 780px) 88vw, 40vw"
             priority={priority}
             framed
-            caption={
-              name && doing
-                ? `${name} — ${doing}`
-                : "Placeholder image. Not a photograph of a real person — turn it over for the workshop."
-            }
+            caption={caption}
           />
         </div>
 
         <div className="f-founder__words">
           <p className="label">{founder.mount}</p>
-          <h2 id={`f-${founder.portrait}`}>{name ?? founder.standIn}</h2>
+          <h2 id={`f-${founder.portrait}`}>
+            {name ?? founder.standIn ?? founder.mount}
+          </h2>
           <div className="rule-brass rule rule--full" aria-hidden="true" />
 
           <dl className="panel illuminated illuminated--brass f-record">

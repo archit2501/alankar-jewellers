@@ -3,10 +3,22 @@ import test from "node:test";
 
 import { renderPage } from "./helpers.mjs";
 
+const { known, site, formattedAddress, whatsappUrl } = await import("../app/site-config.ts");
+
 let cached;
 async function html() {
   cached ??= await renderPage("/");
   return cached;
+}
+
+/** React's own attribute escaping, so an expected href can be matched literally. */
+function attr(value) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 function structuredData(body) {
@@ -75,24 +87,127 @@ test("publishes JewelryStore structured data", async () => {
   assert.match(data.image, /^https:\/\//);
 });
 
-test("never publishes unverified contact facts", async () => {
+/**
+ * The contact-honesty guard, per fact.
+ *
+ * It used to be all-or-nothing: "if the page says 'Details pending' anywhere,
+ * then no tel: and no wa.me link exists". That encoded a model the project has
+ * outgrown. The shop supplied a real, verified phone number while its street
+ * address was still unknown, so both halves of that implication became true at
+ * once and the test could only be satisfied by suppressing a fact we actually
+ * have — which is the exact failure the honesty rule exists to prevent.
+ *
+ * Each fact is now checked on its own, in BOTH directions, and the direction
+ * matters as much as the prohibition:
+ *
+ *   known  -> the fact must be live: a working link on the page AND published
+ *             in the JSON-LD. Hiding a verified fact now fails the suite.
+ *   unknown-> the fact must be absent from the page, absent from the JSON-LD,
+ *             and its placeholder in site-config must not have leaked into the
+ *             HTML anywhere.
+ *
+ * Note what this does NOT do: it cannot tell a true address from a convincing
+ * invention, and no test can. What it enforces is the gate — a value only
+ * reaches the page or the structured data once someone has flipped its flag in
+ * `known` to say the shop supplied it. So filling `site.address` with a
+ * plausible-looking street would not make this test pass; it would fail on the
+ * leak check, and flipping the flag to silence that is a deliberate, reviewable
+ * claim of verification rather than an accident.
+ */
+test("publishes exactly the contact facts it knows, and no others", async () => {
   const body = await html();
   const data = structuredData(body);
-  const pending = body.includes("Details pending");
 
-  if (pending) {
-    // Fabricated LocalBusiness contact data poisons Google Business Profile
-    // matching, so while placeholders stand it must be absent entirely -- and
-    // the page must not render dead tel:/wa.me links either.
-    for (const field of ["telephone", "email", "address", "openingHoursSpecification"]) {
-      assert.ok(!(field in data), `${field} must be omitted while details are pending`);
-    }
-    assert.doesNotMatch(body, /href="tel:/, "no dead tel: link while pending");
-    assert.doesNotMatch(body, /href="https:\/\/wa\.me/, "no dead WhatsApp link while pending");
+  // Adding a fact to `known` without a guard below must fail loudly rather
+  // than sail through an assertion that never runs.
+  assert.deepEqual(
+    Object.keys(known).sort(),
+    ["address", "email", "hours", "maps", "phone", "social", "whatsapp"],
+    "a fact was added to `known` in site-config without a guard in this test"
+  );
+
+  // --- telephone ---------------------------------------------------------
+  if (known.phone) {
+    assert.equal(data.telephone, site.phone, "a verified telephone belongs in the JSON-LD");
+    assert.ok(
+      body.includes(`href="tel:${site.phone}"`),
+      "a verified telephone must be a working tel: link, not inert text"
+    );
+    assert.ok(body.includes(site.phoneDisplay), "the number must also be readable on the page");
   } else {
-    assert.ok(data.telephone, "telephone expected once details are live");
-    assert.ok(data.address, "address expected once details are live");
-    assert.match(body, /href="tel:/, "live tel: link expected");
+    assert.ok(!("telephone" in data), "telephone must be omitted while unverified");
+    assert.doesNotMatch(body, /href="tel:/, "no dead tel: link while the number is unverified");
+    assert.ok(!body.includes(site.phone), "an unverified number must not leak into the HTML");
+  }
+
+  // --- WhatsApp ----------------------------------------------------------
+  if (known.whatsapp) {
+    assert.ok(
+      body.includes(`href="${attr(whatsappUrl())}"`),
+      "a verified WhatsApp line must be a working wa.me link with the prefilled message"
+    );
+  } else {
+    assert.doesNotMatch(body, /href="https:\/\/wa\.me/, "no dead WhatsApp link while unverified");
+  }
+
+  // --- email -------------------------------------------------------------
+  if (known.email) {
+    assert.equal(data.email, site.email, "a verified email belongs in the JSON-LD");
+    assert.ok(body.includes(`href="mailto:${site.email}"`), "a verified email must be linked");
+  } else {
+    assert.ok(!("email" in data), "email must be omitted while unverified");
+    assert.doesNotMatch(body, /href="mailto:/, "no dead mailto: link while unverified");
+    assert.ok(!body.includes(site.email), "the placeholder email must not reach the page");
+  }
+
+  // --- postal address ----------------------------------------------------
+  // The one that would do real damage: a fabricated street address inside
+  // LocalBusiness markup poisons Google Business Profile matching.
+  if (known.address) {
+    assert.ok(data.address, "a verified address belongs in the JSON-LD");
+    assert.equal(data.address.streetAddress, site.address.street);
+    assert.match(body, /<address/, "a verified postal address should use <address>");
+    assert.ok(body.includes(formattedAddress()), "a verified address must be readable on the page");
+  } else {
+    assert.ok(!("address" in data), "address must be omitted while unverified");
+    assert.doesNotMatch(
+      body,
+      /<address/,
+      "no <address> element while the address is unknown — an <address> holding an apology is still machine-readable"
+    );
+    for (const part of [
+      site.address.street,
+      site.address.locality,
+      site.address.city,
+      site.address.region,
+      site.address.postalCode,
+    ]) {
+      assert.ok(!body.includes(part), `unverified address fragment leaked into the page: ${part}`);
+    }
+    // ...and the gap has to be admitted, not silently omitted.
+    assert.ok(body.includes("Details pending"), "an unknown address must be disclosed as pending");
+  }
+
+  // --- opening hours -----------------------------------------------------
+  // `site.hours` is an assumption the site made, not a statement the shop
+  // made. Wrong hours send somebody to a closed shutter.
+  if (known.hours) {
+    assert.ok(data.openingHoursSpecification, "verified hours belong in the JSON-LD");
+    assert.ok(body.includes(site.hours[0].time), "verified hours must be readable on the page");
+  } else {
+    assert.ok(!("openingHoursSpecification" in data), "hours must be omitted while assumed");
+    for (const entry of site.hours) {
+      assert.ok(!body.includes(entry.days), `assumed opening days leaked: ${entry.days}`);
+      assert.ok(!body.includes(entry.time), `assumed opening time leaked: ${entry.time}`);
+    }
+  }
+
+  // --- map and socials ---------------------------------------------------
+  if (!known.maps) {
+    assert.ok(!("hasMap" in data), "hasMap must be omitted while the map link is unknown");
+  }
+  if (!known.social) {
+    assert.ok(!("sameAs" in data), "sameAs must be omitted while no profile is confirmed");
   }
 });
 
@@ -101,9 +216,10 @@ test("renders the contact section", async () => {
 
   assert.ok(body.includes("Come and see them in person."));
   assert.ok(body.includes("Call or WhatsApp"));
+  assert.ok(body.includes("The salon"));
+  // The heading stays whether or not the hours behind it are confirmed; what
+  // changes is whether real times sit under it. That split is asserted above.
   assert.ok(body.includes("Opening hours"));
-  assert.ok(body.includes("Monday – Saturday"));
-  assert.match(body, /<address/, "postal address should use <address>");
 });
 
 test("every image declares intrinsic dimensions", async () => {

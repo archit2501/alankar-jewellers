@@ -27,7 +27,7 @@ const WIDTHS = [400, 800, 1400];
 const QUALITY = 82;
 
 /** Masters that are not catalogue pieces get their own treatment. */
-const EDITORIAL = new Set(["founder-portrait-a", "founder-portrait-b", "workshop-bench", "workshop-hands"]);
+const EDITORIAL = new Set(["founder-portrait-a", "founder-portrait-b", "founder-saksham-goel", "workshop-bench", "workshop-hands"]);
 
 function magick(args) {
   execFileSync("magick", args, { stdio: "pipe" });

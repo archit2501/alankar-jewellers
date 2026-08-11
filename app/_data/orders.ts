@@ -242,7 +242,7 @@ import {
   type PricedQuote,
 } from "../_pricing/price";
 import { readCurrentRate, type RateLookup } from "../_pricing/rates";
-import { SITE_DETAILS_PENDING, site } from "../site-config";
+import { known, site } from "../site-config";
 import { d1CartDb, readCart, type CartDb, type CartStatement } from "./cart";
 
 /* =========================================================================
@@ -387,8 +387,8 @@ export function gstStateName(code: string): string {
  * THE SHOP'S OWN STATE, which the split cannot be computed without.
  *
  * `site.address.region` is still the placeholder string "State" and
- * `SITE_DETAILS_PENDING` is true, so there is no honest answer from the site
- * config today and this returns null — which blocks order creation with a
+ * `known.address` is false, so there is no honest answer from the site config
+ * today and this returns null — which blocks order creation with a
  * stated reason, exactly as an unpriceable line does. Guessing here would mean
  * guessing whether a sale is intra-state or inter-state, which is a tax
  * treatment and not a default.
@@ -398,7 +398,11 @@ export function gstStateName(code: string): string {
  * pattern). It is an operator SETTING a fact, never this code inventing one.
  */
 export function shopStateCode(): string | null {
-  if (!SITE_DETAILS_PENDING) {
+  // Keyed on the ADDRESS alone. It used to read the derived SITE_DETAILS_PENDING,
+  // which stays true until the LAST fact lands — so the shop could supply its
+  // real address and checkout would still refuse every order on the grounds
+  // that it did not know the state. A fact should unblock what it answers.
+  if (known.address) {
     const fromConfig = STATE_CODE_BY_NAME.get(site.address.region.trim().toLowerCase());
     if (fromConfig !== undefined) return fromConfig;
   }

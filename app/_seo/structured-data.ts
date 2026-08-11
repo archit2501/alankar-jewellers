@@ -1,17 +1,26 @@
 /**
  * schema.org structured data for the site.
  *
- * ⚠️  Honesty rule: while `SITE_DETAILS_PENDING` is true the contact block in
- * `site-config.ts` is a set of placeholders. Publishing a placeholder
- * telephone/address/openingHours inside LocalBusiness markup is worse than
- * publishing none — it poisons Google Business Profile matching and can get the
- * entity flagged — so those fields are omitted entirely until the flag flips.
+ * ⚠️  Honesty rule, now applied PER FACT.
  *
- * To publish the full entity: fill in the TODOs in `site-config.ts` and set
- * `SITE_DETAILS_PENDING = false`. Nothing else here needs to change.
+ * Publishing a placeholder telephone/address/openingHours inside LocalBusiness
+ * markup is worse than publishing none — it poisons Google Business Profile
+ * matching and can get the entity flagged. That is why every contact field is
+ * gated. What changed is the granularity: the gate used to be the single
+ * `SITE_DETAILS_PENDING` flag, so one unknown fact suppressed all of them, and
+ * a real telephone sat unpublished because the address had not arrived.
+ *
+ * Each field below is now gated on its own `known.*` flag. A real telephone is
+ * a genuine ranking and call-through signal, so it goes out the moment it is
+ * verified; the address stays out until it is. `site.address`, `site.email`,
+ * `site.hours` and `site.mapsUrl` still hold placeholders/assumptions, and this
+ * file must never emit any of them while their flag is false.
+ *
+ * To publish a further fact: fill in its TODO in `site-config.ts` and flip its
+ * entry in `known`. Nothing here needs to change.
  */
 
-import { SITE_DETAILS_PENDING, site } from "../site-config";
+import { known, site } from "../site-config";
 
 /** Stable node identity so other schema nodes can reference the business. */
 const businessId = `${site.url}/#jewellery-store`;
@@ -24,10 +33,13 @@ const description =
  * Returns a plain object so it can be serialised into a JSON-LD script tag.
  */
 export function jewelryStoreJsonLd(): Record<string, unknown> {
-  // Widened so the conditional below is not a compile-time constant.
-  const detailsPending: boolean = SITE_DETAILS_PENDING;
+  // Widened so each conditional below is not a compile-time constant, which
+  // keeps both branches of every gate type-checked while the flags are literals.
+  const has: Record<keyof typeof known, boolean> = { ...known };
 
-  const sameAs = Object.values(site.social).filter((url) => url.length > 0);
+  const sameAs = has.social
+    ? Object.values(site.social).filter((url) => url.length > 0)
+    : [];
 
   const data: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -52,10 +64,17 @@ export function jewelryStoreJsonLd(): Record<string, unknown> {
     ],
   };
 
-  // Verified real-world contact facts only. See the honesty rule above.
-  if (!detailsPending) {
+  // Verified real-world contact facts only, one gate each. See the rule above.
+
+  if (has.phone) {
     data.telephone = site.phone;
+  }
+
+  if (has.email) {
     data.email = site.email;
+  }
+
+  if (has.address) {
     data.address = {
       "@type": "PostalAddress",
       streetAddress: site.address.street,
@@ -64,19 +83,27 @@ export function jewelryStoreJsonLd(): Record<string, unknown> {
       postalCode: site.address.postalCode,
       addressCountry: site.address.country,
     };
+    // Narrowing areaServed to a city is only meaningful once the city is real.
+    data.areaServed = [
+      { "@type": "Country", name: "India" },
+      { "@type": "City", name: site.address.city },
+    ];
+  }
+
+  // `site.hours` is the shop's assumed schedule, not a statement it has made.
+  // An assumed openingHours is the field most likely to send someone to a
+  // closed shutter, so it waits for confirmation like everything else.
+  if (has.hours) {
     data.openingHoursSpecification = site.openingHoursSpec.map((spec) => ({
       "@type": "OpeningHoursSpecification",
       dayOfWeek: [...spec.days],
       opens: spec.opens,
       closes: spec.closes,
     }));
-    if (site.mapsUrl) {
-      data.hasMap = site.mapsUrl;
-    }
-    data.areaServed = [
-      { "@type": "Country", name: "India" },
-      { "@type": "City", name: site.address.city },
-    ];
+  }
+
+  if (has.maps && site.mapsUrl) {
+    data.hasMap = site.mapsUrl;
   }
 
   // Omitted rather than emitted empty: an empty sameAs is a broken signal.

@@ -1689,6 +1689,19 @@ h3 {
   text-transform: uppercase;
 }
 
+/* Gating is per fact now, so a chip no longer lives only inside the light
+   notice card — an unknown address or an unconfirmed opening time is labelled
+   where it stands, directly on the Darbar field.
+
+   The chip above cannot travel there unchanged: oxblood-deep on oxblood is a
+   1.62:1 step, so a filled chip would read as a smudge rather than a label.
+   Inverted it becomes the gilded chip this site already uses for the same job
+   on dark fields (.section--darbar .f-tag), and the pair measures 7.50:1. */
+.contact__card .contact__tag {
+  background: var(--gold);
+  color: var(--oxblood-deep);
+}
+
 .contact__grid {
   display: grid;
   gap: var(--m-1) var(--s-7);
