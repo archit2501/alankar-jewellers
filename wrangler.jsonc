@@ -20,5 +20,32 @@
   },
   "images": {
     "binding": "IMAGES"
+  },
+  // GOLD RATE INGEST. Handler and full rationale in worker/index.ts.
+  //
+  // CRON IS UTC. INDIA IS UTC+5:30. Every time below is written as the UTC
+  // instant of an IST wall-clock time, and the half-hour offset is the thing
+  // that gets these wrong -- "0 10 * * *" is not 10 AM in Delhi, it is 3:30 PM.
+  // India observes no daylight saving, so these are stable all year.
+  //
+  //   30 4  = 10:00 IST  the shop-opening health check. Nothing new is
+  //                      published this early; this exists so a feed that
+  //                      broke overnight is visible before the doors open.
+  //   40 6  = 12:10 IST  just after IBJA's ~12:05 publication.
+  //   40 11 = 17:10 IST  just after IBJA's ~17:05 publication.
+  //
+  // The two afternoon runs are what keep the storefront priced: a rate expires
+  // 90 minutes after the next publication was due, so a 10:00-only schedule
+  // would leave the site unable to quote from 13:35 every day.
+  //
+  // IBJA does not publish at weekends or on bullion holidays. These still fire;
+  // the read simply finds no newer slot and writes nothing, which is why the
+  // ingest is idempotent on `slotRef`.
+  "triggers": {
+    "crons": [
+      "30 4 * * *",
+      "40 6 * * *",
+      "40 11 * * *"
+    ]
   }
 }
