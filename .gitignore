@@ -32,6 +32,15 @@ yarn-error.log*
 .env*
 !.env.example
 
+# Cloudflare local secrets. NOT covered by `.env*` -- different filename, same
+# blast radius, and this repo is PUBLIC. It is where the admin password pepper
+# and any D1/R2 credentials live during local development, so a single
+# `git add -A` on a day this file exists would publish them.
+# The precedent is not hypothetical: wrangler.jsonc was committed unnoticed
+# exactly that way.
+.dev.vars
+.dev.vars.*
+
 # vercel
 .vercel
 
