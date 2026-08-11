@@ -103,7 +103,7 @@ import type { Interest } from "../../_components/appointment";
  * knows about a piece it knows through `PricedPiece`.
  */
 import { getPricedCataloguePiece } from "../../_data/catalogue";
-import type { PricedPiece } from "../../_data/types";
+import { isHallmarkExempt, type PricedPiece } from "../../_data/types";
 import { images } from "../../_media/images";
 import type { ImageKey } from "../../_media/images";
 import {
@@ -274,6 +274,12 @@ export default async function ProductPage({
 
   const rows = disclosures(piece);
   const unhallmarked = rows.find((row) => row.key === "huid")?.value === null;
+  // WHY the HUID is absent, which is a different question from WHETHER it is.
+  // Kundan, Polki and Jadau are outside mandatory hallmarking under QCO cl.
+  // 2(3); plain gold and diamond are not. This used to be assumed rather than
+  // checked, which was harmless only for as long as every piece in the
+  // catalogue happened to be stone-set.
+  const exemptCraft = isHallmarkExempt(piece.craft);
   const reverse = piece.mediaKey.back;
   const interest = interestFor(piece);
 
@@ -408,12 +414,20 @@ export default async function ProductPage({
                   ))}
                 </dl>
 
-                {unhallmarked ? (
+                {unhallmarked && exemptCraft ? (
                   <p className="pdp-footnote">
                     Kundan, Polki and Jadau are exempt from mandatory
                     hallmarking under BIS QCO cl. 2(3), so a piece of this kind
                     lawfully carries no HUID. It is still unhallmarked, and this
                     page says so rather than leaving the line blank.
+                  </p>
+                ) : unhallmarked ? (
+                  <p className="pdp-footnote">
+                    This piece is not one of the kinds BIS QCO cl. 2(3) exempts,
+                    so it does need to be hallmarked before it is sold. No HUID
+                    has been recorded against it here yet, and rather than leave
+                    the line blank the page says so — ask us for the number
+                    struck on the piece itself.
                   </p>
                 ) : null}
               </div>
@@ -482,15 +496,26 @@ export default async function ProductPage({
                   {/* ADD TO CART. A plain form: no JavaScript and no client
                       island, answered with a 303 to /cart. It records intent
                       and claims the piece — it does not price it and it does
-                      not charge for it. See app/_data/cart.ts. */}
-                  <form className="cart-add cart-add--pdp" method="post" action="/api/cart">
-                    <input type="hidden" name="action" value="add" />
-                    <input type="hidden" name="slug" value={piece.slug} />
-                    <button className="button button--ghost cart-add__button" type="submit">
-                      Add to cart
-                      <span className="visually-hidden"> — {piece.title}</span>
-                    </button>
-                  </form>
+                      not charge for it. See app/_data/cart.ts.
+
+                      Withheld once the piece is gone. The API already refuses
+                      ("That piece has left the shop"), so this was never an
+                      oversell — but the page was printing that sentence and
+                      then offering the button directly underneath it, which
+                      makes the refusal look like a fault rather than the truth.
+                      Unreachable until today: no piece was `buy_online` before
+                      the demonstration stock existed, so nothing had ever sold
+                      out with a buy control on screen. */}
+                  {piece.stockQuantity > 0 ? (
+                    <form className="cart-add cart-add--pdp" method="post" action="/api/cart">
+                      <input type="hidden" name="action" value="add" />
+                      <input type="hidden" name="slug" value={piece.slug} />
+                      <button className="button button--ghost cart-add__button" type="submit">
+                        Add to cart
+                        <span className="visually-hidden"> — {piece.title}</span>
+                      </button>
+                    </form>
+                  ) : null}
                   <p className="pdp-price__aside">
                     A cart holds a one-of-a-kind piece for you while we quote it.
                     Nothing is charged, and no price is fixed until we quote it

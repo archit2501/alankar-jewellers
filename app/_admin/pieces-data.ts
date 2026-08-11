@@ -119,6 +119,7 @@
  */
 
 import type { CartDb, CartStatement, SqlRow, SqlValue } from "../_data/cart";
+import { isHallmarkExempt, type Craft as SharedCraft } from "../_data/types";
 import {
   PriceEngineError,
   priceLine,
@@ -206,7 +207,13 @@ export const CRAFTS = [
   { value: "other", label: "Something else", hallmarkExempt: false },
 ] as const;
 
-export type Craft = (typeof CRAFTS)[number]["value"];
+/**
+ * Re-exported from the shared vocabulary rather than re-derived here. The
+ * storefront's product page needs the same union and the same exemption rule,
+ * and cannot import this module — it pulls in the admin audit and data layers.
+ * Two copies of a legal rule is one copy too many.
+ */
+export type Craft = SharedCraft;
 
 export function isCraft(value: string): value is Craft {
   return CRAFTS.some((craft) => craft.value === value);
@@ -217,7 +224,7 @@ export function craftLabel(value: string): string {
 }
 
 export function craftIsHallmarkExempt(value: string): boolean {
-  return CRAFTS.find((craft) => craft.value === value)?.hallmarkExempt ?? false;
+  return isHallmarkExempt(value);
 }
 
 /**

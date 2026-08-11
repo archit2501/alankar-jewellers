@@ -36,6 +36,8 @@ const {
   CATALOGUE_COLLECTIONS,
   CATALOGUE_SEED,
   CATALOGUE_SEED_ROWS,
+  DEMONSTRATION_SLUGS,
+  isDemonstrationPiece,
   PRICE_BANDS,
   catalogueFacets,
   catalogueHref,
@@ -51,6 +53,17 @@ const {
 } = await import("../app/_data/catalogue.ts");
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
+
+/**
+ * How many `product_collections` rows the seed should produce, computed from the
+ * seed rather than written down. The membership counts in this file used to be
+ * literals, which meant adding a piece failed tests about idempotency — tests
+ * that had nothing to say about the change and reported it as a regression.
+ */
+const SEEDED_MEMBERSHIPS = CATALOGUE_SEED.reduce(
+  (total, piece) => total + piece.collections.length,
+  0
+);
 
 /* =========================================================================
  * 1. The data layer
@@ -92,10 +105,10 @@ function pricedInputPiece(overrides = {}) {
 }
 
 test("serves the compiled seed when D1 is unreachable", async () => {
-  // There is no DB binding in-process, so `getDb()` throws. Five placeholder
-  // pieces is not a reason to serve a 500.
+  // There is no DB binding in-process, so `getDb()` throws. A placeholder
+  // catalogue is not a reason to serve a 500.
   const pieces = await listCatalogue();
-  assert.equal(pieces.length, 5);
+  assert.equal(pieces.length, CATALOGUE_SEED.length);
   assert.deepEqual(
     pieces.map((piece) => piece.slug),
     [
@@ -104,12 +117,46 @@ test("serves the compiled seed when D1 is unreachable", async () => {
       "chandbali-earrings",
       "kundan-kada",
       "maang-tikka",
-    ]
+      "gold-jhumka",
+      "polki-ring",
+      "lotus-pendant",
+      "slim-kada",
+    ],
+    "the fallback must serve the seed in wall order, heirlooms before demonstration stock"
   );
 });
 
-test("invents no weight, purity, hallmark or certificate", () => {
+/**
+ * The catalogue holds two populations with opposite rules, and the split is
+ * DECLARED in `DEMONSTRATION_SLUGS` rather than detected. This asserts the
+ * declaration matches reality in both directions, so neither
+ *
+ *   - a heirloom piece quietly acquiring a weight, nor
+ *   - a fifth priced piece appearing without anyone deciding it should
+ *
+ * can pass. Checking `pricingMode` alone would be circular: the thing under
+ * test is exactly whether a piece is allowed to be priced.
+ */
+test("the demonstration set is declared, and matches what is actually priced", () => {
+  const priced = CATALOGUE_SEED.filter((p) => p.pricingMode !== "on_request").map((p) => p.slug);
+  assert.deepEqual(
+    [...priced].sort(),
+    [...DEMONSTRATION_SLUGS].sort(),
+    "a piece carries a price without being declared a demonstration piece (or vice versa)"
+  );
+
+  for (const slug of DEMONSTRATION_SLUGS) {
+    assert.ok(
+      CATALOGUE_SEED.some((p) => p.slug === slug),
+      `DEMONSTRATION_SLUGS names "${slug}", which is not in the catalogue`
+    );
+  }
+});
+
+test("the heirloom pieces invent no weight, purity, hallmark or certificate", () => {
   for (const piece of CATALOGUE_SEED) {
+    if (isDemonstrationPiece(piece.slug)) continue;
+
     assert.equal(piece.pricingMode, "on_request", `${piece.slug} must be priced on request`);
     assert.equal(piece.netMetalWeightMg, null, `${piece.slug} asserts a net weight`);
     assert.equal(piece.grossWeightMg, null, `${piece.slug} asserts a gross weight`);
@@ -118,30 +165,122 @@ test("invents no weight, purity, hallmark or certificate", () => {
     assert.equal(piece.makingChargeValue, null, `${piece.slug} asserts a making charge`);
     assert.equal(piece.fixedPricePaise, null, `${piece.slug} asserts a price`);
 
-    // A HUID is a government-issued identifier and a certificate number is a
-    // lab's. Inventing either is a fake credential, not a placeholder.
+    // QCO cl. 2(3) exempts Kundan, Polki and Jadau, so a hallmarking charge of
+    // zero is the correct figure and not an unfilled blank.
+    assert.equal(piece.hallmarkingPaise, 0);
+  }
+});
+
+/**
+ * The rule that does NOT bend for demonstration data.
+ *
+ * A weight is a measurement: invented, clearly labelled, it misleads nobody
+ * about anything a regulator issues. A HUID is a government identifier and a
+ * certificate number belongs to a lab. A plausible invented one is a forged
+ * credential no matter how loudly the surrounding page says "demonstration",
+ * so this runs over EVERY piece with no exemption.
+ */
+test("no piece — demonstration or not — carries a fabricated credential", () => {
+  for (const piece of CATALOGUE_SEED) {
     assert.equal(piece.huid, null, `${piece.slug} carries a fabricated HUID`);
     assert.equal(piece.hallmarkPurityMark, null, `${piece.slug} carries a fabricated hallmark`);
     assert.equal(piece.certificateNumber, null, `${piece.slug} carries a fabricated certificate`);
     assert.equal(piece.certificateLab, null, `${piece.slug} names a lab that never saw it`);
-
-    // QCO cl. 2(3) exempts Kundan, Polki and Jadau, so a hallmarking charge of
-    // zero is the correct figure and not an unfilled blank.
-    assert.equal(piece.hallmarkingPaise, 0);
 
     assert.equal(piece.isUniquePiece, true);
     assert.equal(piece.stockQuantity, 1);
   }
 });
 
-test("every piece has a photographed face and reverse with its own alt text", () => {
+/**
+ * A demonstration piece must still be COHERENT — the pricing CHECK in the schema
+ * refuses a dynamic piece without a weight and a fineness, and discovering that
+ * at checkout rather than here is the failure this prevents.
+ *
+ * `hallmarkingPaise` is asserted per piece rather than as a constant, because
+ * the QCO exemption is the whole point: plain gold is not exempt and must carry
+ * the fee, stone-set Kundan and Polki are and must not.
+ */
+test("every demonstration piece can actually be priced", () => {
+  for (const piece of CATALOGUE_SEED) {
+    if (!isDemonstrationPiece(piece.slug)) continue;
+
+    assert.equal(piece.pricingMode, "dynamic_metal", `${piece.slug} is declared demo but unpriced`);
+    assert.ok(piece.netMetalWeightMg > 0, `${piece.slug} has no net weight to price`);
+    assert.ok(piece.grossWeightMg >= piece.netMetalWeightMg, `${piece.slug}: gross below net`);
+    assert.ok([999, 995, 916, 750, 585].includes(piece.fineness), `${piece.slug}: bad fineness`);
+    assert.ok(
+      ["percent", "per_gram", "flat"].includes(piece.makingChargeType),
+      `${piece.slug} has a making-charge type the price engine cannot read`
+    );
+    assert.ok(piece.makingChargeValue > 0, `${piece.slug} has no making charge`);
+
+    // Exempt iff stone-set. A plain gold article pays the BIS per-article fee,
+    // and pretending otherwise would teach the wrong invoice.
+    const exempt = ["polki", "kundan", "jadau"].includes(
+      piece.craft
+    );
+    if (exempt) {
+      assert.equal(piece.hallmarkingPaise, 0, `${piece.slug} is QCO-exempt but charges hallmarking`);
+    } else {
+      assert.ok(piece.hallmarkingPaise > 0, `${piece.slug} is plain gold and must pay the BIS fee`);
+    }
+  }
+});
+
+/**
+ * A front is mandatory. A reverse is NOT — a plain gold kada has no enamelled
+ * back, and inventing one would misdescribe the craft this shop is selling.
+ * What is mandatory is CONSISTENCY: an image and its alt text arrive together
+ * or not at all, so `Flip` never renders a control promising a side that does
+ * not exist, and never hides one that does.
+ */
+test("every piece has a photographed face, and a reverse only where one exists", () => {
   for (const piece of CATALOGUE_SEED) {
     assert.ok(piece.mediaKey.front, `${piece.slug} has no front image`);
-    assert.ok(piece.mediaKey.back, `${piece.slug} has no reverse image`);
     assert.ok(piece.alt.length > 20, `${piece.slug} has thin alt text`);
-    assert.ok(piece.altBack && piece.altBack.length > 20, `${piece.slug} has thin reverse alt`);
-    assert.notEqual(piece.alt, piece.altBack, `${piece.slug} reuses one alt for both sides`);
+
+    if (piece.mediaKey.back) {
+      assert.ok(piece.altBack && piece.altBack.length > 20, `${piece.slug} has thin reverse alt`);
+      assert.notEqual(piece.alt, piece.altBack, `${piece.slug} reuses one alt for both sides`);
+    } else {
+      assert.equal(
+        piece.altBack,
+        null,
+        `${piece.slug} describes a reverse it has no photograph of`
+      );
+    }
   }
+});
+
+/**
+ * A buy control appears for exactly the in-stock pieces, and no others.
+ *
+ * `/api/cart` already refuses a sold piece ("That piece has left the shop"), so
+ * this was never an oversell — the storefront printed that the piece was gone
+ * and rendered an enabled "Add to cart" immediately underneath, so the only way
+ * to find out was to click and be rejected. Unreachable until the demonstration
+ * stock arrived: before that no piece was ever `buy_online`, so nothing could
+ * sell out with a buy control on screen.
+ *
+ * WHAT THIS COVERS AND WHAT IT DOES NOT: the page is rendered in-process from
+ * the compiled seed, where every piece is in stock, so this proves the
+ * IN-STOCK arm and the count invariant. The sold arm cannot be reached from
+ * here without a database, and is asserted against real data in
+ * `cart.test.mjs`, where stock is actually decremented.
+ */
+test("a buy control is rendered for exactly the in-stock pieces", async () => {
+  const body = await renderPage("/shop");
+
+  const forms = [...body.matchAll(/<form[^>]*class="cart-add"[^>]*>[\s\S]*?<\/form>/g)];
+  const inStock = CATALOGUE_SEED.filter((piece) => piece.stockQuantity > 0);
+  assert.equal(inStock.length, CATALOGUE_SEED.length, "the seed is expected to be fully in stock");
+  assert.equal(forms.length, inStock.length, "one buy control per in-stock piece");
+
+  // Each control names the piece it would add, so nine identical buttons cannot
+  // silently all point at the same slug.
+  const slugs = [...body.matchAll(/name="slug" value="([^"]+)"/g)].map((m) => m[1]);
+  assert.deepEqual([...new Set(slugs)].sort(), inStock.map((p) => p.slug).sort());
 });
 
 test("an on-request piece resolves to no price, and says so", async () => {
@@ -288,13 +427,19 @@ test("filters the catalogue by collection and by metal", async () => {
   const earrings = await listPricedCatalogue({ collection: "earrings" });
   assert.deepEqual(
     earrings.map((piece) => piece.slug),
-    ["chandbali-earrings"]
+    ["chandbali-earrings", "gold-jhumka"]
   );
 
+  // Bridal is the five heirloom pieces. The demonstration stock is everyday
+  // work and deliberately belongs to no occasion.
   const bridal = await listPricedCatalogue({ collection: "bridal" });
   assert.equal(bridal.length, 5);
+  assert.ok(
+    bridal.every((piece) => !isDemonstrationPiece(piece.slug)),
+    "demonstration stock must not be filed under an occasion it was never made for"
+  );
 
-  assert.equal((await listPricedCatalogue({ metal: "gold" })).length, 5);
+  assert.equal((await listPricedCatalogue({ metal: "gold" })).length, CATALOGUE_SEED.length);
   assert.equal((await listPricedCatalogue({ metal: "silver" })).length, 0);
 });
 
@@ -302,8 +447,11 @@ test("facets are derived from the data, never hard-coded", async () => {
   const facets = catalogueFacets(await listCatalogue());
 
   assert.deepEqual(facets.metals, ["gold"]);
-  // Nothing has been assayed, so the purity control has nothing honest to offer.
-  assert.deepEqual(facets.finenesses, []);
+  // The purity control offers exactly what the data supports and nothing more.
+  // It was empty while every piece was on request; the demonstration pieces are
+  // all 916, so one option appears. If this ever lists a fineness no piece
+  // carries, the facet has stopped being derived.
+  assert.deepEqual(facets.finenesses, [916]);
   assert.deepEqual(
     facets.collections.map((collection) => collection.slug),
     ["necklaces", "earrings", "bangles", "headpieces", "jadau-polki", "kundan", "meenakari", "bridal"]
@@ -360,7 +508,15 @@ test("the seed applies to the real schema, and is idempotent", () => {
       collections: db.prepare("SELECT count(*) AS c FROM collections").get().c,
       memberships: db.prepare("SELECT count(*) AS c FROM product_collections").get().c,
     };
-    assert.deepEqual(first, { products: 5, variants: 5, collections: 8, memberships: 20 });
+    // Derived from the seed, not pinned to a number. What this test is actually
+    // about is idempotency, and a hard-coded count made every catalogue edit
+    // look like an idempotency failure.
+    assert.deepEqual(first, {
+      products: CATALOGUE_SEED.length,
+      variants: CATALOGUE_SEED.length,
+      collections: CATALOGUE_COLLECTIONS.length,
+      memberships: SEEDED_MEMBERSHIPS,
+    });
 
     // Twice, and then a third time, must leave exactly the same rows. Every
     // statement is an upsert keyed on a deterministic id.
@@ -399,8 +555,37 @@ test("the seeded rows leave every compliance column NULL", () => {
       )
       .all();
 
-    assert.equal(rows.length, 5);
+    assert.equal(rows.length, CATALOGUE_SEED.length);
+
+    const demoSkus = new Set(
+      CATALOGUE_SEED_ROWS.filter((r) => isDemonstrationPiece(r.piece.slug)).map((r) => r.sku)
+    );
+    assert.equal(demoSkus.size, DEMONSTRATION_SLUGS.length, "demo SKUs did not resolve");
+
     for (const row of rows) {
+      // The credential columns. NULL for every row, with no exemption — this is
+      // the assertion that must survive any future change to this file.
+      for (const column of [
+        "huid",
+        "hallmark_purity_mark",
+        "certificate_number",
+        "certificate_lab",
+      ]) {
+        assert.equal(row[column], null, `${row.sku} asserts ${column}`);
+      }
+      assert.equal(row.is_unique_piece, 1);
+      assert.equal(row.stock_quantity, 1);
+
+      if (demoSkus.has(row.sku)) {
+        // Priced, and therefore obliged to satisfy variants_pricing_inputs_ck —
+        // which the INSERT above has already proved, since it did not throw.
+        assert.equal(row.pricing_mode, "dynamic_metal", `${row.sku} is demo but unpriced`);
+        assert.ok(row.fineness > 0, `${row.sku} has no fineness`);
+        assert.ok(row.net_metal_weight_mg > 0, `${row.sku} has no weight`);
+        assert.equal(row.fixed_price_paise, null, `${row.sku} mixes dynamic and fixed pricing`);
+        continue;
+      }
+
       assert.equal(row.pricing_mode, "on_request", `${row.sku} is not on request`);
       for (const column of [
         "fineness",
@@ -409,16 +594,10 @@ test("the seeded rows leave every compliance column NULL", () => {
         "making_charge_type",
         "making_charge_value",
         "fixed_price_paise",
-        "huid",
-        "hallmark_purity_mark",
-        "certificate_number",
-        "certificate_lab",
       ]) {
         assert.equal(row[column], null, `${row.sku} asserts ${column}`);
       }
       assert.equal(row.hallmarking_paise, 0, `${row.sku} charges for a hallmark it does not have`);
-      assert.equal(row.is_unique_piece, 1);
-      assert.equal(row.stock_quantity, 1);
     }
   } finally {
     db.close();
@@ -434,9 +613,15 @@ test("a membership dropped from the seed is dropped from the database", () => {
     db.exec(
       "INSERT INTO product_collections (product_id, collection_id, position) VALUES ('prd_maang-tikka', 'col_necklaces', 99);"
     );
-    assert.equal(db.prepare("SELECT count(*) AS c FROM product_collections").get().c, 21);
+    assert.equal(
+      db.prepare("SELECT count(*) AS c FROM product_collections").get().c,
+      SEEDED_MEMBERSHIPS + 1
+    );
     applySeed(db);
-    assert.equal(db.prepare("SELECT count(*) AS c FROM product_collections").get().c, 20);
+    assert.equal(
+      db.prepare("SELECT count(*) AS c FROM product_collections").get().c,
+      SEEDED_MEMBERSHIPS
+    );
   } finally {
     db.close();
   }
@@ -498,11 +683,20 @@ test("server-renders every piece, both sides, with intrinsic dimensions", async 
     assert.ok(body.includes(piece.spec), `missing the spec line for ${piece.slug}`);
     assert.match(body, new RegExp(`href="/shop/${piece.slug}"`), `no link to ${piece.slug}`);
     assert.ok(body.includes(`${piece.mediaKey.front}-1400.webp`), `no face image for ${piece.slug}`);
-    assert.ok(body.includes(`${piece.mediaKey.back}-1400.webp`), `no reverse image for ${piece.slug}`);
+    if (piece.mediaKey.back) {
+      assert.ok(
+        body.includes(`${piece.mediaKey.back}-1400.webp`),
+        `no reverse image for ${piece.slug}`
+      );
+    }
   }
 
+  // One <img> per face, plus one per piece that HAS a reverse. A plain gold
+  // kada has no enamelled back and must not render an empty second image.
+  const expectedImages =
+    CATALOGUE_SEED.length + CATALOGUE_SEED.filter((piece) => piece.mediaKey.back).length;
   const imgs = body.match(/<img\b[^>]*>/g) ?? [];
-  assert.equal(imgs.length, 10, `expected 5 faces and 5 reverses, found ${imgs.length}`);
+  assert.equal(imgs.length, expectedImages, `expected ${expectedImages} images, found ${imgs.length}`);
   for (const img of imgs) {
     assert.match(img, /\bwidth="\d+"/, `image without width (causes CLS): ${img}`);
     assert.match(img, /\bheight="\d+"/, `image without height (causes CLS): ${img}`);
@@ -549,10 +743,31 @@ test("filters work with a plain GET form — no JavaScript involved", async () =
   }
   assert.match(body, /<button[^>]*type="submit"/, "the form needs a real submit button");
 
-  // The purity control is disabled and says why, rather than offering karat
-  // options against inventory nobody has assayed.
-  assert.match(body, /<select[^>]*name="purity"[^>]*disabled/);
-  assert.match(body, /No piece has a recorded fineness yet/);
+  // The purity control must never offer a fineness no piece carries — that
+  // would be a filter implying a fact. It was disabled while nothing had been
+  // assayed; the demonstration pieces are 916, so it is live and offers exactly
+  // that one option. Both states are asserted from the data rather than pinned.
+  const finenesses = catalogueFacets(await listCatalogue()).finenesses;
+  if (finenesses.length === 0) {
+    assert.match(body, /<select[^>]*name="purity"[^>]*disabled/);
+    assert.match(body, /No piece has a recorded fineness yet/);
+  } else {
+    assert.doesNotMatch(
+      body,
+      /<select[^>]*name="purity"[^>]*disabled/,
+      "the purity control is disabled while pieces do carry a fineness"
+    );
+    for (const fineness of finenesses) {
+      assert.match(body, new RegExp(`<option value="${fineness}"`), `no option for ${fineness}`);
+    }
+    // Nothing beyond what the catalogue supports.
+    const offered = [...body.matchAll(/<option value="(\d{3})"/g)].map((m) => Number(m[1]));
+    assert.deepEqual(
+      [...new Set(offered)].sort(),
+      [...finenesses].sort(),
+      "the purity control offers a fineness no piece carries"
+    );
+  }
 });
 
 test("a collection filter narrows the wall and offers a way back", async () => {
@@ -560,7 +775,7 @@ test("a collection filter narrows the wall and offers a way back", async () => {
 
   assert.ok(body.includes("Chandbali earrings"));
   assert.ok(!body.includes("Kundan kada"), "the filter did not narrow anything");
-  assert.match(body, showing(1, 5));
+  assert.match(body, showing(2, CATALOGUE_SEED.length));
   // The chip is a link that removes the filter, so it works without script,
   // and it names the collection rather than echoing its slug back.
   assert.match(body, /href="\/shop"/);
@@ -574,13 +789,13 @@ test("an unknown filter value shows the catalogue rather than an error", async (
   });
   assert.equal(response.status, 200);
   const body = await response.text();
-  assert.match(body, showing(5, 5));
+  assert.match(body, showing(CATALOGUE_SEED.length, CATALOGUE_SEED.length));
 });
 
 test("a price band excludes on-request pieces and explains itself", async () => {
   const body = await shop("?price=1l-3l");
 
-  assert.match(body, showing(0, 5));
+  assert.match(body, showing(0, CATALOGUE_SEED.length));
   assert.match(body, /Nothing on the wall matches that/);
   assert.match(body, /priced on request/);
   assert.doesNotMatch(body, /₹\s*0\b/);

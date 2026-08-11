@@ -283,7 +283,7 @@ export function buildSeedSql({ now = new Date().toISOString() } = {}) {
           title: piece.title,
           subtitle: piece.subtitle,
           description: piece.description,
-          craft: row.craft,
+          craft: row.piece.craft,
           status: row.status,
           sale_mode: row.saleMode,
           // No invented marketing copy in the SEO columns: the page falls back

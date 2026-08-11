@@ -709,14 +709,28 @@ test("the empty state lists the four real gaps, each checked against code", asyn
   assert.equal(by.payment_capture.resolved, PAYMENT_CAPTURE_ENABLED);
   assert.equal(by.payment_capture.resolved, false);
 
-  // The seeded catalogue is five active pieces, every one of them on_request
-  // with nothing weighed or assayed — so it is listed, but not sellable.
+  // The seeded catalogue is the five heirloom pieces plus four demonstration
+  // pieces that DO carry a weight and a fineness. The gap reports the database
+  // rather than an opinion about it, so it resolves — and the wording has to
+  // follow, because "none has been weighed" is now simply false.
   const active = sqlite
     .prepare("SELECT COUNT(*) AS n FROM products WHERE status = 'active'")
     .get().n;
+  const priceable = sqlite
+    .prepare(
+      `SELECT COUNT(*) AS n FROM variants
+        WHERE pricing_mode = 'dynamic_metal'
+          AND net_metal_weight_mg IS NOT NULL AND fineness IS NOT NULL`
+    )
+    .get().n;
   assert.ok(active > 0, "the fixture has no catalogue, so this proves nothing");
-  assert.equal(by.catalogue.resolved, false);
-  assert.match(by.catalogue.title, /weighed or assayed/);
+  assert.ok(priceable > 0, "the fixture has no priceable piece, so this proves nothing");
+  assert.equal(by.catalogue.resolved, true);
+  assert.doesNotMatch(
+    by.catalogue.title,
+    /weighed or assayed/,
+    "the gap claims nothing has been weighed while the fixture holds pieces that have"
+  );
 
   assert.equal(by.gold_rate.resolved, false, "no rate has ever been ingested");
 
@@ -1005,7 +1019,15 @@ test("signed in with nothing waiting, Today is a to-do list for opening the shop
   } else if (!known.phone) {
     assert.match(html, /no phone number or address/);
   }
-  assert.match(html, /weighed or assayed/);
+  // The catalogue gap is RESOLVED in this fixture — the demonstration pieces
+  // carry a weight and a fineness — and a resolved gap drops off the list
+  // rather than sitting there claiming the shop still has work to do. Asserting
+  // its absence is what proves resolution actually removes it.
+  assert.doesNotMatch(
+    html,
+    /weighed or assayed/,
+    "the panel says nothing has been weighed while the fixture holds pieces that have"
+  );
   assert.match(html, /No gold rate has been recorded/);
   assert.match(html, /Card and UPI are switched off/);
 

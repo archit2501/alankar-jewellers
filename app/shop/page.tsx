@@ -150,22 +150,32 @@ function ShopCard({ piece }: { piece: PricedPiece }) {
         </h3>
         <p className="shop-card__spec">{piece.spec}</p>
         <Price piece={piece} />
-        {piece.isUniquePiece ? (
+        {piece.stockQuantity <= 0 ? (
+          <p className="shop-card__stock">This one has left the shop.</p>
+        ) : piece.isUniquePiece ? (
           <p className="shop-card__stock">One of a kind — there is only this one.</p>
         ) : null}
         {/* ADD TO CART. A plain form, like the filters above it: no JavaScript,
             no client island, and it works with scripting switched off.
             /api/cart answers a form with a 303 to /cart. Adding does not price
             anything — the cart stores intent, and the figure is resolved when
-            the cart renders. See app/_data/cart.ts. */}
-        <form className="cart-add" method="post" action="/api/cart">
-          <input type="hidden" name="action" value="add" />
-          <input type="hidden" name="slug" value={piece.slug} />
-          <button className="button cart-add__button" type="submit">
-            Add to cart
-            <span className="visually-hidden"> — {piece.title}</span>
-          </button>
-        </form>
+            the cart renders. See app/_data/cart.ts.
+
+            Withheld once the piece is gone, for the reason set out on the
+            product page: the API refuses it anyway, so the button only ever
+            produced an error the visitor had no way to anticipate. A sold
+            one-of-a-kind piece must also stop claiming "there is only this
+            one" — present tense about something that is no longer there. */}
+        {piece.stockQuantity > 0 ? (
+          <form className="cart-add" method="post" action="/api/cart">
+            <input type="hidden" name="action" value="add" />
+            <input type="hidden" name="slug" value={piece.slug} />
+            <button className="button cart-add__button" type="submit">
+              Add to cart
+              <span className="visually-hidden"> — {piece.title}</span>
+            </button>
+          </form>
+        ) : null}
       </div>
     </article>
   );
@@ -352,6 +362,13 @@ export default async function ShopPage({
   const facets = catalogueFacets(everything);
   const priceFiltered = query.price !== "";
 
+  // Whether ANY piece could carry a figure at all, read off the catalogue we
+  // already have rather than costing a third query. This decides which of two
+  // true things the empty price-band state says: while every piece was on
+  // request, a band could not match anything and saying so was the whole
+  // explanation. Now that some pieces are priced, that sentence would be false.
+  const anythingPriceable = everything.some((piece) => piece.pricingMode !== "on_request");
+
   return (
     <div className="shop-page">
       {/* The shared SiteHeader navigates by homepage hash anchors, which are
@@ -397,11 +414,20 @@ export default async function ShopPage({
                   <span className="shop-tag">Placeholder catalogue</span>
                 </p>
                 <p>
-                  These five pieces stand in for a catalogue that has not been
-                  photographed or weighed yet. Nothing here carries a weight, a
-                  purity, a hallmark number or a certificate, because none of
-                  those has been recorded — so every piece is priced on request
-                  rather than given a figure we would be making up.
+                  These pieces stand in for a catalogue that has not been
+                  photographed or weighed yet. The five heirloom pieces carry no
+                  weight, purity, hallmark number or certificate, because none of
+                  those has been recorded — so they are priced on request rather
+                  than given a figure we would be making up.
+                </p>
+                <p>
+                  The four smaller pieces you can add to a bag are a{" "}
+                  <strong>demonstration</strong>. Their weights and making
+                  charges are invented so that the pricing, the bag and the
+                  checkout can be walked through end to end before the real
+                  stock exists. No hallmark number is shown against any of them,
+                  because a made-up one would be a forged credential rather than
+                  a placeholder.
                 </p>
                 <p>
                   <Link className="text-action" href="/#visit">
@@ -450,12 +476,19 @@ export default async function ShopPage({
             <div className="shop-wall grained">
               <div className="shop-empty">
                 <h3>Nothing on the wall matches that.</h3>
-                {priceFiltered ? (
+                {priceFiltered && !anythingPriceable ? (
                   <p>
                     Every piece in the catalogue today is priced on request,
                     because none of them has been weighed. A price band therefore
                     matches nothing at all — it is not an empty shelf, it is an
                     unrecorded one.
+                  </p>
+                ) : priceFiltered ? (
+                  <p>
+                    Nothing falls in that band. Most of the catalogue is priced
+                    on request rather than given a figure we would be making up,
+                    and a piece with no price cannot sit in a price range — so a
+                    band only ever searches the few that carry one.
                   </p>
                 ) : (
                   <p>

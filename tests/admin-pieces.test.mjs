@@ -366,6 +366,33 @@ after(() => {
  * 1. THE GATE
  * ====================================================================== */
 
+/**
+ * The CRAFTS table still carries a `hallmarkExempt` flag per row, which is now
+ * documentation rather than the rule — `craftIsHallmarkExempt` delegates to the
+ * shared `isHallmarkExempt` so the storefront and the admin cannot disagree
+ * about a legal exemption. This asserts the table has not drifted away from the
+ * rule it describes.
+ */
+test("the craft table agrees with the shared hallmarking rule", async () => {
+  const { CRAFTS, craftIsHallmarkExempt } = await import("../app/_admin/pieces-data.ts");
+  const { isHallmarkExempt } = await import("../app/_data/types.ts");
+
+  for (const craft of CRAFTS) {
+    assert.equal(
+      craft.hallmarkExempt,
+      isHallmarkExempt(craft.value),
+      `CRAFTS says ${craft.value} exempt=${craft.hallmarkExempt}, the rule disagrees`
+    );
+    assert.equal(craftIsHallmarkExempt(craft.value), isHallmarkExempt(craft.value));
+  }
+
+  // The three QCO cl. 2(3) categories, and nothing else.
+  assert.deepEqual(
+    CRAFTS.filter((c) => c.hallmarkExempt).map((c) => c.value).sort(),
+    ["jadau", "kundan", "polki"]
+  );
+});
+
 test("every pieces screen and the endpoint refuse an anonymous request", async () => {
   const sku = await startPiece();
 

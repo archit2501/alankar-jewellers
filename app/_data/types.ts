@@ -21,6 +21,15 @@ import type { ImageKey } from "../_media/images";
 /** Millesimal fineness, never karat. 995 has no karat equivalent. */
 export type Fineness = 999 | 995 | 916 | 750 | 585;
 
+export type Craft = "jadau" | "polki" | "diamond" | "gold" | "kundan" | "other";
+
+/** The crafts BIS QCO cl. 2(3) exempts from mandatory hallmarking. */
+export const HALLMARK_EXEMPT_CRAFTS: readonly Craft[] = ["jadau", "polki", "kundan"];
+
+export function isHallmarkExempt(craft: string): boolean {
+  return (HALLMARK_EXEMPT_CRAFTS as readonly string[]).includes(craft);
+}
+
 export type PricingMode = "dynamic_metal" | "fixed" | "on_request";
 
 /**
@@ -36,6 +45,14 @@ export type CataloguePiece = {
 
   /** The line the shop would say out loud. Metal, stones, cord. */
   spec: string;
+
+  /**
+   * What the piece IS, which decides whether BIS QCO cl. 2(3) exempts it from
+   * mandatory hallmarking. The product page needs this to avoid claiming an
+   * exemption a plain gold article does not have — a claim that used to be safe
+   * only because every piece in the catalogue happened to be stone-set.
+   */
+  craft: Craft;
 
   pricingMode: PricingMode;
   fineness: Fineness | null;

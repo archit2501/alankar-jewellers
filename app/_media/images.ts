@@ -43,6 +43,18 @@ export const images = {
     "height": 1125,
     "srcSet": "/images/catalogue/founder-saksham-goel-400.webp 400w, /images/catalogue/founder-saksham-goel-900.webp 900w"
   },
+  "gold-jhumka-front": {
+    "src": "/images/catalogue/gold-jhumka-front-1400.webp",
+    "width": 1400,
+    "height": 1750,
+    "srcSet": "/images/catalogue/gold-jhumka-front-400.webp 400w, /images/catalogue/gold-jhumka-front-800.webp 800w, /images/catalogue/gold-jhumka-front-1400.webp 1400w"
+  },
+  "gold-jhumka-reverse": {
+    "src": "/images/catalogue/gold-jhumka-reverse-1400.webp",
+    "width": 1400,
+    "height": 1750,
+    "srcSet": "/images/catalogue/gold-jhumka-reverse-400.webp 400w, /images/catalogue/gold-jhumka-reverse-800.webp 800w, /images/catalogue/gold-jhumka-reverse-1400.webp 1400w"
+  },
   "jadau-haar-front": {
     "src": "/images/catalogue/jadau-haar-front-1400.webp",
     "width": 1400,
@@ -66,6 +78,18 @@ export const images = {
     "width": 1400,
     "height": 1750,
     "srcSet": "/images/catalogue/kundan-kada-reverse-400.webp 400w, /images/catalogue/kundan-kada-reverse-800.webp 800w, /images/catalogue/kundan-kada-reverse-1400.webp 1400w"
+  },
+  "lotus-pendant-front": {
+    "src": "/images/catalogue/lotus-pendant-front-1400.webp",
+    "width": 1400,
+    "height": 1750,
+    "srcSet": "/images/catalogue/lotus-pendant-front-400.webp 400w, /images/catalogue/lotus-pendant-front-800.webp 800w, /images/catalogue/lotus-pendant-front-1400.webp 1400w"
+  },
+  "lotus-pendant-reverse": {
+    "src": "/images/catalogue/lotus-pendant-reverse-1400.webp",
+    "width": 1400,
+    "height": 1750,
+    "srcSet": "/images/catalogue/lotus-pendant-reverse-400.webp 400w, /images/catalogue/lotus-pendant-reverse-800.webp 800w, /images/catalogue/lotus-pendant-reverse-1400.webp 1400w"
   },
   "maang-tikka-front": {
     "src": "/images/catalogue/maang-tikka-front-1400.webp",
@@ -91,6 +115,12 @@ export const images = {
     "height": 1750,
     "srcSet": "/images/catalogue/polki-choker-reverse-400.webp 400w, /images/catalogue/polki-choker-reverse-800.webp 800w, /images/catalogue/polki-choker-reverse-1400.webp 1400w"
   },
+  "polki-ring-front": {
+    "src": "/images/catalogue/polki-ring-front-1400.webp",
+    "width": 1400,
+    "height": 1750,
+    "srcSet": "/images/catalogue/polki-ring-front-400.webp 400w, /images/catalogue/polki-ring-front-800.webp 800w, /images/catalogue/polki-ring-front-1400.webp 1400w"
+  },
   "rani-haar-front": {
     "src": "/images/catalogue/rani-haar-front-1400.webp",
     "width": 1400,
@@ -102,6 +132,12 @@ export const images = {
     "width": 1400,
     "height": 1750,
     "srcSet": "/images/catalogue/rani-haar-reverse-400.webp 400w, /images/catalogue/rani-haar-reverse-800.webp 800w, /images/catalogue/rani-haar-reverse-1400.webp 1400w"
+  },
+  "slim-kada-front": {
+    "src": "/images/catalogue/slim-kada-front-1400.webp",
+    "width": 1400,
+    "height": 1750,
+    "srcSet": "/images/catalogue/slim-kada-front-400.webp 400w, /images/catalogue/slim-kada-front-800.webp 800w, /images/catalogue/slim-kada-front-1400.webp 1400w"
   },
   "workshop-bench": {
     "src": "/images/catalogue/workshop-bench-900.webp",

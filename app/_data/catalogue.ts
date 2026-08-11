@@ -53,10 +53,37 @@
  *   certificateNumber / certificateLab NULL — same argument.
  *
  * `hallmarkingPaise: 0` is NOT a placeholder and must not be "filled in later"
- * by default: QCO cl. 2(3) exempts Kundan, Polki and Jadau — every piece below —
- * from mandatory hallmarking, and `app/_pricing/price.ts` deliberately emits no
- * component at all for a zero, so no invoice implies a hallmark that does not
- * exist.
+ * by default: QCO cl. 2(3) exempts Kundan, Polki and Jadau from mandatory
+ * hallmarking, and `app/_pricing/price.ts` deliberately emits no component at
+ * all for a zero, so no invoice implies a hallmark that does not exist. Note the
+ * word "exempts" is doing real work — it is NOT true of the two plain gold
+ * demonstration pieces described next, which do carry the fee.
+ *
+ * ===========================================================================
+ * 3a. FOUR PIECES BELOW ARE DEMONSTRATION STOCK, AND ARE PRICED
+ * ===========================================================================
+ * The five heirloom pieces above remain exactly as (3) describes. Beneath them
+ * sit four small everyday pieces built by `demoPiece()` which DO carry a weight,
+ * a fineness and a making charge, and which are `saleMode: "buy_online"`.
+ *
+ * They exist because a shop cannot be handed a storefront whose buy, cart and
+ * checkout path has never been walked end to end. Nothing about the price
+ * engine, stock reservation or the statutory price breakup can be demonstrated
+ * — or reviewed by the owner — against a catalogue that is priced on request.
+ *
+ * WHAT THEIR NUMBERS ARE: plausible, internally consistent, and INVENTED. No
+ * scale has touched any of these pieces because none of them physically exists.
+ * They are here to exercise the arithmetic, not to describe stock.
+ *
+ * WHAT IS STILL REFUSED: `huid`, `certificateNumber` and `hallmarkPurityMark`
+ * stay NULL. Those are credentials rather than measurements, and a plausible
+ * invented HUID is a forged government identifier no matter how clearly the
+ * surrounding page is labelled a demonstration.
+ *
+ * `CATALOGUE_IS_PLACEHOLDER` therefore stays TRUE, and the notice it renders on
+ * the shop page must keep saying — accurately — which of these pieces carry
+ * figures and which do not. Deleting these four is a data change and nothing
+ * more: no code depends on their existence.
  *
  * ===========================================================================
  * 4. PRICING GOES THROUGH THE TYPED RATE RESULT. NEVER THROUGH A CAST.
@@ -80,7 +107,7 @@ import {
 import type { ImageKey } from "../_media/images";
 import { isPriceableMetal, priceLine, type MetalRate } from "../_pricing/price";
 import { formatPaiseAsRupees, readCurrentRate, type RateLookup } from "../_pricing/rates";
-import type { CatalogueFilter, CataloguePiece, Fineness, PricedPiece } from "./types";
+import type { CatalogueFilter, CataloguePiece, Craft, Fineness, PricedPiece } from "./types";
 
 /* =========================================================================
  * Presentation manifest — the half that is not in the database. See (1).
@@ -133,6 +160,35 @@ const PRESENTATION: Readonly<Record<string, Presentation>> = {
     alt: "Round gold maang tikka set with kundan around a ruby centre, a polki drop below and a woven chain above",
     altBack: "Turn over to see the concentric floral meenakari rosette on the back of the disc",
     spec: "Kundan-set polki · ruby centre · woven chain",
+  },
+
+  /* --- The four demonstration pieces. See (3a). ------------------------- */
+
+  "gold-jhumka": {
+    mediaKey: { front: "gold-jhumka-front", back: "gold-jhumka-reverse" },
+    alt: "Pair of small gold jhumka earrings, each a granulated dome hung with a fringe of seed pearls",
+    altBack:
+      "The same pair turned over: the inside of each dome enamelled in red and green around a gold lotus",
+    spec: "Granulated gold · seed-pearl fringe · enamelled inside",
+  },
+  "polki-ring": {
+    mediaKey: { front: "polki-ring-front", back: null },
+    alt: "Slim gold ring with one uncut polki diamond closed in a kundan bezel, ringed with granulation",
+    altBack: null,
+    spec: "One uncut polki · kundan bezel · granulated shoulders",
+  },
+  "lotus-pendant": {
+    mediaKey: { front: "lotus-pendant-front", back: "lotus-pendant-reverse" },
+    alt: "Eight-petalled gold lotus pendant, granulated throughout, ringed with polki around a cabochon emerald",
+    altBack:
+      "The same pendant turned over: one red and green lotus enamelled across the whole of the back",
+    spec: "Granulated lotus · polki ring · cabochon emerald",
+  },
+  "slim-kada": {
+    mediaKey: { front: "slim-kada-front", back: null },
+    alt: "Slim round gold kada chased all the way round with a fine vine pattern, closed by a plain hinged clasp",
+    altBack: null,
+    spec: "Chased vine · hinged clasp · no stones",
   },
 };
 
@@ -210,7 +266,6 @@ export type CatalogueSeedRow = {
   readonly piece: CataloguePiece;
   readonly variantId: string;
   readonly sku: string;
-  readonly craft: "jadau" | "polki" | "diamond" | "gold" | "kundan" | "other";
   readonly status: "draft" | "active" | "archived";
   readonly saleMode: "buy_online" | "enquire_only" | "appointment_only";
   readonly position: number;
@@ -221,6 +276,7 @@ function seedPiece(input: {
   title: string;
   subtitle: string;
   description: string;
+  craft: Craft;
   collections: readonly string[];
 }): CataloguePiece {
   const presentation = PRESENTATION[input.slug];
@@ -237,6 +293,7 @@ function seedPiece(input: {
     subtitle: input.subtitle,
     description: input.description,
     spec: presentation.spec,
+    craft: input.craft,
 
     // See (3): placeholder inventory, so nothing measurable is asserted.
     pricingMode: "on_request",
@@ -269,6 +326,88 @@ function seedPiece(input: {
 }
 
 /**
+ * A DEMONSTRATION piece — see (3a). Deliberately a separate function from
+ * `seedPiece` rather than an options bag on it, because the two say opposite
+ * things and the name is the warning: `seedPiece` asserts nothing measurable,
+ * and this one asserts a weight the shop has never put on a scale.
+ *
+ * What it still refuses to invent, exactly as `seedPiece` does:
+ *
+ *   huid                  A HUID is a government-issued identifier. A made-up
+ *                         one is a fake credential whether or not the piece
+ *                         behind it is real, so it stays NULL and the storefront
+ *                         explains the absence.
+ *   certificateNumber     Same argument.
+ *   hallmarkPurityMark    Asserts an assay that has not happened.
+ *
+ * `hallmarkingPaise` is NOT uniform here, and that is the point. QCO cl. 2(3)
+ * exempts Kundan, Polki and Jadau, so the two stone-set pieces carry 0 — but a
+ * plain gold jhumka and a plain gold kada are NOT exempt, and a shop selling
+ * them charges the BIS fee per article. Passing 0 for those would have quietly
+ * made the demonstration teach the wrong invoice.
+ */
+function demoPiece(input: {
+  slug: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  craft: Craft;
+  collections: readonly string[];
+  /** Millesimal fineness. 916 is the 22-carat this shop works in. */
+  fineness: Fineness;
+  netMetalWeightMg: number;
+  grossWeightMg: number;
+  makingChargeType: "percent" | "per_gram" | "flat";
+  /** Basis points of METAL VALUE for `percent`, paise for the other two. */
+  makingChargeValue: number;
+  stoneValuePaise: number;
+  /** 0 where QCO cl. 2(3) exempts the piece; the BIS per-article fee otherwise. */
+  hallmarkingPaise: number;
+}): CataloguePiece {
+  const presentation = PRESENTATION[input.slug];
+  if (presentation === undefined) {
+    throw new Error(`No presentation manifest entry for "${input.slug}".`);
+  }
+
+  return {
+    id: `prd_${input.slug}`,
+    slug: input.slug,
+    title: input.title,
+    subtitle: input.subtitle,
+    description: input.description,
+    spec: presentation.spec,
+    craft: input.craft,
+
+    pricingMode: "dynamic_metal",
+    fineness: input.fineness,
+    metal: "gold",
+    netMetalWeightMg: input.netMetalWeightMg,
+    grossWeightMg: input.grossWeightMg,
+    makingChargeType: input.makingChargeType,
+    makingChargeValue: input.makingChargeValue,
+    stoneValuePaise: input.stoneValuePaise,
+    hallmarkingPaise: input.hallmarkingPaise,
+    otherChargesPaise: 0,
+    fixedPricePaise: null,
+
+    // Never invented, in demonstration data or anywhere else.
+    huid: null,
+    hallmarkPurityMark: null,
+    certificateNumber: null,
+    certificateLab: null,
+
+    stockQuantity: 1,
+    isUniquePiece: true,
+
+    mediaKey: presentation.mediaKey,
+    alt: presentation.alt,
+    altBack: presentation.altBack,
+
+    collections: input.collections,
+  };
+}
+
+/**
  * The five pieces, in the order the wall hangs them. Titles, specs, copy and alt
  * text are verbatim from `app/page.tsx`.
  */
@@ -280,11 +419,11 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
       subtitle: "Necklace",
       description:
         "Gold and stone on the face. On the back, a lotus fired into every single plate.",
+      craft: "jadau",
       collections: ["necklaces", "jadau-polki", "meenakari", "bridal"],
     }),
     variantId: "var_jadau-haar",
     sku: "AJ-JADAU-HAAR-01",
-    craft: "jadau",
     status: "active",
     saleMode: "enquire_only",
     position: 10,
@@ -296,11 +435,11 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
       subtitle: "Choker",
       description:
         "Close-set stones sit shoulder to shoulder in front. Behind them, green enamel and thirty small flowers.",
+      craft: "polki",
       collections: ["necklaces", "jadau-polki", "meenakari", "bridal"],
     }),
     variantId: "var_polki-choker",
     sku: "AJ-POLKI-CHOKER-01",
-    craft: "polki",
     status: "active",
     saleMode: "enquire_only",
     position: 20,
@@ -312,11 +451,11 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
       subtitle: "Earrings",
       description:
         "Worn, the reverse faces the wearer's neck. It is still the more decorated of the two sides.",
+      craft: "polki",
       collections: ["earrings", "jadau-polki", "meenakari", "bridal"],
     }),
     variantId: "var_chandbali-earrings",
     sku: "AJ-CHANDBALI-01",
-    craft: "polki",
     status: "active",
     saleMode: "enquire_only",
     position: 30,
@@ -328,11 +467,11 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
       subtitle: "Bangle",
       description:
         "The inside of a bangle touches only the wrist, which is exactly why this one is enamelled.",
+      craft: "kundan",
       collections: ["bangles", "kundan", "meenakari", "bridal"],
     }),
     variantId: "var_kundan-kada",
     sku: "AJ-KUNDAN-KADA-01",
-    craft: "kundan",
     status: "active",
     saleMode: "enquire_only",
     position: 40,
@@ -344,14 +483,117 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
       subtitle: "Headpiece",
       description:
         "The smallest piece here, and the back of it is worked as carefully as the front nobody questions.",
+      craft: "kundan",
       collections: ["headpieces", "kundan", "meenakari", "bridal"],
     }),
     variantId: "var_maang-tikka",
     sku: "AJ-MAANG-TIKKA-01",
-    craft: "kundan",
     status: "active",
     saleMode: "enquire_only",
     position: 50,
+  },
+
+  /* =======================================================================
+   * DEMONSTRATION STOCK — see (3a). Everything below is buyable and priced.
+   *
+   * Small everyday pieces, which is deliberate on two counts. It is what
+   * actually sells online, and it keeps the split the schema was built around
+   * intact: `saleMode` exists so a bridal set worth several lakhs converts
+   * through a private viewing rather than a Buy button. The five pieces above
+   * stay `enquire_only` for exactly that reason.
+   * ==================================================================== */
+
+  {
+    piece: demoPiece({
+      slug: "gold-jhumka",
+      title: "Gold jhumka",
+      subtitle: "Earrings",
+      description:
+        "Small enough for a working day. The enamel is inside the bell, where only the wearer's neck ever sees it.",
+      craft: "gold",
+      collections: ["earrings", "meenakari"],
+      fineness: 916,
+      netMetalWeightMg: 8_200,
+      grossWeightMg: 8_900,
+      makingChargeType: "percent",
+      makingChargeValue: 1400, // 14% of metal value
+      stoneValuePaise: 0, // seed pearls, carried in the making charge
+      hallmarkingPaise: 4500, // plain gold: NOT exempt, BIS fee per article
+    }),
+    variantId: "var_gold-jhumka",
+    sku: "AJ-JHUMKA-01",
+    status: "active",
+    saleMode: "buy_online",
+    position: 60,
+  },
+  {
+    piece: demoPiece({
+      slug: "polki-ring",
+      title: "Polki ring",
+      subtitle: "Ring",
+      description:
+        "One uncut stone, closed in by hand with pure gold. The oldest setting there is, on the smallest thing we make.",
+      craft: "polki",
+      collections: ["jadau-polki", "kundan"],
+      fineness: 916,
+      netMetalWeightMg: 3_600,
+      grossWeightMg: 3_900,
+      makingChargeType: "percent",
+      makingChargeValue: 1800, // 18% — small pieces carry proportionally more work
+      stoneValuePaise: 1_850_000, // the polki, ₹18,500
+      hallmarkingPaise: 0, // QCO cl. 2(3): polki, exempt
+    }),
+    variantId: "var_polki-ring",
+    sku: "AJ-RING-01",
+    status: "active",
+    saleMode: "buy_online",
+    position: 70,
+  },
+  {
+    piece: demoPiece({
+      slug: "lotus-pendant",
+      title: "Lotus pendant",
+      subtitle: "Pendant",
+      description:
+        "Eight petals of granulation on the face. One whole lotus, in enamel, on the side that faces in.",
+      craft: "kundan",
+      collections: ["necklaces", "kundan", "meenakari"],
+      fineness: 916,
+      netMetalWeightMg: 6_400,
+      grossWeightMg: 7_100,
+      makingChargeType: "percent",
+      makingChargeValue: 1600,
+      stoneValuePaise: 1_240_000, // emerald cabochon and the polki ring, ₹12,400
+      hallmarkingPaise: 0, // QCO cl. 2(3): kundan-set, exempt
+    }),
+    variantId: "var_lotus-pendant",
+    sku: "AJ-PENDANT-01",
+    status: "active",
+    saleMode: "buy_online",
+    position: 80,
+  },
+  {
+    piece: demoPiece({
+      slug: "slim-kada",
+      title: "Slim kada",
+      subtitle: "Bangle",
+      description:
+        "No stones and nothing to catch. A vine chased right round it, and a clasp you can work one-handed.",
+      craft: "gold",
+      collections: ["bangles"],
+      fineness: 916,
+      netMetalWeightMg: 14_800,
+      grossWeightMg: 14_800, // no stones, so gross and net are the same
+      makingChargeType: "per_gram",
+      makingChargeValue: 65_000, // ₹650 per gram
+      stoneValuePaise: 0,
+      hallmarkingPaise: 4500, // plain gold: NOT exempt
+    }),
+    variantId: "var_slim-kada",
+    sku: "AJ-KADA-01",
+    status: "active",
+    saleMode: "buy_online",
+    position: 90,
   },
 ];
 
@@ -359,6 +601,26 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
 export const CATALOGUE_SEED: readonly CataloguePiece[] = CATALOGUE_SEED_ROWS.map(
   (row) => row.piece
 );
+
+/**
+ * The demonstration pieces, named rather than detected. See (3a).
+ *
+ * This is declared by hand and the test suite asserts that it matches the set of
+ * pieces which actually carry a weight — in BOTH directions. Deriving it from
+ * `pricingMode` instead would make the guard circular and let a fifth priced
+ * piece appear without anybody deciding it should.
+ */
+export const DEMONSTRATION_SLUGS: readonly string[] = [
+  "gold-jhumka",
+  "polki-ring",
+  "lotus-pendant",
+  "slim-kada",
+];
+
+/** True for a piece whose figures are invented for demonstration. See (3a). */
+export function isDemonstrationPiece(slug: string): boolean {
+  return DEMONSTRATION_SLUGS.includes(slug);
+}
 
 /**
  * TRUE while the catalogue is placeholder inventory rather than the shop's real
@@ -386,6 +648,24 @@ function isPricingMode(value: string): value is CataloguePiece["pricingMode"] {
   return value === "dynamic_metal" || value === "fixed" || value === "on_request";
 }
 
+/**
+ * `products.craft` is constrained by the schema, but this module treats the
+ * database as untrusted input everywhere else and there is no reason to make an
+ * exception for the one field that decides whether the page claims a legal
+ * exemption. An unrecognised craft is not silently coerced to something
+ * convenient — the piece is skipped, exactly as an unknown pricing mode is.
+ */
+function isCraft(value: string): value is Craft {
+  return (
+    value === "jadau" ||
+    value === "polki" ||
+    value === "diamond" ||
+    value === "gold" ||
+    value === "kundan" ||
+    value === "other"
+  );
+}
+
 /** One row of the products x variants join, before presentation is attached. */
 type CommerceRow = {
   id: string;
@@ -393,6 +673,8 @@ type CommerceRow = {
   title: string;
   subtitle: string | null;
   description: string | null;
+  /** Widened to `string` on purpose — validated by `isCraft` before use. */
+  craft: string;
   pricingMode: string;
   fineness: number | null;
   metal: string;
@@ -432,6 +714,7 @@ async function readCommerceRows(): Promise<CataloguePiece[] | null> {
         title: products.title,
         subtitle: products.subtitle,
         description: products.description,
+        craft: products.craft,
         pricingMode: variants.pricingMode,
         fineness: variants.fineness,
         metal: variants.metal,
@@ -486,6 +769,10 @@ async function readCommerceRows(): Promise<CataloguePiece[] | null> {
       console.warn(`[catalogue] product "${row.slug}" has an unknown pricing mode; not listed.`);
       continue;
     }
+    if (!isCraft(row.craft)) {
+      console.warn(`[catalogue] product "${row.slug}" has an unknown craft; not listed.`);
+      continue;
+    }
 
     pieces.push({
       id: row.id,
@@ -494,6 +781,7 @@ async function readCommerceRows(): Promise<CataloguePiece[] | null> {
       subtitle: row.subtitle,
       description: row.description,
       spec: presentation.spec,
+      craft: row.craft,
       pricingMode: row.pricingMode,
       fineness: toFineness(row.fineness),
       metal: row.metal,
