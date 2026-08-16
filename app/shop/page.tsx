@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Flip } from "../_components/flip";
 import {
   CATALOGUE_IS_PLACEHOLDER,
+  DEMONSTRATION_SLUGS,
   PRICE_BANDS,
   catalogueFacets,
   catalogueHref,
@@ -421,16 +422,25 @@ export default async function ShopPage({
                   than given a figure we would be making up.
                 </p>
                 <p>
-                  The four smaller pieces you can add to a bag are a{" "}
-                  <strong>demonstration</strong>. The gold rate behind them is
-                  real — it is IBJA&rsquo;s published rate, refreshed after each
-                  of their two daily publications. What is invented is the{" "}
+                  The {DEMONSTRATION_SLUGS.length} pieces you can add to a bag
+                  are a <strong>demonstration</strong>. The gold rate behind them
+                  is real — it is IBJA&rsquo;s published rate, refreshed after
+                  each of their two daily publications. What is invented is the{" "}
                   <strong>pieces</strong>: their weights and making charges are
                   made up, because none of them physically exists. So the
                   arithmetic is genuine and the object it is applied to is not.
                   Do not read the total as a quotation for anything. No hallmark
                   number is shown against them either, because a made-up one
                   would be a forged credential rather than a placeholder.
+                </p>
+                <p>
+                  <strong>Every photograph on this site is generated, not
+                  taken.</strong>{" "}
+                  Nobody in these pictures is a customer of ours, and no piece in
+                  them has ever been in the shop. They are here so the site can
+                  be built and reviewed before the real stock is photographed,
+                  and every one of them will be replaced by a photograph of an
+                  actual piece.
                 </p>
                 <p>
                   <Link className="text-action" href="/#visit">

@@ -102,7 +102,7 @@ import type { Interest } from "../../_components/appointment";
  * prevailing rate, or null when there is no such piece. Everything this page
  * knows about a piece it knows through `PricedPiece`.
  */
-import { getPricedCataloguePiece } from "../../_data/catalogue";
+import { getPricedCataloguePiece, isDemonstrationPiece } from "../../_data/catalogue";
 import { isHallmarkExempt, type PricedPiece } from "../../_data/types";
 import { images } from "../../_media/images";
 import type { ImageKey } from "../../_media/images";
@@ -340,6 +340,26 @@ export default async function ProductPage({
               )}
               <div className="rule-gold rule rule--center" aria-hidden="true" />
               <p className="pdp-spec">{piece.spec}</p>
+
+              {/* THE DISCLOSURE HAS TO BE HERE, NOT ONLY ON /shop.
+                  The listing has carried a placeholder notice for weeks, but
+                  this is the page a crawler resolves as authoritative and the
+                  page a shared link opens. It publishes a price, a weight and
+                  — since the worn shots landed — a photograph of a person
+                  wearing something that has never existed. A disclosure one
+                  navigation away is not a disclosure. */}
+              {isDemonstrationPiece(piece.slug) ? (
+                <p className="pdp-demo">
+                  <span className="pdp-demo__tag">Demonstration piece</span>
+                  <span className="pdp-demo__body">
+                    This piece does not exist. Its weight and making charge are
+                    invented and its photographs are generated, so the figures
+                    below are arithmetic on a made-up object rather than a
+                    quotation. The gold rate behind them is IBJA&rsquo;s real
+                    published rate.
+                  </span>
+                </p>
+              ) : null}
             </div>
 
             {/* THE DIPTYCH. Two plates, one size. See the header. */}
@@ -382,6 +402,51 @@ export default async function ProductPage({
               )}
             </div>
           </section>
+
+          {/* ---- ON THE WEARER ------------------------------------------
+              Deliberately NOT a third plate inside the diptych. The diptych is
+              a two-plate composition with a seam down its middle and one
+              argument to make — face and reverse, the same object twice. A
+              third panel turns a statement into a gallery.
+
+              It is also a different KIND of photograph and is captioned as one.
+              The plates are the object on a grey sweep; this is the object on a
+              person, which is the only way to answer "how big is it" without
+              putting a ruler in the shot. Absent for every piece not
+              photographed worn, with nothing standing in its place — the same
+              rule the missing reverse follows above. */}
+          {piece.mediaKey.worn === null ? null : (
+            <section
+              className="section section--haveli grained pdp-worn"
+              aria-labelledby="pdp-worn-title"
+            >
+              <div className="wrap pdp-worn__grid">
+                <figure className="pdp-worn__figure">
+                  <img
+                    className="pdp-worn__image"
+                    src={images[piece.mediaKey.worn].src}
+                    srcSet={images[piece.mediaKey.worn].srcSet}
+                    sizes="(max-width: 780px) 92vw, 46vw"
+                    width={images[piece.mediaKey.worn].width}
+                    height={images[piece.mediaKey.worn].height}
+                    alt={piece.altWorn ?? `${piece.title}, worn`}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </figure>
+                <div className="pdp-worn__note">
+                  <p className="label">On the wearer</p>
+                  <h2 id="pdp-worn-title">How big it actually is.</h2>
+                  <div className="rule-brass rule rule--full" aria-hidden="true" />
+                  <p className="pdp-worn__body">
+                    A piece photographed alone on a grey sweep has no size. This
+                    is the same piece on a person, which is the only honest
+                    answer to how it will sit on you.
+                  </p>
+                </div>
+              </div>
+            </section>
+          )}
 
           {/* ---- HAVELI: the record and the price ---------------------- */}
           <section

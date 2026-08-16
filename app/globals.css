@@ -4725,3 +4725,73 @@ a.contact__value:hover {
     padding: var(--s-7) var(--s-5);
   }
 }
+
+/* =========================================================================
+ * ON THE WEARER — the product page's third photograph.
+ *
+ * Sits below the diptych, deliberately outside it. Half image, half note on a
+ * wide screen; stacked below 780px with the photograph first, because the
+ * photograph is the argument and the paragraph only explains it.
+ * ====================================================================== */
+
+.pdp-worn__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  align-items: center;
+}
+
+.pdp-worn__figure {
+  margin: 0;
+  /* The same cusped arch the plates are cut to, so the three photographs on
+     this page read as one family rather than two styles. */
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+.pdp-worn__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+}
+
+.pdp-worn__body {
+  max-width: 36ch;
+  color: var(--ink-2);
+}
+
+@media (max-width: 780px) {
+  .pdp-worn__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* The per-piece demonstration disclosure. Sindoor on plaster is 6.48:1 — the
+   light-field accent, never gold, which is 1.90:1 here and illegal as text. */
+.pdp-demo {
+  max-width: 54ch;
+  margin: 1.5rem auto 0;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid var(--brass);
+  border-radius: 2px;
+  background: var(--plaster-sunk);
+  text-align: left;
+}
+
+.pdp-demo__tag {
+  display: block;
+  font-family: var(--font-data);
+  font-size: var(--t-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sindoor);
+  margin-bottom: 0.4rem;
+}
+
+.pdp-demo__body {
+  display: block;
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+}

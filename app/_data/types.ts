@@ -80,9 +80,15 @@ export type CataloguePiece = {
    * `back` is the enamelled meenakari reverse — the site's whole idea — and is
    * absent when a piece has not been photographed from behind.
    */
-  mediaKey: { front: ImageKey; back: ImageKey | null };
+  mediaKey: { front: ImageKey; back: ImageKey | null; worn: ImageKey | null };
   alt: string;
   altBack: string | null;
+  /**
+   * The piece on a body. Null where none exists — the five heirloom pieces have
+   * never been worn for a camera, and a missing worn shot is a fact about the
+   * photography rather than a hole to fill with something approximate.
+   */
+  altWorn: string | null;
 
   collections: readonly string[];
 };

@@ -25,6 +25,12 @@ export const images = {
     "height": 1750,
     "srcSet": "/images/catalogue/bridal-tikka-reverse-400.webp 400w, /images/catalogue/bridal-tikka-reverse-800.webp 800w, /images/catalogue/bridal-tikka-reverse-1400.webp 1400w"
   },
+  "bridal-tikka-worn": {
+    "src": "/images/catalogue/bridal-tikka-worn-1400.webp",
+    "width": 1400,
+    "height": 1750,
+    "srcSet": "/images/catalogue/bridal-tikka-worn-400.webp 400w, /images/catalogue/bridal-tikka-worn-800.webp 800w, /images/catalogue/bridal-tikka-worn-1400.webp 1400w"
+  },
   "chandbali-earrings-front": {
     "src": "/images/catalogue/chandbali-earrings-front-1400.webp",
     "width": 1400,
@@ -67,6 +73,12 @@ export const images = {
     "height": 1750,
     "srcSet": "/images/catalogue/gold-jhumka-reverse-400.webp 400w, /images/catalogue/gold-jhumka-reverse-800.webp 800w, /images/catalogue/gold-jhumka-reverse-1400.webp 1400w"
   },
+  "gold-jhumka-worn": {
+    "src": "/images/catalogue/gold-jhumka-worn-1400.webp",
+    "width": 1400,
+    "height": 1750,
+    "srcSet": "/images/catalogue/gold-jhumka-worn-400.webp 400w, /images/catalogue/gold-jhumka-worn-800.webp 800w, /images/catalogue/gold-jhumka-worn-1400.webp 1400w"
+  },
   "jadau-haar-front": {
     "src": "/images/catalogue/jadau-haar-front-1400.webp",
     "width": 1400,
@@ -91,6 +103,12 @@ export const images = {
     "height": 1750,
     "srcSet": "/images/catalogue/jadau-kangan-reverse-400.webp 400w, /images/catalogue/jadau-kangan-reverse-800.webp 800w, /images/catalogue/jadau-kangan-reverse-1400.webp 1400w"
   },
+  "jadau-kangan-worn": {
+    "src": "/images/catalogue/jadau-kangan-worn-1400.webp",
+    "width": 1400,
+    "height": 1750,
+    "srcSet": "/images/catalogue/jadau-kangan-worn-400.webp 400w, /images/catalogue/jadau-kangan-worn-800.webp 800w, /images/catalogue/jadau-kangan-worn-1400.webp 1400w"
+  },
   "kundan-kada-front": {
     "src": "/images/catalogue/kundan-kada-front-1400.webp",
     "width": 1400,
@@ -114,6 +132,12 @@ export const images = {
     "width": 1400,
     "height": 1750,
     "srcSet": "/images/catalogue/lotus-pendant-reverse-400.webp 400w, /images/catalogue/lotus-pendant-reverse-800.webp 800w, /images/catalogue/lotus-pendant-reverse-1400.webp 1400w"
+  },
+  "lotus-pendant-worn": {
+    "src": "/images/catalogue/lotus-pendant-worn-1400.webp",
+    "width": 1400,
+    "height": 1750,
+    "srcSet": "/images/catalogue/lotus-pendant-worn-400.webp 400w, /images/catalogue/lotus-pendant-worn-800.webp 800w, /images/catalogue/lotus-pendant-worn-1400.webp 1400w"
   },
   "maang-tikka-front": {
     "src": "/images/catalogue/maang-tikka-front-1400.webp",
@@ -145,6 +169,12 @@ export const images = {
     "height": 1750,
     "srcSet": "/images/catalogue/polki-ring-front-400.webp 400w, /images/catalogue/polki-ring-front-800.webp 800w, /images/catalogue/polki-ring-front-1400.webp 1400w"
   },
+  "polki-ring-worn": {
+    "src": "/images/catalogue/polki-ring-worn-1400.webp",
+    "width": 1400,
+    "height": 1750,
+    "srcSet": "/images/catalogue/polki-ring-worn-400.webp 400w, /images/catalogue/polki-ring-worn-800.webp 800w, /images/catalogue/polki-ring-worn-1400.webp 1400w"
+  },
   "rani-haar-front": {
     "src": "/images/catalogue/rani-haar-front-1400.webp",
     "width": 1400,
@@ -157,11 +187,23 @@ export const images = {
     "height": 1750,
     "srcSet": "/images/catalogue/rani-haar-reverse-400.webp 400w, /images/catalogue/rani-haar-reverse-800.webp 800w, /images/catalogue/rani-haar-reverse-1400.webp 1400w"
   },
+  "rani-haar-worn": {
+    "src": "/images/catalogue/rani-haar-worn-1400.webp",
+    "width": 1400,
+    "height": 1750,
+    "srcSet": "/images/catalogue/rani-haar-worn-400.webp 400w, /images/catalogue/rani-haar-worn-800.webp 800w, /images/catalogue/rani-haar-worn-1400.webp 1400w"
+  },
   "slim-kada-front": {
     "src": "/images/catalogue/slim-kada-front-1400.webp",
     "width": 1400,
     "height": 1750,
     "srcSet": "/images/catalogue/slim-kada-front-400.webp 400w, /images/catalogue/slim-kada-front-800.webp 800w, /images/catalogue/slim-kada-front-1400.webp 1400w"
+  },
+  "slim-kada-worn": {
+    "src": "/images/catalogue/slim-kada-worn-1400.webp",
+    "width": 1400,
+    "height": 1750,
+    "srcSet": "/images/catalogue/slim-kada-worn-400.webp 400w, /images/catalogue/slim-kada-worn-800.webp 800w, /images/catalogue/slim-kada-worn-1400.webp 1400w"
   },
   "workshop-bench": {
     "src": "/images/catalogue/workshop-bench-900.webp",

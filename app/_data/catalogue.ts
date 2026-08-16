@@ -114,9 +114,15 @@ import type { CatalogueFilter, CataloguePiece, Craft, Fineness, PricedPiece } fr
  * ====================================================================== */
 
 type Presentation = {
-  readonly mediaKey: { readonly front: ImageKey; readonly back: ImageKey | null };
+  readonly mediaKey: {
+    readonly front: ImageKey;
+    readonly back: ImageKey | null;
+    /** The piece worn. See (1a). */
+    readonly worn: ImageKey | null;
+  };
   readonly alt: string;
   readonly altBack: string | null;
+  readonly altWorn: string | null;
   /** The line the shop would say out loud. Describes the photograph. */
   readonly spec: string;
 };
@@ -128,90 +134,109 @@ type Presentation = {
  */
 const PRESENTATION: Readonly<Record<string, Presentation>> = {
   "jadau-haar": {
-    mediaKey: { front: "jadau-haar-front", back: "jadau-haar-reverse" },
+    mediaKey: { front: "jadau-haar-front", back: "jadau-haar-reverse", worn: null },
     alt: "Jadau haar of uncut polki closed-set in gold, hung with carved ruby and emerald drops on a red silk cord",
     altBack:
       "The same haar turned over: every plate enamelled on a red ground with a white and green lotus",
+    altWorn: null,
     spec: "Uncut polki · carved ruby and emerald drops · silk cord",
   },
   "polki-choker": {
-    mediaKey: { front: "polki-choker-front", back: "polki-choker-reverse" },
+    mediaKey: { front: "polki-choker-front", back: "polki-choker-reverse", worn: null },
     alt: "Polki choker of kundan-set uncut diamonds with a pearl fringe, strung on a red silk cord and tassel",
     altBack:
       "The same choker turned over: a green enamel ground carrying one white and red flower per cell",
+    altWorn: null,
     spec: "Kundan-set polki · pearl fringe · silk cord and tassel",
   },
   "chandbali-earrings": {
-    mediaKey: { front: "chandbali-earrings-front", back: "chandbali-earrings-reverse" },
+    mediaKey: { front: "chandbali-earrings-front", back: "chandbali-earrings-reverse", worn: null },
     alt: "Pair of crescent chandbali earrings in granulated gold with rose-cut polki and pearl and emerald bead drops",
     altBack:
       "The same pair turned over: a green, red and white lotus spread across the whole of each crescent",
+    altWorn: null,
     spec: "Crescent chandbali · rose-cut polki · pearl and emerald drops",
   },
   "kundan-kada": {
-    mediaKey: { front: "kundan-kada-front", back: "kundan-kada-reverse" },
+    mediaKey: { front: "kundan-kada-front", back: "kundan-kada-reverse", worn: null },
     alt: "Hinged gold kada set with kundan flowerheads, rimmed in seed pearls, with carved emerald terminals",
     altBack:
       "The same kada turned over: a red and green flowering vine enamelled around the inner face",
+    altWorn: null,
     spec: "Closed-set kundan · seed-pearl rim · carved emerald terminals",
   },
   "maang-tikka": {
-    mediaKey: { front: "maang-tikka-front", back: "maang-tikka-reverse" },
+    mediaKey: { front: "maang-tikka-front", back: "maang-tikka-reverse", worn: null },
     alt: "Round gold maang tikka set with kundan around a ruby centre, a polki drop below and a woven chain above",
     altBack: "Turn over to see the concentric floral meenakari rosette on the back of the disc",
+    altWorn: null,
     spec: "Kundan-set polki · ruby centre · woven chain",
   },
 
   /* --- The four demonstration pieces. See (3a). ------------------------- */
 
   "gold-jhumka": {
-    mediaKey: { front: "gold-jhumka-front", back: "gold-jhumka-reverse" },
+    mediaKey: { front: "gold-jhumka-front", back: "gold-jhumka-reverse", worn: "gold-jhumka-worn" },
     alt: "Pair of small gold jhumka earrings, each a granulated dome hung with a fringe of seed pearls",
     altBack:
       "The same pair turned over: the inside of each dome enamelled in red and green around a gold lotus",
+    altWorn:
+      "The jhumka worn: the granulated dome and its pearl fringe hanging at the ear",
     spec: "Granulated gold · seed-pearl fringe · enamelled inside",
   },
   "polki-ring": {
-    mediaKey: { front: "polki-ring-front", back: null },
+    mediaKey: { front: "polki-ring-front", back: null, worn: "polki-ring-worn" },
     alt: "Slim gold ring with one uncut polki diamond closed in a kundan bezel, ringed with granulation",
     altBack: null,
+    altWorn:
+      "The ring worn on a hand, showing how small the band and its single stone are",
     spec: "One uncut polki · kundan bezel · granulated shoulders",
   },
   "lotus-pendant": {
-    mediaKey: { front: "lotus-pendant-front", back: "lotus-pendant-reverse" },
+    mediaKey: { front: "lotus-pendant-front", back: "lotus-pendant-reverse", worn: "lotus-pendant-worn" },
     alt: "Eight-petalled gold lotus pendant, granulated throughout, ringed with polki around a cabochon emerald",
     altBack:
       "The same pendant turned over: one red and green lotus enamelled across the whole of the back",
+    altWorn:
+      "The pendant worn at the throat on a fine chain, showing its everyday scale",
     spec: "Granulated lotus · polki ring · cabochon emerald",
   },
   "slim-kada": {
-    mediaKey: { front: "slim-kada-front", back: null },
+    mediaKey: { front: "slim-kada-front", back: null, worn: "slim-kada-worn" },
     alt: "Slim round gold kada chased all the way round with a fine vine pattern, closed by a plain hinged clasp",
     altBack: null,
+    altWorn:
+      "The kada worn on a wrist, showing how slim the chased band sits",
     spec: "Chased vine · hinged clasp · no stones",
   },
 
   /* --- Bridal demonstration pieces. See (3a). --------------------------- */
 
   "rani-haar": {
-    mediaKey: { front: "rani-haar-front", back: "rani-haar-reverse" },
+    mediaKey: { front: "rani-haar-front", back: "rani-haar-reverse", worn: "rani-haar-worn" },
     alt: "Three-strand rani haar of carved ruby and emerald beads and pearls, hung with seven kundan-set polki medallions and a drop",
     altBack:
       "The same haar turned over: a pink and green lotus enamelled on the back of every medallion and on the drop",
+    altWorn:
+      "The haar worn: three strands falling below the collarbone with the drop at the centre",
     spec: "Three strands · carved ruby and emerald · kundan medallions",
   },
   "bridal-tikka": {
-    mediaKey: { front: "bridal-tikka-front", back: "bridal-tikka-reverse" },
+    mediaKey: { front: "bridal-tikka-front", back: "bridal-tikka-reverse", worn: "bridal-tikka-worn" },
     alt: "Bridal maang tikka: a kundan-set polki medallion hung with carved emerald and ruby drops, on a pearl and gold chain",
     altBack:
       "The same tikka turned over: a red and green lotus enamelled across the back of the medallion",
+    altWorn:
+      "The tikka worn at the hairline, its chain running back over the parting",
     spec: "Kundan-set polki · carved bead drops · pearl chain",
   },
   "jadau-kangan": {
-    mediaKey: { front: "jadau-kangan-front", back: "jadau-kangan-reverse" },
+    mediaKey: { front: "jadau-kangan-front", back: "jadau-kangan-reverse", worn: "jadau-kangan-worn" },
     alt: "Wide bridal jadau kangan of polki flowerheads bedded in gold, rimmed in seed pearls with carved emerald beads",
     altBack:
       "The same kangan turned over: a red and green flowering vine enamelled right round the inner face",
+    altWorn:
+      "The kangan worn on a wrist, showing the full width of the stone-set band",
     spec: "Jadau flowerheads · seed-pearl rim · carved emerald",
   },
 };
@@ -344,6 +369,7 @@ function seedPiece(input: {
     mediaKey: presentation.mediaKey,
     alt: presentation.alt,
     altBack: presentation.altBack,
+    altWorn: presentation.altWorn,
 
     collections: input.collections,
   };
@@ -426,6 +452,7 @@ function demoPiece(input: {
     mediaKey: presentation.mediaKey,
     alt: presentation.alt,
     altBack: presentation.altBack,
+    altWorn: presentation.altWorn,
 
     collections: input.collections,
   };
@@ -915,6 +942,7 @@ async function readCommerceRows(): Promise<CataloguePiece[] | null> {
       mediaKey: presentation.mediaKey,
       alt: presentation.alt,
       altBack: presentation.altBack,
+      altWorn: presentation.altWorn,
       collections: membership.get(row.id) ?? [],
     });
   }

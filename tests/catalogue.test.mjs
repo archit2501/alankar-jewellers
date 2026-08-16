@@ -238,6 +238,45 @@ test("every demonstration piece can actually be priced", () => {
  * or not at all, so `Flip` never renders a control promising a side that does
  * not exist, and never hides one that does.
  */
+/**
+ * The worn shot follows the reverse's rule: image and alt text arrive together
+ * or not at all, and a piece never claims a photograph it does not have.
+ *
+ * The heirloom pieces have none and must keep none. They have never been worn
+ * for a camera, and borrowing a body shot of a different necklace to fill the
+ * panel is exactly the substitution the product page refuses in words two
+ * sections earlier.
+ */
+test("a worn photograph exists only where one was actually made", () => {
+  for (const piece of CATALOGUE_SEED) {
+    if (piece.mediaKey.worn) {
+      assert.ok(
+        piece.altWorn && piece.altWorn.length > 20,
+        `${piece.slug} has a worn photograph with thin or missing alt text`
+      );
+      assert.notEqual(piece.altWorn, piece.alt, `${piece.slug} reuses one alt for two shots`);
+      assert.notEqual(piece.altWorn, piece.altBack, `${piece.slug} reuses the reverse alt`);
+      assert.ok(
+        isDemonstrationPiece(piece.slug),
+        `${piece.slug} is an heirloom piece claiming a worn photograph nobody took`
+      );
+    } else {
+      assert.equal(
+        piece.altWorn,
+        null,
+        `${piece.slug} describes a worn shot it has no photograph of`
+      );
+    }
+  }
+
+  // Every demonstration piece has one, so the panel is not silently absent on
+  // the pieces the section was built for.
+  for (const slug of DEMONSTRATION_SLUGS) {
+    const piece = CATALOGUE_SEED.find((p) => p.slug === slug);
+    assert.ok(piece.mediaKey.worn, `${slug} is a demonstration piece with no worn photograph`);
+  }
+});
+
 test("every piece has a photographed face, and a reverse only where one exists", () => {
   for (const piece of CATALOGUE_SEED) {
     assert.ok(piece.mediaKey.front, `${piece.slug} has no front image`);
