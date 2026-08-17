@@ -318,7 +318,7 @@ export type NoticeCopy = { readonly copy: string; readonly problem: boolean };
  */
 export const PIECE_NOTICES: Readonly<Record<PieceNotice, NoticeCopy>> = {
   created: {
-    copy: "Started. It is saved as a draft and is not on the website — fill in the rest whenever you like, a bit at a time.",
+    copy: "Started. It is saved as a draft and is not on the website. Fill in the rest whenever you like, a bit at a time.",
     problem: false,
   },
   "weight-saved": { copy: "Weight and purity saved.", problem: false },
@@ -337,7 +337,7 @@ export const PIECE_NOTICES: Readonly<Record<PieceNotice, NoticeCopy>> = {
     problem: false,
   },
   "brought-back": { copy: "Brought back as a draft.", problem: false },
-  "no-change": { copy: "Nothing changed — the piece was already like that.", problem: false },
+  "no-change": { copy: "Nothing changed. The piece was already like that.", problem: false },
   "confirm-weight": {
     copy: "Nothing has been saved yet. Read the weight back, in words and in rupees, and confirm it.",
     problem: false,
@@ -349,19 +349,19 @@ export const PIECE_NOTICES: Readonly<Record<PieceNotice, NoticeCopy>> = {
   },
   "needs-craft": { copy: "Say what kind of piece it is.", problem: true },
   "bad-weight": {
-    copy: "That is not a weight this can read. Write it in grams the way it reads on the scale — 18.4 and 18.400 both work. Digits and at most one dot, no commas, and no more than three figures after the dot.",
+    copy: "That is not a weight this can read. Write it in grams the way it reads on the scale: 18.4 and 18.400 both work. Digits and at most one dot, no commas, and no more than three figures after the dot.",
     problem: true,
   },
   "weight-too-big": {
-    copy: "That weight is over five kilograms, which is almost always a misplaced decimal point rather than a real piece. Nothing was saved — check it and try again.",
+    copy: "That weight is over five kilograms, which is almost always a misplaced decimal point rather than a real piece. Nothing was saved. Check it and try again.",
     problem: true,
   },
   "bad-purity": {
-    copy: "Purity has to be one of 999, 995, 916, 750 or 585. 22K is 916, and 995 has no carat name at all — which is why both are printed on every button.",
+    copy: "Purity has to be one of 999, 995, 916, 750 or 585. 22K is 916, and 995 has no carat name at all: which is why both are printed on every button.",
     problem: true,
   },
   "needs-weight": {
-    copy: "A piece priced by weight needs both a net metal weight and a purity, and this one is missing at least one of them. Add them under “Weight and purity” first, or leave it at price on request — that is a real answer and the website says so plainly.",
+    copy: "A piece priced by weight needs both a net metal weight and a purity, and this one is missing at least one of them. Add them under “Weight and purity” first, or leave it at price on request, which is a real answer and the website says so plainly.",
     problem: true,
   },
   "needs-price": {
@@ -385,19 +385,19 @@ export const PIECE_NOTICES: Readonly<Record<PieceNotice, NoticeCopy>> = {
     problem: true,
   },
   "online-on-request": {
-    copy: "A piece shown at “price on request” cannot be bought on the website — there is no figure to charge. Give it a price, or leave it as one people ask about.",
+    copy: "A piece shown at “price on request” cannot be bought on the website. There is no figure to charge. Give it a price, or leave it as one people ask about.",
     problem: true,
   },
   "needs-huid": {
-    copy: "Type the hallmark number as it reads on the piece. If it is not to hand, choose “it is hallmarked but the number is not here” instead and come back to it — nothing will be made up in the meantime.",
+    copy: "Type the hallmark number as it reads on the piece. If it is not to hand, choose “it is hallmarked but the number is not here” instead and come back to it. Nothing will be made up in the meantime.",
     problem: true,
   },
   "not-publishable": {
-    copy: "Answer the hallmark question first — either this piece's hallmark number, or that it is exempt because it is Kundan, Polki or Jadau. Until then it stays off the website.",
+    copy: "Answer the hallmark question first: either this piece's hallmark number, or that it is exempt because it is Kundan, Polki or Jadau. Until then it stays off the website.",
     problem: true,
   },
   "name-taken": {
-    copy: "There is already a piece with a name very like that one. Give this one a name that tells them apart — the customer sees it too.",
+    copy: "There is already a piece with a name very like that one. Give this one a name that tells them apart. The customer sees it too.",
     problem: true,
   },
   "negative-money": {
@@ -410,7 +410,7 @@ export const PIECE_NOTICES: Readonly<Record<PieceNotice, NoticeCopy>> = {
     problem: true,
   },
   "sku-taken": {
-    copy: "That piece number is already in use. Try again — a new one is drawn each time.",
+    copy: "That piece number is already in use. Try again. A new one is drawn each time.",
     problem: true,
   },
   "not-found": {
@@ -941,7 +941,7 @@ export function canPublish(piece: AdminPiece): boolean {
  * truth.
  */
 export const PHOTOGRAPHS_BLOCKED =
-  "Photographs cannot be added yet. The storage they need is not switched on for this account, so there is nothing here to upload to — and until a piece has one the website leaves it out, even when it is marked as being on the website. That is the website being careful rather than something you have done wrong.";
+  "Photographs cannot be added yet. The storage they need is not switched on for this account, so there is nothing here to upload to, and until a piece has one the website leaves it out, even when it is marked as being on the website. That is the website being careful rather than something you have done wrong.";
 
 /* =========================================================================
  * DIAGNOSING THE CONSTRAINTS, BEFORE AND AFTER

@@ -1089,7 +1089,7 @@ export function toCheckoutFields(value: unknown): readonly CheckoutField[] {
 /** What the page says about each field it was told to ask again for. */
 export const CHECKOUT_FIELD_PROBLEMS: Readonly<Record<CheckoutField, string>> = {
   name: "We need the name this order is for.",
-  phone: "We need a mobile number with at least ten digits — it is how we will reach you about this order.",
+  phone: "We need a mobile number with at least ten digits. It is how we will reach you about this order.",
   email: "That email address does not look like one. Leave it empty if you would rather we only called.",
   fulfilment: "Please choose whether the piece is collected from the shop or sent to you.",
   plan: "Please choose how you would like to settle this order.",
@@ -2059,7 +2059,7 @@ export async function cancelOrder(
   const intact = await assertOrderIntact(db, orderId, lineItemCount);
   if (!intact.ok) {
     console.error(
-      `[orders] refusing to cancel ${orderNumber}: it is TORN — line_item_count says ${lineItemCount}, ${intact.found} rows exist.`
+      `[orders] refusing to cancel ${orderNumber}: it is TORN. line_item_count says ${lineItemCount}, ${intact.found} rows exist.`
     );
     return { ok: false, reason: "torn", expected: lineItemCount, found: intact.found };
   }

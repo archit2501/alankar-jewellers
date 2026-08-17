@@ -427,7 +427,7 @@ async function handleCancel(
         status: 409,
         notice: ORDER_ACTION_NOTICES.notCancellable,
         error:
-          "This order cannot be cancelled now — the piece has already left the shop. That needs a return, which is a different act.",
+          "This order cannot be cancelled now. The piece has already left the shop. That needs a return, which is a different act.",
       });
     default:
       return respond(request, orderNumber, {

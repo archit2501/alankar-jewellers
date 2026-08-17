@@ -405,7 +405,7 @@ function orderSummary(input: {
   const money =
     input.totalPaise === null ? "" : `, ${formatPricePaise(input.totalPaise)}`;
   const settled = PAYMENT_CAPTURE_ENABLED ? "" : " Nothing has been charged.";
-  return `Order recorded — ${pieces}${money}.${settled}`;
+  return `Order recorded: ${pieces}${money}.${settled}`;
 }
 
 /**
@@ -418,7 +418,7 @@ function orderSummary(input: {
  */
 function ticketSummary(kind: string | null, subject: string | null): string {
   const said = subject ?? "No subject was recorded.";
-  return kind === "complaint" ? `Problem raised — ${said}` : said;
+  return kind === "complaint" ? `Problem raised: ${said}` : said;
 }
 
 /** A queue entry with the one fact the contract has no room for. */
@@ -726,7 +726,7 @@ export async function readSetupGaps(db: CartDb): Promise<SetupGap[]> {
         ? "The website has a phone number, but no address or opening hours"
         : "The website has no phone number or address yet",
       detail: known.phone
-        ? "The number is live and people can ring it. The address and the opening hours are still missing, and the page says so rather than inventing them — someone will otherwise arrive at a closed shutter."
+        ? "The number is live and people can ring it. The address and the opening hours are still missing, and the page says so rather than inventing them. Someone will otherwise arrive at a closed shutter."
         : "It says so on the page rather than inventing them. They are filled in once, in the site’s own settings, by whoever looks after the website.",
       href: null,
       resolved: known.phone && known.address && known.hours,
@@ -736,7 +736,7 @@ export async function readSetupGaps(db: CartDb): Promise<SetupGap[]> {
       id: "gold_rate",
       title: "No gold rate has been recorded",
       detail:
-        "Nothing on the website can show a price until one is. Every piece shows “price on request”, and nobody can check out. That is deliberate — a wrong price is worse than no price.",
+        "Nothing on the website can show a price until one is. Every piece shows “price on request”, and nobody can check out. That is deliberate: a wrong price is worse than no price.",
       href: "/admin/rate",
       resolved: rateRows > 0,
     },

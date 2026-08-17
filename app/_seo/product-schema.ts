@@ -230,7 +230,7 @@ export function disclosures(piece: CataloguePiece): readonly Disclosure[] {
       key: "purity",
       label: "Purity",
       value: purityDisplay(piece),
-      pending: "Not assayed yet — no fineness has been recorded.",
+      pending: "Not assayed yet. No fineness has been recorded.",
       compliance: true,
     },
     {
@@ -253,7 +253,7 @@ export function disclosures(piece: CataloguePiece): readonly Disclosure[] {
       value: piece.huid,
       // The wording a buyer needs: the absence of a HUID is a fact about the
       // piece, not a gap in the page. Never blank, never invented.
-      pending: "Not yet hallmarked — no HUID has been issued for this piece.",
+      pending: "Not yet hallmarked. No HUID has been issued for this piece.",
       compliance: true,
     },
     {
@@ -267,7 +267,7 @@ export function disclosures(piece: CataloguePiece): readonly Disclosure[] {
       key: "certificate",
       label: "Certificate",
       value: piece.certificateNumber,
-      pending: "Not yet certified — no certificate number exists for this piece.",
+      pending: "Not yet certified. No certificate number exists for this piece.",
       compliance: true,
     },
     {

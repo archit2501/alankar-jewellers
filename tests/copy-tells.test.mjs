@@ -51,6 +51,19 @@ function* walk(dir) {
 const components = [...walk(`${ROOT}app`)].filter((f) => f.endsWith(".tsx"));
 
 /**
+ * Copy does not only live in components. Piece descriptions, disclosure
+ * sentences, admin notices and the JSON-LD description are all strings in .ts
+ * files, and scoping the first version of this guard to .tsx left five
+ * em-dashes rendering on two live pages after it passed.
+ *
+ * Comments in those files stay exempt, so the check looks INSIDE string
+ * literals rather than at whole lines.
+ */
+const dataFiles = [...walk(`${ROOT}app`)].filter((f) => f.endsWith(".ts"));
+
+const STRING_WITH_DASH = /(["'`])((?:(?!\1)[^\\]|\\.)*—(?:(?!\1)[^\\]|\\.)*)\1/g;
+
+/**
  * Blank out comments while preserving line numbers, so a reported line points
  * at the real one.
  */
@@ -71,6 +84,18 @@ test("no em-dash reaches the page", () => {
         offences.push(`${file.slice(ROOT.length)}:${i + 1}  ${line.trim().slice(0, 80)}`);
       }
     });
+  }
+
+  for (const file of dataFiles) {
+    // Comments first. A doc comment may quote `a phrase — like this`, and the
+    // string-literal regex cannot tell that from code.
+    withoutComments(readFileSync(file, "utf8"))
+      .split("\n")
+      .forEach((line, i) => {
+        for (const m of line.matchAll(STRING_WITH_DASH)) {
+          offences.push(`${file.slice(ROOT.length)}:${i + 1}  ${m[2].trim().slice(0, 70)}`);
+        }
+      });
   }
 
   assert.deepEqual(

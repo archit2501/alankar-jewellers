@@ -348,7 +348,7 @@ async function handleWrite(
         status: 409,
         notice: RATE_NOTICES.conflict,
         error:
-          "That rate is no longer the one in force, so it cannot be corrected. What it was is part of the record now — the orders billed from it were billed from it. Correct the rate that is in force instead.",
+          "That rate is no longer the one in force, so it cannot be corrected. What it was is part of the record now. The orders billed from it were billed from it. Correct the rate that is in force instead.",
       });
     }
 
@@ -373,7 +373,7 @@ async function handleWrite(
         status: 400,
         notice: RATE_NOTICES.notAllowed,
         error:
-          "Choose one of the purities the rate is published at. Purity is millesimal fineness — 916, never 22 carat.",
+          "Choose one of the purities the rate is published at. Purity is millesimal fineness: 916, never 22 carat.",
       });
     }
     metal = slot.metal;
@@ -526,7 +526,7 @@ export function GET(): Response {
     JSON.stringify({
       ok: false,
       error:
-        "Use POST. Rates cannot be read, edited or deleted through this endpoint — a wrong rate is superseded, never changed.",
+        "Use POST. Rates cannot be read, edited or deleted through this endpoint. A wrong rate is superseded, never changed.",
     }),
     { status: 405, headers: result }
   );

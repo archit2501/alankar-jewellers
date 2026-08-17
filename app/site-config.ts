@@ -147,10 +147,10 @@ export const founder = {
    * The role as a verb rather than a job title, which is Part E's grammar and
    * also, here, the client's own phrasing: he oversees everything.
    */
-  oversees: "Oversees everything — all of the operations." as string | null,
+  oversees: "Oversees everything, all of the operations." as string | null,
 
   /**
-   * The same fact cut to caption length, for Part E's "Name — verb." grammar
+   * The same fact cut to caption length, for Part E's "Name, verb." grammar
    * under a portrait. Kept here rather than sliced out of the sentence above,
    * so that both phrasings are things the shop said rather than things a
    * component derived.

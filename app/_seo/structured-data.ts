@@ -26,7 +26,7 @@ import { known, site } from "../site-config";
 const businessId = `${site.url}/#jewellery-store`;
 
 const description =
-  "Alankar Jewellers has crafted antique Jadau, diamond and Polki jewellery since 1980 — designer pieces made with trust and artistry across generations.";
+  "Alankar Jewellers has crafted antique Jadau, diamond and Polki jewellery since 1980. Designer pieces made with trust and artistry across generations.";
 
 /**
  * The business as a `JewelryStore` (a subtype of `LocalBusiness`).

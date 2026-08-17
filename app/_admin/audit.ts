@@ -349,7 +349,7 @@ export async function writeAudit(db: CartDb, entry: AuditEntry): Promise<AuditRo
     await db.batch([auditStatement(row)]);
   } catch (error) {
     console.error(
-      `[admin-audit] FAILED to record ${row.action} (${row.entityType}) — the action itself was not affected:`,
+      `[admin-audit] FAILED to record ${row.action} (${row.entityType}): the action itself was not affected:`,
       error
     );
   }
@@ -428,8 +428,8 @@ export async function mirrorAuditRow(row: AuditRow): Promise<boolean> {
       warnedAboutMissingMirror = true;
       console.warn(
         "[admin-audit] ADMIN_AUDIT_MIRROR_URL is not set, so admin audit rows exist only in D1. " +
-          "D1 has no India region, so CERT-In direction (iv) — 180 days of logs within Indian " +
-          "jurisdiction — is not being met, and this log has no copy outside the reach of whoever " +
+          "D1 has no India region, so CERT-In direction (iv), 180 days of logs within Indian " +
+          "jurisdiction, is not being met, and this log has no copy outside the reach of whoever " +
           "holds the database credentials. Set the secret to close both. " +
           "(Warned once per isolate; further rows are mirrored nowhere, silently.)"
       );

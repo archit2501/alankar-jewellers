@@ -262,7 +262,7 @@ function buildManualQuotes(raw: unknown):
         ok: false,
         error: `\`fineness\` must be one of ${ALLOWED_FINENESS[metal].join(
           ", "
-        )} for ${metal} — millesimal fineness, never karat.`,
+        )} for ${metal}: millesimal fineness, never karat.`,
       };
     }
 

@@ -1347,7 +1347,7 @@ export function rowPath(bar: {
 export const RECORDED_NOT_RECEIVED =
   PAYMENT_CAPTURE_ENABLED
     ? "Every figure here is what has been ordered through the website."
-    : "No money has come through the website — card and UPI are not switched on. Every figure here is what was ordered, not what was taken.";
+    : "No money has come through the website. Card and UPI are not switched on. Every figure here is what was ordered, not what was taken.";
 
 /** Whether a rate lookup is usable, in the one word the screens branch on. */
 export function rateStandingWord(lookup: RateLookup | null): "none" | "good" | "stale" | "broken" {
