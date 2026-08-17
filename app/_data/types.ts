@@ -18,6 +18,30 @@
 
 import type { ImageKey } from "../_media/images";
 
+/**
+ * The demonstration pieces, named rather than detected.
+ *
+ * DECLARED HERE, in the leaf module, rather than in `catalogue.ts` where it
+ * began. `app/_seo/product-schema.ts` has to know which pieces are invented in
+ * order to keep their figures out of the structured data, and importing the
+ * catalogue would drag the D1 layer into a module that only formats markup.
+ * `catalogue.ts` re-exports both so every existing import still resolves.
+ */
+export const DEMONSTRATION_SLUGS: readonly string[] = [
+  "gold-jhumka",
+  "polki-ring",
+  "lotus-pendant",
+  "slim-kada",
+  "rani-haar",
+  "bridal-tikka",
+  "jadau-kangan",
+];
+
+/** True for a piece whose figures are invented for demonstration. */
+export function isDemonstrationPiece(slug: string): boolean {
+  return DEMONSTRATION_SLUGS.includes(slug);
+}
+
 /** Millesimal fineness, never karat. 995 has no karat equivalent. */
 export type Fineness = 999 | 995 | 916 | 750 | 585;
 

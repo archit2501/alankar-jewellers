@@ -740,27 +740,11 @@ export const CATALOGUE_SEED: readonly CataloguePiece[] = CATALOGUE_SEED_ROWS.map
 );
 
 /**
- * The demonstration pieces, named rather than detected. See (3a).
- *
- * This is declared by hand and the test suite asserts that it matches the set of
- * pieces which actually carry a weight — in BOTH directions. Deriving it from
- * `pricingMode` instead would make the guard circular and let a fifth priced
- * piece appear without anybody deciding it should.
+ * Re-exported from `./types` so this module stays the one place the storefront
+ * imports catalogue facts from. The declaration moved to the leaf module so the
+ * SEO layer can read it without importing the database. See ./types.
  */
-export const DEMONSTRATION_SLUGS: readonly string[] = [
-  "gold-jhumka",
-  "polki-ring",
-  "lotus-pendant",
-  "slim-kada",
-  "rani-haar",
-  "bridal-tikka",
-  "jadau-kangan",
-];
-
-/** True for a piece whose figures are invented for demonstration. See (3a). */
-export function isDemonstrationPiece(slug: string): boolean {
-  return DEMONSTRATION_SLUGS.includes(slug);
-}
+export { DEMONSTRATION_SLUGS, isDemonstrationPiece } from "./types";
 
 /**
  * TRUE while the catalogue is placeholder inventory rather than the shop's real

@@ -152,6 +152,72 @@ function leaves(value, path = "$", out = []) {
  * is where that is usually thrown away by a float division.
  * ---------------------------------------------------------------------- */
 
+/**
+ * A DEMONSTRATION PIECE MAKES NO COMMERCIAL CLAIM TO A MACHINE.
+ *
+ * This is the bug that shipped: seven pieces published a full Offer — a real
+ * rupee price, `InStock`, and a gross weight in grams — for objects that have
+ * never existed, indexed and machine-readable, while the only disclosure lived
+ * one navigation away on /shop.
+ *
+ * Asserted in BOTH directions, because a gate that only proves the invented
+ * case stays silent when it starts withholding everything.
+ */
+test("invented pieces publish no offer, no price and no weight", async () => {
+  // The seed script registers the hooks that let plain Node resolve `../../db`
+  // out of the catalogue's module graph.
+  await import("../scripts/seed-catalogue.mjs");
+  const { productJsonLd } = await import("../app/_seo/product-schema.ts");
+  const { DEMONSTRATION_SLUGS } = await import("../app/_data/types.ts");
+  const { CATALOGUE_SEED } = await import("../app/_data/catalogue.ts");
+
+  const priced = (piece) => ({
+    ...piece,
+    price: { totalPaise: 51_987_624, lines: [], goldRateId: "rate_x" },
+  });
+
+  let checkedInvented = 0;
+  let checkedReal = 0;
+
+  for (const piece of CATALOGUE_SEED) {
+    const data = productJsonLd(priced(piece));
+
+    // True of every piece: the identity is never withheld.
+    assert.equal(data["@type"], "Product");
+    assert.ok(data.name, `${piece.slug} lost its name`);
+    assert.ok(data.image, `${piece.slug} lost its images`);
+
+    if (DEMONSTRATION_SLUGS.includes(piece.slug)) {
+      checkedInvented += 1;
+      assert.ok(!("offers" in data), `${piece.slug} publishes an Offer for a piece that does not exist`);
+      assert.ok(!("weight" in data), `${piece.slug} publishes an invented gross weight`);
+
+      const props = data.additionalProperty ?? [];
+      for (const id of ["fineness", "netMetalWeight"]) {
+        assert.ok(
+          !props.some((p) => p.propertyID === id),
+          `${piece.slug} publishes an invented ${id}`
+        );
+      }
+      // The serialised form is what a crawler actually reads.
+      const json = JSON.stringify(data);
+      assert.doesNotMatch(json, /InStock|OutOfStock/, `${piece.slug} claims an availability`);
+      assert.doesNotMatch(json, /519876\.24/, `${piece.slug} leaks a price`);
+      continue;
+    }
+
+    // A real piece with a real price still publishes one — the gate must not
+    // have quietly swallowed the whole feature.
+    checkedReal += 1;
+    assert.ok(data.offers, `${piece.slug} is a real piece and lost its Offer`);
+    assert.equal(data.offers.price, "519876.24", `${piece.slug} lost its price`);
+    assert.equal(data.offers.priceCurrency, "INR");
+  }
+
+  assert.equal(checkedInvented, DEMONSTRATION_SLUGS.length, "not every invented piece was checked");
+  assert.ok(checkedReal > 0, "no real piece was checked, so the positive arm proves nothing");
+});
+
 test("rupees are formatted with Indian digit grouping, to the paise", () => {
   assert.equal(formatRupees(0), "₹0.00");
   assert.equal(formatRupees(1), "₹0.01");

@@ -59,7 +59,7 @@
  */
 
 import { images } from "../_media/images";
-import type { CataloguePiece, PricedPiece } from "../_data/types";
+import { isDemonstrationPiece, type CataloguePiece, type PricedPiece } from "../_data/types";
 import { isPriceableMetal, purityLabel } from "../_pricing/price";
 import { site } from "../site-config";
 
@@ -334,9 +334,17 @@ export function productJsonLd(piece: PricedPiece): Record<string, unknown> {
   // Verified physical facts only, and the array is dropped entirely rather than
   // published empty — an empty additionalProperty is a broken signal, exactly
   // as an empty sameAs is in structured-data.ts.
+  //
+  // "Verified" is doing the work in that sentence. A demonstration piece has a
+  // fineness and a net weight in the database, and both are invented, so both
+  // are withheld here for the reason set out at THE SECOND GATE below. HUID,
+  // hallmark mark and certificate need no gate: they are null for every piece
+  // in the catalogue and always have been, because a fabricated credential was
+  // never on the table.
+  const invented = isDemonstrationPiece(piece.slug);
   const additionalProperty: Record<string, unknown>[] = [];
 
-  if (piece.fineness !== null) {
+  if (piece.fineness !== null && !invented) {
     additionalProperty.push({
       "@type": "PropertyValue",
       propertyID: "fineness",
@@ -344,7 +352,7 @@ export function productJsonLd(piece: PricedPiece): Record<string, unknown> {
       value: String(piece.fineness),
     });
   }
-  if (piece.netMetalWeightMg !== null) {
+  if (piece.netMetalWeightMg !== null && !invented) {
     additionalProperty.push({
       "@type": "PropertyValue",
       propertyID: "netMetalWeight",
@@ -390,6 +398,29 @@ export function productJsonLd(piece: PricedPiece): Record<string, unknown> {
     });
   }
 
+  /**
+   * THE SECOND GATE: A DEMONSTRATION PIECE MAKES NO COMMERCIAL CLAIM.
+   *
+   * The gate below this one asks "is there a fresh rate", which is a question
+   * about the PRICE. This one asks whether the OBJECT exists, and it did not
+   * exist as a question until demonstration stock was added to the catalogue.
+   *
+   * Everything these pieces published was true of the arithmetic and false of
+   * the world: an `Offer` at ₹5,19,876, `InStock`, and a gross weight of 33.100
+   * grams for a kangan nobody has ever made, machine-readable and indexed. A
+   * human reading the page sees the disclosure printed above the diptych; a
+   * crawler reads this object and sees a shop asserting it has the thing and
+   * will sell it at that figure.
+   *
+   * So for these pieces the entire `offers` node and `weight` are withheld —
+   * not zeroed, not marked OutOfStock, which would be a different false claim
+   * about a real object. What remains is true: it has that name, that
+   * description, those photographs, and it belongs to this shop.
+   *
+   * This is the same rule `site-config.ts` applies to the shop's address and
+   * `disclosures()` applies to a HUID, arriving late at the one surface where
+   * nobody was reading.
+   */
   const offer: Record<string, unknown> = {
     "@type": "Offer",
     "@id": `${url}#offer`,
@@ -420,14 +451,17 @@ export function productJsonLd(piece: PricedPiece): Record<string, unknown> {
     image,
     productID: piece.id,
     brand: { "@id": BUSINESS_ID },
-    offers: offer,
   };
+
+  if (!invented) {
+    data.offers = offer;
+  }
 
   const metal = disclosed(rows, "metal");
   if (metal !== null) {
     data.material = metal;
   }
-  if (piece.grossWeightMg !== null) {
+  if (piece.grossWeightMg !== null && !invented) {
     data.weight = {
       "@type": "QuantitativeValue",
       value: gramsDecimal(piece.grossWeightMg),
