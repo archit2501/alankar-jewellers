@@ -6,7 +6,7 @@
  * ===========================================================================
  * research/05-admin-ux.md §1: the admin is the HAVELI register — plaster
  * ground, ink, sindoor, brass hairlines. The Darbar ornament of the storefront
- * (oxblood fields, gold rules, multifoil arches, the flip) is discarded here.
+ * (meena fields, gold rules, multifoil arches, the flip) is discarded here.
  * A management screen is a register on a counter, read at arm's length by
  * someone standing up.
  *
@@ -60,7 +60,7 @@
   --ord-alert: var(--adm-alert, var(--sindoor));
   --ord-on-alert: var(--adm-on-alert, var(--plaster));
   --ord-hair: var(--adm-hair, rgba(125, 108, 91, 0.28));
-  --ord-focus: var(--field-focus, var(--oxblood-deep));
+  --ord-focus: var(--field-focus, var(--meena-deep));
   --ord-label: var(--field-label, var(--sindoor));
 
   color: var(--ord-ink);

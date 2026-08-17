@@ -163,7 +163,7 @@ type Piece = (typeof pieces)[number];
  *                   with a cusped shadow falling from it back onto the wall.
  *   Flip            the piece, already arch-masked by flip.css.
  *   .piece__lamp    the light in the alcove. The hero's `.hero__lamp`, retuned
- *                   from oxblood to teak.
+ *                   from meena green to teak.
  *
  * The lamp is a sibling rather than an ancestor wrapper on purpose: a mask
  * clips everything its element paints, so masking anything above the Flip's
@@ -276,7 +276,7 @@ export default function Home() {
                 {/* The alcove. Every catalogue photograph was shot on a flat,
                     cold grey sweep, and at this size that sweep is the largest
                     single area on the screen — it was reading as a grey slab
-                    dropped on the oxblood. This overlay is cut to the same arch
+                    dropped on the meena green. This overlay is cut to the same arch
                     and does three things to it: warms it toward the field,
                     darkens it at the crown and the rim so it recedes like the
                     back of a niche, and lays one soft pool of light over the

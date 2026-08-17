@@ -38,7 +38,7 @@ import { images, type ImageKey } from "../_media/images";
  *   keyboard — focus reveals it; Enter/Space pins it so it survives blur
  *   touch    — tap pins it (there is no hover to rely on)
  *
- * The field colour travels to oxblood on the same curve as the crossfade, so
+ * The field colour travels to meena green on the same curve as the crossfade, so
  * image and field read as one object turning rather than two things animating.
  *
  * The piece is cut to the multifoil arch. The mask lives on `.flip__stage`

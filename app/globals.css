@@ -22,20 +22,20 @@
  *
  * Measured, on the four fields this page actually uses:
  *
- *   FIELD              head          body           label        metal
- *   --oxblood          gold-leaf 9.24  plaster 12.08  gold 6.35   gold
- *   --oxblood-deep     gold-leaf 10.91 plaster 14.26  gold 7.50   gold
- *   --teak-deep        gold-leaf 10.71 plaster 13.99  gold 7.36   gold
- *   --plaster          ink 14.08       ink-2 7.80     sindoor 6.48 brass*
+ *   FIELD              head           body          label         metal
+ *   --meena            gold-leaf 9.15  ivory 13.45   gold 6.29    gold
+ *   --meena-deep       gold-leaf 11.10 ivory 16.32   gold 7.63    gold
+ *   --teak-deep        gold-leaf 10.71 ivory 13.55   gold 7.36    gold
+ *   --plaster          ink 14.68       ink-2 7.63    sindoor 6.86 brass*
  *
- *   * brass measures 2.85:1 on plaster, so on the light field brass is ORNAMENT
+ *   * brass measures 3.02:1 on plaster, so on the light field brass is ORNAMENT
  *     ONLY — rules, corner brackets, hairlines — and never a letterform. The
  *     light-field accent for text is --sindoor. (Brass is legal as large text on
  *     --teak at 3.96:1, which is why the token exists; this page has no large
  *     brass text on it.)
  *
  * REGISTERS
- *   Darbar (oxblood)   hero · the reverse · the invitation · the footer.
+ *   Darbar (meena)     hero · the reverse · the invitation · the footer.
  *                      Centred, symmetrical, ceremonial, gold used generously.
  *   Haveli  (plaster)  the pieces · the house. Editorial, asymmetric, warm,
  *                      metal reduced to brass ornament.
@@ -64,7 +64,7 @@
   --field-head: var(--ink);
   --field-label: var(--sindoor);
   --field-metal: var(--brass);
-  --field-focus: var(--oxblood-deep);
+  --field-focus: var(--meena-deep);
 }
 
 *,
@@ -92,7 +92,7 @@ body {
 
 ::selection {
   background: var(--gold-leaf);
-  color: var(--oxblood-deep);
+  color: var(--meena-deep);
 }
 
 button,
@@ -263,7 +263,7 @@ h3 {
    screen would float over whatever the body colour happens to be. So the ground
    is a wrapper and the lattice sits inside it. */
 .jali-break {
-  background: var(--oxblood-deep);
+  background: var(--meena-deep);
 }
 
 .jali-break--haveli {
@@ -277,26 +277,26 @@ h3 {
 }
 
 .section--darbar {
-  --field: var(--oxblood);
+  --field: var(--meena);
   --field-ink: var(--plaster);
   --field-head: var(--gold-leaf);
   --field-label: var(--gold);
   --field-metal: var(--gold);
   --field-focus: var(--gold-leaf);
 
-  background: var(--oxblood);
+  background: var(--meena);
   color: var(--plaster);
 }
 
 .section--darbar-deep {
-  --field: var(--oxblood-deep);
+  --field: var(--meena-deep);
   --field-ink: var(--plaster);
   --field-head: var(--gold-leaf);
   --field-label: var(--gold);
   --field-metal: var(--gold);
   --field-focus: var(--gold-leaf);
 
-  background: var(--oxblood-deep);
+  background: var(--meena-deep);
   color: var(--plaster);
 }
 
@@ -383,19 +383,19 @@ h3 {
   background: var(--plaster-sunk);
 }
 
-/* The same object on a Darbar field: an oxblood-lift panel ruled in gold. */
+/* The same object on a Darbar field: an meena-lift panel ruled in gold. */
 .panel--lift {
-  --field: var(--oxblood-lift);
+  --field: var(--meena-lift);
 
   padding: var(--s-7);
-  background: var(--oxblood-lift);
+  background: var(--meena-lift);
 }
 
 /* --- Controls ------------------------------------------------------------ */
 
 /* One button, two states of the same idea. On the light field it is a court
-   plaque: oxblood block, gold letters. On a dark field it inverts to gold leaf
-   with oxblood letters. Both carry a doubled frame — the button's own 1px edge,
+   plaque: meena block, gold letters. On a dark field it inverts to gold leaf
+   with meena letters. Both carry a doubled frame — the button's own 1px edge,
    a gap in the field colour, then the outer rule — because a single-stroke
    button is the web default and the default is what we are avoiding. */
 .button {
@@ -406,7 +406,7 @@ h3 {
   justify-content: center;
   padding: var(--s-3) var(--s-7);
   border: var(--rule-hair) solid var(--gold);
-  background: var(--oxblood-deep);
+  background: var(--meena-deep);
   box-shadow:
     0 0 0 var(--rule-gap) var(--field),
     0 0 0 calc(var(--rule-gap) + var(--rule-hair)) var(--gold-deep);
@@ -425,7 +425,7 @@ h3 {
 }
 
 .button:hover {
-  background: var(--oxblood-lift);
+  background: var(--meena-lift);
   color: var(--gold-leaf);
 }
 
@@ -454,7 +454,7 @@ h3 {
   box-shadow:
     0 0 0 var(--rule-gap) var(--field),
     0 0 0 calc(var(--rule-gap) + var(--rule-hair)) var(--gold-deep);
-  color: var(--oxblood-deep);
+  color: var(--meena-deep);
 }
 
 .hero .button:hover,
@@ -463,7 +463,7 @@ h3 {
 .section--vitrine .button:hover,
 .site-footer .button:hover {
   background: var(--gold-leaf);
-  color: var(--oxblood-deep);
+  color: var(--meena-deep);
 }
 
 .hero .button--ghost,
@@ -530,7 +530,7 @@ h3 {
 /* The court band at the top of the page. It never changes colour on scroll, so
    the site always has a dark lintel over it. */
 .site-header {
-  --field: var(--oxblood-deep);
+  --field: var(--meena-deep);
   --field-ink: var(--plaster);
   --field-head: var(--gold-leaf);
   --field-label: var(--gold);
@@ -540,7 +540,7 @@ h3 {
   position: sticky;
   z-index: 50;
   top: 0;
-  background: var(--oxblood-deep);
+  background: var(--meena-deep);
   color: var(--plaster);
 }
 
@@ -652,7 +652,7 @@ h3 {
 
 .nav-appointment:hover {
   background: var(--gold);
-  color: var(--oxblood-deep);
+  color: var(--meena-deep);
 }
 
 .menu-toggle {
@@ -684,7 +684,7 @@ h3 {
  * Five planes, drawn back to front, because a single flat plane is exactly
  * what made the old hero read cheaper than the teak niches further down:
  *
- *   0  the oxblood field and its grain            (.hero, .grained::after)
+ *   0  the meena field and its grain            (.hero, .grained::after)
  *   1  the jali wall, running to both screen edges (.hero__flank)
  *   2  a vignette that pushes the wall into shadow (.hero__vignette)
  *   3  a warm radial glow inside the opening       (.hero__glow)
@@ -702,10 +702,10 @@ h3 {
  * The glow is CSS only. Contrast is unaffected by it where it matters: the
  * brightest part of the gradient sits behind the photograph, and by the time it
  * reaches the caption it has fallen back to the field, so gold stays at its
- * measured 6.35:1 on oxblood.
+ * measured 6.29:1 on meena.
  */
 .hero {
-  --field: var(--oxblood);
+  --field: var(--meena);
   --field-ink: var(--plaster);
   --field-head: var(--gold-leaf);
   --field-label: var(--gold);
@@ -724,7 +724,7 @@ h3 {
   /* No inline padding: the wall and its two rules run edge to edge. The
      inscription and the invitation put the gutter back on themselves. */
   padding: var(--s-4) 0 var(--m-2);
-  background: var(--oxblood);
+  background: var(--meena);
   color: var(--plaster);
   text-align: center;
 }
@@ -905,7 +905,7 @@ h3 {
    on the screen. Cut to the same arch as the photograph, this overlay lays
    three coats on it, bottom to top: a warm wash that pulls the neutral toward
    the field, a rim-and-crown darkening so the sweep recedes like the back of a
-   niche instead of standing forward of the oxblood, and one soft pool of light
+   niche instead of standing forward of the meena green, and one soft pool of light
    sitting on the piece. The pool is centred at 62% down, which is where the
    stones are; the crown, which is only empty sweep inside the loop of the cord,
    is the part that goes dark. Nothing here touches the stones themselves —
@@ -1104,7 +1104,7 @@ h3 {
  * 2. The sweep is lit. Every catalogue photograph was shot on a flat, cold grey
  *    sweep (51%–64% luminance), and at these sizes it was the brightest, coldest
  *    and largest area in the section. `.piece__lamp` is `.hero__lamp` retuned
- *    from oxblood to teak: warm wash, crown and rim dropped into shadow, one
+ *    from meena green to teak: warm wash, crown and rim dropped into shadow, one
  *    pool of light over the stones. Nothing touches the stones' own colour.
  *
  * 3. It is dense. The wall is a single sunk-plaster surface rather than five
@@ -1319,7 +1319,7 @@ h3 {
   filter: drop-shadow(0 10px 20px rgba(36, 21, 10, 0.34));
 }
 
-/* THE LAMP — the hero's `.hero__lamp`, retuned from oxblood to teak. Four coats,
+/* THE LAMP — the hero's `.hero__lamp`, retuned from meena green to teak. Four coats,
    bottom to top: a warm wash that pulls the neutral sweep toward the wood, a
    rim-and-crown darkening so the sweep recedes like the back of a niche instead
    of standing forward of the wall, and one soft pool of light where the stones
@@ -1348,14 +1348,14 @@ h3 {
 /* THE FOCUS RING, and the one thing an arch-shaped recess breaks. The ring is a
    rectangle and the opening is not, so its top corners fall outside the arch
    onto the plaster, where --gold-leaf measures 1.05:1 and is simply not there.
-   Doubling it — gold between two bands of oxblood-deep — means one of the two
+   Doubling it — gold between two bands of meena-deep — means one of the two
    is always in contrast with whatever is behind it: gold-leaf reads 10.6:1 on
-   the teak inside the opening, oxblood-deep reads 11.5:1 on the plaster
+   the teak inside the opening, meena-deep reads 15.34:1 on the plaster
    outside it. Scoped here rather than changed in flip.css, where the ring is
    correct for every other place a Flip appears. */
 .pieces .flip__frame:focus-visible {
   outline-offset: 3px;
-  box-shadow: 0 0 0 7px var(--oxblood-deep);
+  box-shadow: 0 0 0 7px var(--meena-deep);
 }
 
 /* --- The label under an alcove ------------------------------------------- */
@@ -1561,7 +1561,7 @@ h3 {
 /* One date, set as the display figure it is. */
 .house__year {
   margin: var(--s-2) 0 var(--s-5);
-  color: var(--oxblood-deep);
+  color: var(--meena-deep);
   font-family: var(--font-display);
   font-size: var(--d-l);
   font-variant-numeric: lining-nums;
@@ -1668,7 +1668,7 @@ h3 {
 .contact__notice {
   --field: var(--plaster-sunk);
   --field-metal: var(--brass);
-  --field-focus: var(--oxblood-deep);
+  --field-focus: var(--meena-deep);
 
   max-width: var(--measure);
   padding: var(--s-5);
@@ -1681,7 +1681,7 @@ h3 {
   display: inline-block;
   margin-right: var(--s-3);
   padding: var(--s-1) var(--s-3);
-  background: var(--oxblood-deep);
+  background: var(--meena-deep);
   color: var(--gold);
   font-size: var(--t-2xs);
   font-weight: 600;
@@ -1693,13 +1693,13 @@ h3 {
    notice card — an unknown address or an unconfirmed opening time is labelled
    where it stands, directly on the Darbar field.
 
-   The chip above cannot travel there unchanged: oxblood-deep on oxblood is a
+   The chip above cannot travel there unchanged: meena-deep on meena is a
    1.62:1 step, so a filled chip would read as a smudge rather than a label.
    Inverted it becomes the gilded chip this site already uses for the same job
    on dark fields (.section--darbar .f-tag), and the pair measures 7.50:1. */
 .contact__card .contact__tag {
   background: var(--gold);
-  color: var(--oxblood-deep);
+  color: var(--meena-deep);
 }
 
 .contact__grid {
@@ -1798,7 +1798,7 @@ a.contact__value:hover {
 /* --- Footer -------------------------------------------------------------- */
 
 .site-footer {
-  --field: var(--oxblood-deep);
+  --field: var(--meena-deep);
   --field-ink: var(--plaster);
   --field-head: var(--gold-leaf);
   --field-label: var(--gold);
@@ -1807,7 +1807,7 @@ a.contact__value:hover {
 
   display: grid;
   padding: var(--m-2) var(--gutter) var(--m-1);
-  background: var(--oxblood-deep);
+  background: var(--meena-deep);
   color: var(--plaster);
   gap: var(--m-1) var(--s-7);
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
@@ -1881,7 +1881,7 @@ a.contact__value:hover {
   place-items: center;
   overflow-y: auto;
   padding: var(--s-5);
-  background: color-mix(in srgb, var(--oxblood-deep) 86%, transparent);
+  background: color-mix(in srgb, var(--meena-deep) 86%, transparent);
 }
 
 .appointment-dialog {
@@ -1890,7 +1890,7 @@ a.contact__value:hover {
   --field-head: var(--ink);
   --field-label: var(--sindoor);
   --field-metal: var(--brass);
-  --field-focus: var(--oxblood-deep);
+  --field-focus: var(--meena-deep);
 
   position: relative;
   width: min(820px, 100%);
@@ -2102,7 +2102,7 @@ a.contact__value:hover {
     flex-direction: column;
     justify-content: center;
     padding: var(--m-2) var(--gutter);
-    background: var(--oxblood-deep);
+    background: var(--meena-deep);
     gap: var(--s-4);
     opacity: 0;
     transition:
@@ -2443,7 +2443,7 @@ a.contact__value:hover {
  * the page component for why that is an editorial rule and not a layout taste.
  *
  * Contrast, measured on the two fields this page uses:
- *   --oxblood-deep   gold-leaf 10.91 · plaster 14.26 · gold 7.50
+ *   --meena-deep     gold-leaf 11.10 · plaster 15.34 · gold 7.63
  *   --plaster        ink 14.08 · ink-2 7.80 · sindoor 6.48 · brass = ORNAMENT
  * Brass is never a letterform here. Gold never appears on the light field.
  *
@@ -2642,7 +2642,7 @@ a.contact__value:hover {
   object-fit: cover;
 }
 
-/* The alcove lamp, oxblood-tuned: a warm wash that pulls the cold studio sweep
+/* The alcove lamp, meena-tuned: a warm wash that pulls the cold studio sweep
    toward the field, a rim-and-crown darkening so it recedes like the back of a
    niche, and one pool of light where the stones are. It never touches the
    stones' own colour. */
@@ -2694,7 +2694,7 @@ a.contact__value:hover {
   padding: var(--s-7);
   border: var(--rule-hair) dashed var(--gold-deep);
   aspect-ratio: 100 / 132;
-  background: var(--oxblood-lift);
+  background: var(--meena-lift);
   gap: var(--s-4);
   text-align: left;
 }
@@ -3038,9 +3038,9 @@ a.contact__value:hover {
 }
 
 /* Restated at page scope so the ring cannot go missing on this route, and so it
-   inverts with the field: gold-leaf on Darbar, oxblood-deep on plaster. */
+   inverts with the field: gold-leaf on Darbar, meena-deep on plaster. */
 .shop-page :focus-visible {
-  outline: 2px solid var(--field-focus, var(--oxblood-deep));
+  outline: 2px solid var(--field-focus, var(--meena-deep));
   outline-offset: 3px;
 }
 
@@ -3079,7 +3079,7 @@ a.contact__value:hover {
   min-width: 0;
   flex-direction: column;
   gap: 2px;
-  color: var(--gold-leaf); /* 10.91:1 on oxblood-deep */
+  color: var(--gold-leaf); /* 11.10:1 on meena-deep */
 }
 
 .shop-wordmark__name {
@@ -3089,7 +3089,7 @@ a.contact__value:hover {
 }
 
 .shop-wordmark__since {
-  color: var(--gold); /* 7.50:1 on oxblood-deep */
+  color: var(--gold); /* 7.63:1 on meena-deep */
   font-size: var(--t-2xs);
   font-weight: 600;
   letter-spacing: var(--tracking-label);
@@ -3105,7 +3105,7 @@ a.contact__value:hover {
 
 .shop-nav a {
   padding-block: var(--s-2);
-  color: var(--plaster); /* 14.26:1 on oxblood-deep */
+  color: var(--plaster); /* 15.34:1 on meena-deep */
   font-size: var(--t-sm);
   transition: color var(--motion-fast);
 }
@@ -3136,7 +3136,7 @@ a.contact__value:hover {
   margin-top: var(--s-6);
 }
 
-/* The honesty notice. Same object as /founders' pending panel: an oxblood-lift
+/* The honesty notice. Same object as /founders' pending panel: a meena-lift
    panel ruled in gold, saying plainly what has not been recorded yet. */
 .shop-notice {
   display: flex;
@@ -3144,7 +3144,7 @@ a.contact__value:hover {
   max-width: 46ch;
   flex-direction: column;
   gap: var(--s-4);
-  color: var(--plaster-sunk); /* 8.21:1 on oxblood-lift */
+  color: var(--plaster-sunk); /* 8.48:1 on meena-lift */
   font-size: var(--t-sm);
 }
 
@@ -3432,12 +3432,12 @@ a.contact__value:hover {
 
 /* THE FOCUS RING on an arch-shaped recess. The ring is a rectangle and the
    opening is not, so its top corners fall onto the plaster where --gold-leaf
-   measures 1.05:1. Doubling it — gold between two bands of oxblood-deep — keeps
+   measures 1.05:1. Doubling it — gold between two bands of meena-deep — keeps
    one of the two in contrast with whatever is behind it: gold-leaf reads 10.6:1
-   on the teak inside the opening, oxblood-deep 11.5:1 on the plaster outside. */
+   on the teak inside the opening, meena-deep 15.34:1 on the plaster outside. */
 .shop-card__alcove .flip__frame:focus-visible {
   outline-offset: 3px;
-  box-shadow: 0 0 0 7px var(--oxblood-deep);
+  box-shadow: 0 0 0 7px var(--meena-deep);
 }
 
 /* --- Nothing matched ----------------------------------------------------- */
@@ -3482,7 +3482,7 @@ a.contact__value:hover {
 .shop-close__body {
   max-width: 52ch;
   margin: var(--s-6) auto var(--s-7);
-  color: var(--plaster-sunk); /* 9.82:1 on oxblood */
+  color: var(--plaster-sunk); /* 10.67:1 on meena */
   font-size: var(--t-md);
 }
 
@@ -3498,7 +3498,7 @@ a.contact__value:hover {
 }
 
 .shop-colophon a {
-  color: var(--gold); /* 7.50:1 on oxblood-deep */
+  color: var(--gold); /* 7.63:1 on meena-deep */
   text-decoration: underline;
   text-decoration-thickness: var(--rule-hair);
   text-underline-offset: 6px;
@@ -3581,9 +3581,9 @@ a.contact__value:hover {
 }
 
 /* Restated at page scope so the ring cannot go missing on this route, and so
-   it inverts with the field: gold-leaf on Darbar, oxblood-deep on plaster. */
+   it inverts with the field: gold-leaf on Darbar, meena-deep on plaster. */
 .cart-page :focus-visible {
-  outline: 2px solid var(--field-focus, var(--oxblood-deep));
+  outline: 2px solid var(--field-focus, var(--meena-deep));
   outline-offset: 3px;
 }
 
@@ -3617,7 +3617,7 @@ a.contact__value:hover {
   min-width: 0;
   flex-direction: column;
   gap: 2px;
-  color: var(--gold-leaf); /* 10.91:1 on oxblood-deep */
+  color: var(--gold-leaf); /* 11.10:1 on meena-deep */
 }
 
 .cart-wordmark__name {
@@ -3627,7 +3627,7 @@ a.contact__value:hover {
 }
 
 .cart-wordmark__since {
-  color: var(--gold); /* 7.50:1 on oxblood-deep */
+  color: var(--gold); /* 7.63:1 on meena-deep */
   font-size: var(--t-2xs);
   font-weight: 600;
   letter-spacing: var(--tracking-label);
@@ -3643,7 +3643,7 @@ a.contact__value:hover {
 
 .cart-nav a {
   padding-block: var(--s-2);
-  color: var(--plaster); /* 14.26:1 on oxblood-deep */
+  color: var(--plaster); /* 15.34:1 on meena-deep */
   font-size: var(--t-sm);
   transition: color var(--motion-fast);
 }
@@ -3848,7 +3848,7 @@ a.contact__value:hover {
 }
 
 .cart-item__hold--yours {
-  border-left-color: var(--emerald);
+  border-left-color: var(--meena);
 }
 
 .cart-item__hold--elsewhere {
@@ -3967,7 +3967,7 @@ a.contact__value:hover {
 .cart-close__body {
   max-width: 52ch;
   margin: var(--s-6) auto var(--s-7);
-  color: var(--plaster-sunk); /* 9.82:1 on oxblood */
+  color: var(--plaster-sunk); /* 10.67:1 on meena */
   font-size: var(--t-md);
 }
 
@@ -3983,7 +3983,7 @@ a.contact__value:hover {
 }
 
 .cart-colophon a {
-  color: var(--gold); /* 7.50:1 on oxblood-deep */
+  color: var(--gold); /* 7.63:1 on meena-deep */
   text-decoration: underline;
   text-decoration-thickness: var(--rule-hair);
   text-underline-offset: 6px;
@@ -4043,7 +4043,7 @@ a.contact__value:hover {
  * COLOUR, obeyed line by line and measured:
  *   on --plaster-sunk   --ink 11.5:1 · --ink-2 6.4:1 · --sindoor 5.3:1
  *   on --plaster-lift   --ink 15.65:1 · --ink-2 8.67:1 · --sindoor 7.20:1
- *   on --oxblood-deep   --plaster 14.26:1 · --gold 7.50:1 · --gold-leaf 10.91:1
+ *   on --meena-deep     --plaster 15.34:1 · --gold 7.63:1 · --gold-leaf 11.10:1
  * --brass is 2.85:1 on plaster, so it appears below only as a rule, an edge or
  * an input's underline — never as text.
  *
@@ -4073,7 +4073,7 @@ a.contact__value:hover {
    inverts with the field. Checkout is the one page here that is mostly form
    controls, so a visible focus ring is not a nicety on it. */
 .checkout-page :focus-visible {
-  outline: 2px solid var(--field-focus, var(--oxblood-deep));
+  outline: 2px solid var(--field-focus, var(--meena-deep));
   outline-offset: 3px;
 }
 
@@ -4107,7 +4107,7 @@ a.contact__value:hover {
   min-width: 0;
   flex-direction: column;
   gap: 2px;
-  color: var(--gold-leaf); /* 10.91:1 on oxblood-deep */
+  color: var(--gold-leaf); /* 11.10:1 on meena-deep */
 }
 
 .checkout-wordmark__name {
@@ -4117,7 +4117,7 @@ a.contact__value:hover {
 }
 
 .checkout-wordmark__since {
-  color: var(--gold); /* 7.50:1 on oxblood-deep */
+  color: var(--gold); /* 7.63:1 on meena-deep */
   font-size: var(--t-2xs);
   font-weight: 600;
   letter-spacing: var(--tracking-label);
@@ -4133,7 +4133,7 @@ a.contact__value:hover {
 
 .checkout-nav a {
   padding-block: var(--s-2);
-  color: var(--plaster); /* 14.26:1 on oxblood-deep */
+  color: var(--plaster); /* 15.34:1 on meena-deep */
   font-size: var(--t-sm);
   transition: color var(--motion-fast);
 }
@@ -4412,7 +4412,7 @@ a.contact__value:hover {
   height: 20px;
   flex: 0 0 auto;
   margin-top: 3px;
-  accent-color: var(--oxblood);
+  accent-color: var(--meena);
 }
 
 .checkout-choice strong,
@@ -4670,7 +4670,7 @@ a.contact__value:hover {
 .checkout-close__body {
   max-width: 54ch;
   margin: var(--s-6) auto var(--s-7);
-  color: var(--plaster-sunk); /* 9.82:1 on oxblood */
+  color: var(--plaster-sunk); /* 10.67:1 on meena */
   font-size: var(--t-md);
 }
 
@@ -4686,7 +4686,7 @@ a.contact__value:hover {
 }
 
 .checkout-colophon a {
-  color: var(--gold); /* 7.50:1 on oxblood-deep */
+  color: var(--gold); /* 7.63:1 on meena-deep */
   text-decoration: underline;
   text-decoration-thickness: var(--rule-hair);
   text-underline-offset: 6px;

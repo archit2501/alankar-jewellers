@@ -6,7 +6,7 @@
  * ===========================================================================
  * research/05-admin-ux.md §1: the admin is the HAVELI register — plaster
  * ground, ink, sindoor, brass hairlines. The Darbar ornament of the storefront
- * (oxblood fields, gold rules, multifoil arches, the flip) is discarded here.
+ * (meena fields, gold rules, multifoil arches, the flip) is discarded here.
  *
  * ORNAMENT MARKS THE STATUTORY, and nothing in this screen is statutory. The
  * bill on the order page is a BIS Reg. 5(11) document and carries the brass
@@ -55,7 +55,7 @@
   --pcs-alert: var(--adm-alert, var(--sindoor));
   --pcs-on-alert: var(--adm-on-alert, var(--plaster));
   --pcs-hair: var(--adm-hair, rgba(125, 108, 91, 0.28));
-  --pcs-focus: var(--field-focus, var(--oxblood-deep));
+  --pcs-focus: var(--field-focus, var(--meena-deep));
   --pcs-label: var(--field-label, var(--sindoor));
 
   color: var(--pcs-ink);

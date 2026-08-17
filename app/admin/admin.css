@@ -12,7 +12,7 @@
  * research/05-admin-ux.md §1. The admin uses the HAVELI register — plaster
  * ground, ink, sindoor accent, brass hairlines — and the VITRINE register for
  * the header strip, the bottom bar and dark mode. It DISCARDS Darbar entirely:
- * no oxblood ground, no cusped arches, no jali screens, no doubled gold rules.
+ * no meena ground, no cusped arches, no jali screens, no doubled gold rules.
  * Ceremony is a sales instrument and it has no addressee in here.
  *
  * TWO RULES CARRY THE WHOLE DESIGN
@@ -67,7 +67,7 @@
   --field-head: var(--ink);
   --field-label: var(--sindoor);
   --field-metal: var(--brass);
-  --field-focus: var(--oxblood-deep);
+  --field-focus: var(--meena-deep);
 
   --adm-ground: var(--plaster);
   --adm-raised: var(--plaster-lift);

@@ -21,7 +21,8 @@
  * TWO REGISTERS, ONE PALETTE
  * ---------------------------------------------------------------------------
  * DARBAR (the court) — hero, the reverse, the closing invitation.
- *   Deep oxblood, gold used generously, cusped arches. Ceremonial. This is
+ *   Deep meenakari green, gold used generously, cusped arches. Ceremonial.
+ *   This is
  *   where the brand asserts standing.
  *
  * HAVELI (the family house) — the pieces, the craft, the founders, the shop.
@@ -36,48 +37,75 @@
  * THE GOLD RULE, INVERTED FROM THE PREVIOUS SYSTEM
  * ---------------------------------------------------------------------------
  * The old system banned gold from text because it measured 2.8:1 — but that is
- * only true on a LIGHT ground. Measured here:
+ * only true on a LIGHT ground. Measured against the fields below:
  *
- *     --gold on --oxblood        6.35:1   ✔ body text
- *     --gold on --oxblood-deep   7.50:1   ✔ body text
- *     --gold-leaf on --oxblood   9.24:1   ✔ anything
- *     --gold on --plaster        ~2.6:1   ✘ never
+ *     --gold on --meena          6.29:1   ✔ body text
+ *     --gold on --meena-deep     7.63:1   ✔ body text
+ *     --gold-leaf on --meena     9.15:1   ✔ anything
+ *     --gold on --plaster        2.01:1   ✘ never
  *
  * So: GOLD IS TEXT ON DARK FIELDS AND NEVER ON LIGHT ONES. That is exactly why
  * every traditional Indian jeweller sets gold on deep colour — it is a
  * legibility fact before it is a taste one. `--brass` is the light-field metal
  * and is large-text only (3.96:1 on teak).
+ *
+ * `tests/tokens-contrast.test.mjs` parses this file and asserts every line
+ * above. The rule used to live only in this comment, which meant nothing
+ * checked it and a placeholder token sat at 4.40:1 for weeks.
+ *
+ * ---------------------------------------------------------------------------
+ * WHY THE CEREMONIAL GROUND IS GREEN AND NOT OXBLOOD
+ * ---------------------------------------------------------------------------
+ * It was oxblood, and oxblood was wrong for one reason that has nothing to do
+ * with whether it looked good: warm-cream ground + brass + oxblood + espresso
+ * text is the palette every generative tool produces when it is asked for a
+ * premium heritage jeweller. The reasoning that arrived at it was sound and
+ * entirely reproducible, which is exactly the problem — the shop got no credit
+ * for the parts of this build that are genuinely its own.
+ *
+ * The green is not a mood. It is the enamel. Meenakari is fired in this green
+ * and every reverse photographed for this site carries it, so the ground is now
+ * A COLOUR TAKEN FROM THE OBJECT — which is the argument the site already makes
+ * about its own photography. `--emerald` used to sit in the jewel notes below
+ * as a decorative accent; the ground absorbed it.
+ *
+ * `--sindoor` stays red on purpose. Against green it becomes the complementary
+ * note, and red-and-green fired side by side is what meenakari IS. An all-green
+ * palette would have been the blander choice.
  */
 
 :root {
   /* ===== DARBAR — the court ============================================= */
-  --oxblood: #4a0e17; /* Mughal manuscript border — the ceremonial ground */
-  --oxblood-deep: #2e080e; /* the darkest field on the site */
-  --oxblood-lift: #61151f; /* raised panels within a Darbar field */
+  /* Fired meenakari green. The enamel on the back of every piece on this site. */
+  --meena: #0d2b1d; /* the ceremonial ground */
+  --meena-deep: #061710; /* the darkest field on the site */
+  --meena-lift: #163d2b; /* raised panels within a Darbar field */
 
-  --gold: #c9a227; /* real antique gold. TEXT ONLY ON DARK — 6.35:1 on oxblood */
-  --gold-leaf: #e3c766; /* illumination highlight, hairlines on dark, 9.24:1 */
+  --gold: #c9a227; /* real antique gold. TEXT ONLY ON DARK — 6.29:1 on meena */
+  --gold-leaf: #e3c766; /* illumination highlight, hairlines on dark, 9.15:1 */
   --gold-deep: #8a6b18; /* the shadow side of a gold rule; never text */
 
   /* ===== HAVELI — the family house ====================================== */
-  --plaster: #ede3d0; /* old lime-wash wall — the warm content ground */
-  --plaster-lift: #f6efe0; /* raised card on plaster */
-  --plaster-sunk: #dccdb2; /* recess, data blocks — a REAL step, 1.22:1 */
-  --teak: #3b2517; /* carved wood — the warm dark field */
+  /* Still lime plaster, cooled off the cream. The warmth used to come from the
+   * ground; it now comes from the gold and the sindoor sitting on it. */
+  --plaster: #eceae4; /* old lime-wash wall — the content ground */
+  --plaster-lift: #f4f3ef; /* raised card on plaster */
+  --plaster-sunk: #dbd8ce; /* recess, data blocks — a REAL step */
+  --teak: #3b2517; /* carved wood — the vitrine, deliberately still brown */
   --teak-deep: #241409; /* the inside of the vitrine */
-  --brass: #a8802c; /* aged brass. Large text only on light. 3.96:1 on teak */
+  --brass: #a8802c; /* aged brass. NEVER a letterform. 3.96:1 on teak */
 
   /* ===== THE JEWEL NOTES ================================================ */
-  /* Each is a real enamel or stone pigment, not a UI accent. Used sparingly. */
-  --emerald: #1b4d3e; /* meenakari green */
+  /* Each is a real enamel or stone pigment, not a UI accent. Used sparingly.
+   * `--emerald` is gone: the ceremonial ground is that green now. */
   --lapis: #1f3a6e; /* the second jewel note, block-print blue */
-  --sindoor: #8c2f23; /* the one hot accent — 6.48:1 on plaster */
-  --ivory: #f5efe2; /* handmade paper, text on Darbar fields — 13.41:1 */
+  --sindoor: #8c2f23; /* the complementary note — 6.86:1 on plaster */
+  --ivory: #f2f1ec; /* handmade paper, text on Darbar fields — 13.45:1 */
 
   /* ===== INK ============================================================ */
-  --ink: #1c1611; /* primary text on light — 14.08:1 on plaster */
-  --ink-2: #4f4034; /* secondary text on light */
-  --ink-3: #7d6c5b; /* captions. NEVER body text */
+  --ink: #141a16; /* primary text on light — 14.68:1 on plaster */
+  --ink-2: #414a44; /* secondary text on light — 7.63:1 */
+  --ink-3: #566057; /* captions and placeholders. Was 4.40:1 and failing. */
 
   /* ===== TYPE =========================================================== */
   /* Both display and body are Indian Type Foundry faces drawn with Devanagari

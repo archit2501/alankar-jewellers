@@ -69,7 +69,7 @@
 }
 
 .flip--reversed .flip__stage {
-  background-color: var(--oxblood-deep);
+  background-color: var(--meena-deep);
 }
 
 .flip__face,
@@ -112,7 +112,7 @@
   height: 34px;
   place-items: center;
   background: var(--gold);
-  color: var(--oxblood-deep);
+  color: var(--meena-deep);
   opacity: 0;
   transition:
     opacity var(--motion-fast),

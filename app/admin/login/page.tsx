@@ -96,14 +96,14 @@ const STYLES = `
   display: grid;
   place-items: center;
   padding: var(--s-6) var(--s-5);
-  background: var(--oxblood-deep);
+  background: var(--meena-deep);
   color: var(--ivory);
   font-family: var(--font-body);
 }
 .admin-auth__card {
   width: 100%;
   max-width: 26rem;
-  background: var(--oxblood);
+  background: var(--meena);
   border: var(--rule-hair) solid var(--gold-deep);
   padding: var(--m-1) var(--s-6) var(--s-7);
 }
@@ -131,7 +131,7 @@ const STYLES = `
 }
 .admin-auth__notice {
   border-left: var(--rule-heavy) solid var(--gold);
-  background: var(--oxblood-lift);
+  background: var(--meena-lift);
   padding: var(--s-4);
   margin: 0 0 var(--s-5);
   font-size: var(--t-sm);
@@ -169,7 +169,7 @@ const STYLES = `
   font-size: var(--t-xs);
   letter-spacing: var(--tracking-label);
   text-transform: uppercase;
-  color: var(--oxblood-deep);
+  color: var(--meena-deep);
   background: var(--gold);
   border: none;
   cursor: pointer;

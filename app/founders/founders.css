@@ -3,7 +3,7 @@
  *
  * "Darbar shell, Haveli soul." This page is the emotional centre of the site and
  * it sits in the HAVELI register: lime plaster, teak, aged brass. It opens and
- * closes in DARBAR — oxblood and gold — so the family is framed ceremonially,
+ * closes in DARBAR — meena green and gold — so the family is framed ceremonially,
  * but everything between the two doors is domestic, warm and textured.
  *
  * Field order, top to bottom:
@@ -34,7 +34,7 @@
  * nothing here hard-codes a colour against a field it cannot see.
  *
  * THE COLOUR RULE, obeyed line by line below:
- *   gold is text ONLY on the oxblood and teak fields (6.35–10.91:1)
+ *   gold is text ONLY on the meena and teak fields (6.29-11.10:1)
  *   brass on plaster is 2.85:1 and is therefore NEVER a letterform here — it is
  *   rules, corner brackets, mounts and ruled blank lines only
  *   text on plaster is --ink 14.08, --ink-2 7.80, --sindoor 6.48
@@ -70,10 +70,10 @@
 
 /* globals.css already rings :focus-visible from --field-focus. This restates it
    at page scope so the ring cannot go missing on this route, and so it inverts
-   with the field: gold-leaf on the Darbar and Vitrine fields, oxblood-deep on
+   with the field: gold-leaf on the Darbar and Vitrine fields, meena-deep on
    plaster. */
 .f-page :focus-visible {
-  outline: 2px solid var(--field-focus, var(--oxblood-deep));
+  outline: 2px solid var(--field-focus, var(--meena-deep));
   outline-offset: 3px;
 }
 
@@ -145,7 +145,7 @@
   min-width: 0;
   flex-direction: column;
   gap: 2px;
-  color: var(--gold-leaf); /* 10.91:1 on oxblood-deep */
+  color: var(--gold-leaf); /* 11.10:1 on meena-deep */
 }
 
 .f-wordmark__name {
@@ -155,7 +155,7 @@
 }
 
 .f-wordmark__since {
-  color: var(--plaster-sunk); /* 11.60:1 on oxblood-deep */
+  color: var(--plaster-sunk); /* 12.94:1 on meena-deep */
   font-family: var(--font-data);
   font-size: var(--t-2xs);
   letter-spacing: var(--tracking-label);
@@ -182,7 +182,7 @@
 }
 
 .f-nav a[aria-current="page"] {
-  color: var(--plaster); /* 14.26:1 on oxblood-deep */
+  color: var(--plaster); /* 15.34:1 on meena-deep */
   text-decoration: underline;
   text-decoration-thickness: 2px;
   text-underline-offset: var(--s-1);
@@ -203,7 +203,7 @@
 /* The three confirmed facts, stated on the Darbar field before the page shows
    a face. It is set at lede weight rather than body weight because it is doing
    structural work — it is what stops one portrait reading as an unfinished
-   pair — and --plaster on --oxblood is 12.11:1. */
+   pair — and --plaster on --meena is 12.65:1. */
 .f-opener__fact {
   max-width: 38ch;
   margin-top: var(--s-7);
@@ -221,7 +221,7 @@
   max-width: 46ch;
   flex-direction: column;
   gap: var(--s-4);
-  color: var(--plaster-sunk); /* 8.21:1 on oxblood-lift */
+  color: var(--plaster-sunk); /* 8.48:1 on meena-lift */
   font-size: var(--t-sm);
 }
 
@@ -523,7 +523,7 @@
 .f-close__body {
   max-width: 52ch;
   margin: var(--s-6) auto 0;
-  color: var(--plaster-sunk); /* 9.82:1 on oxblood */
+  color: var(--plaster-sunk); /* 10.67:1 on meena */
   font-size: var(--t-md);
 }
 
@@ -533,7 +533,7 @@
 
 .f-colophon {
   padding: var(--m-1) var(--gutter);
-  color: var(--plaster-sunk); /* 11.60:1 on oxblood-deep */
+  color: var(--plaster-sunk); /* 12.94:1 on meena-deep */
   font-size: var(--t-xs);
 }
 
