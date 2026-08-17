@@ -275,7 +275,8 @@ function isoAt(nowMs: number, plusMinutes = 0): string {
 const SELECT_VARIANT = `
   SELECT v.id AS "variantId",
          v.stock_quantity AS "stockQuantity",
-         v.is_unique_piece AS "isUniquePiece"
+         v.is_unique_piece AS "isUniquePiece",
+         p.sale_mode AS "saleMode"
   FROM variants v
   JOIN products p ON p.id = v.product_id
   WHERE p.slug = ? AND p.status = 'active'
@@ -365,6 +366,12 @@ type VariantRef = {
   readonly variantId: string;
   readonly stockQuantity: number;
   readonly isUniquePiece: boolean;
+  /**
+   * `products.sale_mode`. Read here because HIDING THE BUTTON IS NOT A GATE:
+   * the storefront now withholds the control for a piece that is not for sale
+   * online, but the endpoint is a plain form POST and anyone can send one.
+   */
+  readonly saleMode: string;
 };
 
 async function resolveVariant(db: CartDb, slug: string): Promise<VariantRef | null> {
@@ -378,6 +385,8 @@ async function resolveVariant(db: CartDb, slug: string): Promise<VariantRef | nu
     variantId,
     stockQuantity: asInt(row, "stockQuantity") ?? 0,
     isUniquePiece: asInt(row, "isUniquePiece") === 1,
+    // Fail closed: an unreadable mode is not a buyable one.
+    saleMode: asText(row, "saleMode") ?? "enquire_only",
   };
 }
 
@@ -411,7 +420,10 @@ async function readLiveHold(
  * ====================================================================== */
 
 export type AddToCartResult =
-  | { readonly ok: false; readonly reason: "unknown_piece" | "sold_out" }
+  | {
+      readonly ok: false;
+      readonly reason: "unknown_piece" | "sold_out" | "not_for_sale_online";
+    }
   | {
       readonly ok: true;
       /** The server's id for this cart. Always server-generated. */
@@ -446,6 +458,11 @@ export async function addToCart(
 
   const variant = await resolveVariant(db, options.slug);
   if (variant === null) return { ok: false, reason: "unknown_piece" };
+  // Checked BEFORE stock, because "not for sale here" is the truer answer than
+  // "sold out" for a piece that was never on sale here in the first place.
+  if (variant.saleMode !== "buy_online") {
+    return { ok: false, reason: "not_for_sale_online" };
+  }
   if (variant.stockQuantity < 1) return { ok: false, reason: "sold_out" };
 
   const existingCartId = await resolveCartId(db, options.token);
@@ -683,6 +700,8 @@ export const CART_NOTICES = {
   "not-in-cart": "That piece was not in your cart, so nothing changed.",
   "unknown-piece": "We could not find that piece.",
   "sold-out": "That piece has left the shop.",
+  "not-for-sale-online":
+    "This piece is not sold through the website. It is shown by appointment so you can see it in the hand first, and we will hold it for you while you decide. Ring the shop or ask for a viewing.",
   "bad-request": "That request did not make sense to us, so nothing was changed.",
   unavailable:
     "We could not reach your cart just now, so nothing was changed. Please try again, or call the shop.",

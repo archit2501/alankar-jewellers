@@ -54,6 +54,13 @@ export function isHallmarkExempt(craft: string): boolean {
   return (HALLMARK_EXEMPT_CRAFTS as readonly string[]).includes(craft);
 }
 
+export type SaleMode = "buy_online" | "enquire_only" | "appointment_only";
+
+/** True only for a piece the shop has decided may be bought online. */
+export function isBuyable(piece: { saleMode: SaleMode; stockQuantity: number }): boolean {
+  return piece.saleMode === "buy_online" && piece.stockQuantity > 0;
+}
+
 export type PricingMode = "dynamic_metal" | "fixed" | "on_request";
 
 /**
@@ -77,6 +84,16 @@ export type CataloguePiece = {
    * only because every piece in the catalogue happened to be stone-set.
    */
   craft: Craft;
+
+  /**
+   * Whether this piece may be bought on the website at all.
+   *
+   * This lived only on the seed row and in the database for weeks, which meant
+   * the admin wrote it, the audit log tracked it, and the storefront never read
+   * it -- so every piece rendered an Add to cart button and the API accepted
+   * every one of them. A four lakh bridal set was one click from a cart.
+   */
+  saleMode: SaleMode;
 
   pricingMode: PricingMode;
   fineness: Fineness | null;

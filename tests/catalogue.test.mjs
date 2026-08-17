@@ -311,18 +311,34 @@ test("every piece has a photographed face, and a reverse only where one exists",
  * here without a database, and is asserted against real data in
  * `cart.test.mjs`, where stock is actually decremented.
  */
-test("a buy control is rendered for exactly the in-stock pieces", async () => {
+test("a buy control is rendered for exactly the pieces the shop sells online", async () => {
   const body = await renderPage("/shop");
 
-  const forms = [...body.matchAll(/<form[^>]*class="cart-add"[^>]*>[\s\S]*?<\/form>/g)];
-  const inStock = CATALOGUE_SEED.filter((piece) => piece.stockQuantity > 0);
-  assert.equal(inStock.length, CATALOGUE_SEED.length, "the seed is expected to be fully in stock");
-  assert.equal(forms.length, inStock.length, "one buy control per in-stock piece");
+  // In stock is NOT the test. `saleMode` is the shop's decision about whether a
+  // piece may be bought here at all, and it went unread by the storefront for
+  // weeks: every piece rendered a buy control, including the five heirloom
+  // pieces the schema exists to keep off a Buy button.
+  const buyable = CATALOGUE_SEED.filter(
+    (piece) => piece.saleMode === "buy_online" && piece.stockQuantity > 0
+  );
+  const withheld = CATALOGUE_SEED.filter((piece) => piece.saleMode !== "buy_online");
+  assert.ok(buyable.length > 0, "no buyable piece, so the positive arm proves nothing");
+  assert.ok(withheld.length > 0, "no withheld piece, so the negative arm proves nothing");
 
-  // Each control names the piece it would add, so nine identical buttons cannot
-  // silently all point at the same slug.
-  const slugs = [...body.matchAll(/name="slug" value="([^"]+)"/g)].map((m) => m[1]);
-  assert.deepEqual([...new Set(slugs)].sort(), inStock.map((p) => p.slug).sort());
+  const forms = [...body.matchAll(/<form[^>]*class="cart-add"[^>]*>[\s\S]*?<\/form>/g)];
+  assert.equal(forms.length, buyable.length, "one buy control per buyable piece, and no others");
+
+  const slugs = [...body.matchAll(/name="slug" value="([^"]+)"/g)];
+  assert.deepEqual(
+    [...new Set(slugs.map((m) => m[1]))].sort(),
+    buyable.map((p) => p.slug).sort()
+  );
+
+  // The withheld pieces are still ON the page. They are shown and enquired
+  // about; they are simply not sold through it.
+  for (const piece of withheld) {
+    assert.ok(body.includes(piece.title), `${piece.slug} vanished from the wall`);
+  }
 });
 
 test("an on-request piece resolves to no price, and says so", async () => {

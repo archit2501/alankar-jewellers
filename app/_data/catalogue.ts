@@ -107,7 +107,14 @@ import {
 import type { ImageKey } from "../_media/images";
 import { isPriceableMetal, priceLine, type MetalRate } from "../_pricing/price";
 import { formatPaiseAsRupees, readCurrentRate, type RateLookup } from "../_pricing/rates";
-import type { CatalogueFilter, CataloguePiece, Craft, Fineness, PricedPiece } from "./types";
+import type {
+  CatalogueFilter,
+  CataloguePiece,
+  Craft,
+  Fineness,
+  PricedPiece,
+  SaleMode,
+} from "./types";
 
 /* =========================================================================
  * Presentation manifest — the half that is not in the database. See (1).
@@ -316,7 +323,6 @@ export type CatalogueSeedRow = {
   readonly variantId: string;
   readonly sku: string;
   readonly status: "draft" | "active" | "archived";
-  readonly saleMode: "buy_online" | "enquire_only" | "appointment_only";
   readonly position: number;
 };
 
@@ -326,6 +332,7 @@ function seedPiece(input: {
   subtitle: string;
   description: string;
   craft: Craft;
+  saleMode: SaleMode;
   collections: readonly string[];
 }): CataloguePiece {
   const presentation = PRESENTATION[input.slug];
@@ -343,6 +350,7 @@ function seedPiece(input: {
     description: input.description,
     spec: presentation.spec,
     craft: input.craft,
+    saleMode: input.saleMode,
 
     // See (3): placeholder inventory, so nothing measurable is asserted.
     pricingMode: "on_request",
@@ -402,6 +410,7 @@ function demoPiece(input: {
   subtitle: string;
   description: string;
   craft: Craft;
+  saleMode: SaleMode;
   collections: readonly string[];
   /** Millesimal fineness. 916 is the 22-carat this shop works in. */
   fineness: Fineness;
@@ -427,6 +436,7 @@ function demoPiece(input: {
     description: input.description,
     spec: presentation.spec,
     craft: input.craft,
+    saleMode: input.saleMode,
 
     pricingMode: "dynamic_metal",
     fineness: input.fineness,
@@ -466,6 +476,7 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
   {
     piece: seedPiece({
       slug: "jadau-haar",
+      saleMode: "enquire_only",
       title: "Jadau haar",
       subtitle: "Necklace",
       description:
@@ -476,12 +487,12 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
     variantId: "var_jadau-haar",
     sku: "AJ-JADAU-HAAR-01",
     status: "active",
-    saleMode: "enquire_only",
     position: 10,
   },
   {
     piece: seedPiece({
       slug: "polki-choker",
+      saleMode: "enquire_only",
       title: "Polki choker",
       subtitle: "Choker",
       description:
@@ -492,12 +503,12 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
     variantId: "var_polki-choker",
     sku: "AJ-POLKI-CHOKER-01",
     status: "active",
-    saleMode: "enquire_only",
     position: 20,
   },
   {
     piece: seedPiece({
       slug: "chandbali-earrings",
+      saleMode: "enquire_only",
       title: "Chandbali earrings",
       subtitle: "Earrings",
       description:
@@ -508,12 +519,12 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
     variantId: "var_chandbali-earrings",
     sku: "AJ-CHANDBALI-01",
     status: "active",
-    saleMode: "enquire_only",
     position: 30,
   },
   {
     piece: seedPiece({
       slug: "kundan-kada",
+      saleMode: "enquire_only",
       title: "Kundan kada",
       subtitle: "Bangle",
       description:
@@ -524,12 +535,12 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
     variantId: "var_kundan-kada",
     sku: "AJ-KUNDAN-KADA-01",
     status: "active",
-    saleMode: "enquire_only",
     position: 40,
   },
   {
     piece: seedPiece({
       slug: "maang-tikka",
+      saleMode: "enquire_only",
       title: "Maang tikka",
       subtitle: "Headpiece",
       description:
@@ -540,7 +551,6 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
     variantId: "var_maang-tikka",
     sku: "AJ-MAANG-TIKKA-01",
     status: "active",
-    saleMode: "enquire_only",
     position: 50,
   },
 
@@ -557,6 +567,7 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
   {
     piece: demoPiece({
       slug: "gold-jhumka",
+      saleMode: "buy_online",
       title: "Gold jhumka",
       subtitle: "Earrings",
       description:
@@ -574,12 +585,12 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
     variantId: "var_gold-jhumka",
     sku: "AJ-JHUMKA-01",
     status: "active",
-    saleMode: "buy_online",
     position: 60,
   },
   {
     piece: demoPiece({
       slug: "polki-ring",
+      saleMode: "buy_online",
       title: "Polki ring",
       subtitle: "Ring",
       description:
@@ -597,12 +608,12 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
     variantId: "var_polki-ring",
     sku: "AJ-RING-01",
     status: "active",
-    saleMode: "buy_online",
     position: 70,
   },
   {
     piece: demoPiece({
       slug: "lotus-pendant",
+      saleMode: "buy_online",
       title: "Lotus pendant",
       subtitle: "Pendant",
       description:
@@ -620,12 +631,12 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
     variantId: "var_lotus-pendant",
     sku: "AJ-PENDANT-01",
     status: "active",
-    saleMode: "buy_online",
     position: 80,
   },
   {
     piece: demoPiece({
       slug: "slim-kada",
+      saleMode: "buy_online",
       title: "Slim kada",
       subtitle: "Bangle",
       description:
@@ -643,7 +654,6 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
     variantId: "var_slim-kada",
     sku: "AJ-KADA-01",
     status: "active",
-    saleMode: "buy_online",
     position: 90,
   },
 
@@ -666,6 +676,7 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
   {
     piece: demoPiece({
       slug: "rani-haar",
+      saleMode: "buy_online",
       title: "Rani haar",
       subtitle: "Necklace",
       craft: "polki",
@@ -683,12 +694,12 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
     variantId: "var_rani-haar",
     sku: "AJ-RANI-HAAR-01",
     status: "active",
-    saleMode: "buy_online",
     position: 100,
   },
   {
     piece: demoPiece({
       slug: "bridal-tikka",
+      saleMode: "buy_online",
       title: "Bridal tikka",
       subtitle: "Headpiece",
       craft: "kundan",
@@ -706,12 +717,12 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
     variantId: "var_bridal-tikka",
     sku: "AJ-TIKKA-01",
     status: "active",
-    saleMode: "buy_online",
     position: 110,
   },
   {
     piece: demoPiece({
       slug: "jadau-kangan",
+      saleMode: "buy_online",
       title: "Jadau kangan",
       subtitle: "Bangle",
       craft: "jadau",
@@ -729,7 +740,6 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
     variantId: "var_jadau-kangan",
     sku: "AJ-KANGAN-01",
     status: "active",
-    saleMode: "buy_online",
     position: 120,
   },
 ];
@@ -779,6 +789,10 @@ function isPricingMode(value: string): value is CataloguePiece["pricingMode"] {
  * exemption. An unrecognised craft is not silently coerced to something
  * convenient — the piece is skipped, exactly as an unknown pricing mode is.
  */
+function isSaleMode(value: string): value is SaleMode {
+  return value === "buy_online" || value === "enquire_only" || value === "appointment_only";
+}
+
 function isCraft(value: string): value is Craft {
   return (
     value === "jadau" ||
@@ -799,6 +813,8 @@ type CommerceRow = {
   description: string | null;
   /** Widened to `string` on purpose — validated by `isCraft` before use. */
   craft: string;
+  /** Same treatment: validated by `isSaleMode` before it reaches a piece. */
+  saleMode: string;
   pricingMode: string;
   fineness: number | null;
   metal: string;
@@ -839,6 +855,7 @@ async function readCommerceRows(): Promise<CataloguePiece[] | null> {
         subtitle: products.subtitle,
         description: products.description,
         craft: products.craft,
+        saleMode: products.saleMode,
         pricingMode: variants.pricingMode,
         fineness: variants.fineness,
         metal: variants.metal,
@@ -897,6 +914,11 @@ async function readCommerceRows(): Promise<CataloguePiece[] | null> {
       console.warn(`[catalogue] product "${row.slug}" has an unknown craft; not listed.`);
       continue;
     }
+    if (!isSaleMode(row.saleMode)) {
+      // Fail closed. An unreadable sale mode must not default to buyable.
+      console.warn(`[catalogue] product "${row.slug}" has an unknown sale mode; not listed.`);
+      continue;
+    }
 
     pieces.push({
       id: row.id,
@@ -906,6 +928,7 @@ async function readCommerceRows(): Promise<CataloguePiece[] | null> {
       description: row.description,
       spec: presentation.spec,
       craft: row.craft,
+      saleMode: row.saleMode,
       pricingMode: row.pricingMode,
       fineness: toFineness(row.fineness),
       metal: row.metal,

@@ -71,7 +71,10 @@
  *                          asserted and the enum has no "unknown" member. No UI
  *                          reads this column; it must be set properly by the
  *                          admin when a real piece is entered.
- *   status/sale_mode       'active' + 'enquire_only'. Online ordering is not
+ *   status/sale_mode       'active'. The five heirloom pieces are
+ *                          'enquire_only'; the demonstration stock is
+ *                          'buy_online'. Read off the piece, not the row, so
+ *                          there is one literal per piece. Online ordering is not
  *                          open, which is what the homepage already says.
  */
 
@@ -285,7 +288,7 @@ export function buildSeedSql({ now = new Date().toISOString() } = {}) {
           description: piece.description,
           craft: row.piece.craft,
           status: row.status,
-          sale_mode: row.saleMode,
+          sale_mode: row.piece.saleMode,
           // No invented marketing copy in the SEO columns: the page falls back
           // to its own title and description, which are real.
           seo_title: null,

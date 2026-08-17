@@ -265,21 +265,37 @@ export async function POST(request: Request): Promise<Response> {
     const result = await addToCart(db, { token, slug });
 
     if (!result.ok) {
-      const soldOut = result.reason === "sold_out";
-      return respond(
-        request,
-        {
-          status: soldOut ? 409 : 404,
-          body: {
-            ok: false,
-            error: soldOut
-              ? "That piece has left the shop."
-              : "We could not find that piece.",
+        // Three refusals, three different truths. A piece the shop never put
+        // on sale online is not "sold out" and not "unknown"; saying either
+        // sends a customer away from a piece that is available, just not here.
+        const REFUSALS = {
+          sold_out: {
+            status: 409,
+            error: "That piece has left the shop.",
+            notice: "sold-out" as const,
           },
-          notice: soldOut ? "sold-out" : "unknown-piece",
-        },
-        null
-      );
+          not_for_sale_online: {
+            status: 403,
+            error:
+              "This piece is not sold through the website. Ring the shop or ask for a viewing.",
+            notice: "not-for-sale-online" as const,
+          },
+          unknown_piece: {
+            status: 404,
+            error: "We could not find that piece.",
+            notice: "unknown-piece" as const,
+          },
+        };
+        const refusal = REFUSALS[result.reason];
+        return respond(
+          request,
+          {
+            status: refusal.status,
+            body: { ok: false, error: refusal.error },
+            notice: refusal.notice,
+          },
+          null
+        );
     }
 
     const snapshot = await readCart(db, { token: result.cartId });

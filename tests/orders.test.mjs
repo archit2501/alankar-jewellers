@@ -360,9 +360,25 @@ test("A COMPLAINT NUMBER IS DRAWN, NOT DERIVED FROM THE ORDER", () => {
   // Rule 7(1)(f) issues a number per COMPLAINT LODGED, and one order can
   // legitimately produce a second complaint that
   // `support_tickets_ticket_number_unique` would then refuse.
+  //
+  // THE TOLERANCE IS ONE, AND THAT IS ARITHMETIC RATHER THAN SLOPPINESS.
+  // The suffix is 6 Crockford symbols, so 32^6 = 1,073,741,824 values. Drawing
+  // 2000 of them carries a birthday-collision probability of 0.186% -- about 1
+  // run in 537. Demanding zero collisions therefore fails CI roughly twice a
+  // year for no reason, which is how a suite teaches people to re-run it.
+  //
+  // Allowing exactly one drops that to P(two or more) which is under 1 in
+  // 500,000, and it still catches what this test is FOR: a derived scheme
+  // (`orderNumber.replace("AJ-", "AJ-C-")`) collides on nearly every draw here,
+  // not once.
+  const DRAWS = 2000;
   const numbers = new Set();
-  for (let index = 0; index < 2000; index += 1) numbers.add(newTicketNumber());
-  assert.equal(numbers.size, 2000, "two ticket numbers collided in 2000 draws");
+  for (let index = 0; index < DRAWS; index += 1) numbers.add(newTicketNumber());
+  assert.ok(
+    numbers.size >= DRAWS - 1,
+    `${DRAWS - numbers.size} ticket numbers collided in ${DRAWS} draws. One is ` +
+      `expected roughly 1 run in 537; more than one means these are not being drawn.`
+  );
 
   for (const number of numbers) {
     assert.match(number, /^AJ-C-\d{4}-[0-9A-HJKMNP-TV-Z]{6}$/);
@@ -691,8 +707,15 @@ test("weight is printed in grams to three places, without a float", () => {
 test("AN UNPRICEABLE CART CANNOT PRODUCE AN ORDER — the shop as it stands today", async () => {
   const { sqlite, db } = freshOrders();
 
+  // The cart's add path now refuses an `enquire_only` piece outright, so the
+  // only way a non-buyable piece reaches checkout is the sequence below: it was
+  // buyable when the shopper carted it, and the owner changed their mind after.
+  // That is a real sequence, and it is why the checkout guard has to exist even
+  // though the cart guard does too.
+  sqlite.prepare("UPDATE products SET sale_mode = 'buy_online'").run();
   const added = await addToCart(db, { token: null, slug: HAAR });
   await addToCart(db, { token: added.cartId, slug: CHOKER });
+  sqlite.prepare("UPDATE products SET sale_mode = 'enquire_only'").run();
 
   const resolution = await resolveCheckout(db, {
     token: added.cartId,
@@ -702,8 +725,8 @@ test("AN UNPRICEABLE CART CANNOT PRODUCE AN ORDER — the shop as it stands toda
   assert.equal(resolution.ok, false);
   assert.equal(resolution.reason, "unpriceable");
   assert.equal(resolution.lineCount, 2);
-  // Every seeded product is `enquire_only`, which is refused before pricing is
-  // even attempted — the owner decides per piece whether it is buyable.
+  // Refused before pricing is even attempted: the owner decides per piece
+  // whether it is buyable, and that decision outranks having a figure.
   assert.deepEqual(
     resolution.blocked.map((line) => line.reason),
     ["not_for_sale_online", "not_for_sale_online"]
@@ -1948,7 +1971,19 @@ function tokenOf(response) {
   return match ? match[1] : null;
 }
 
+/**
+ * Add a piece through the real cart endpoint.
+ *
+ * The endpoint now refuses an `enquire_only` piece outright, and the seeded
+ * heirloom pieces are exactly that, so the piece is opened for online sale
+ * first. It is NOT closed again here: most callers want a cart that works. The
+ * three tests that need a non-buyable piece in front of checkout close it
+ * themselves with `closeToOnlineSale()`, which is also the only real-world
+ * sequence that produces one -- it was on sale when the shopper carted it, and
+ * the owner changed their mind afterwards.
+ */
 async function addPiece(slug, cookie) {
+  worker.prepare("UPDATE products SET sale_mode = 'buy_online' WHERE slug = ?").run(slug);
   const headers = { "Content-Type": "application/json" };
   if (cookie) headers.cookie = `${CART_COOKIE}=${cookie}`;
   const response = await fetchWorker("/api/cart", {
@@ -1957,6 +1992,11 @@ async function addPiece(slug, cookie) {
     body: JSON.stringify({ action: "add", slug }),
   });
   return tokenOf(response) ?? cookie;
+}
+
+/** Take a piece off online sale after it is already in someone's cart. */
+function closeToOnlineSale(slug) {
+  worker.prepare("UPDATE products SET sale_mode = 'enquire_only' WHERE slug = ?").run(slug);
 }
 
 async function order(body, { cookie, form = false } = {}) {
@@ -1990,6 +2030,7 @@ const SUBMISSION = {
 
 test("POST refuses to create an order for a cart it cannot price", async () => {
   const cookie = await addPiece(HAAR);
+  closeToOnlineSale(HAAR);
   const { response, body } = await order(SUBMISSION, { cookie });
 
   assert.equal(response.status, 409);
@@ -2147,6 +2188,7 @@ async function checkoutHtml(cookie, query = "") {
 
 test("an unpriceable cart is shown the refusal and NO ORDER FORM AT ALL", async () => {
   const cookie = await addPiece(HAAR);
+  closeToOnlineSale(HAAR);
   const html = await checkoutHtml(cookie);
 
   assert.equal((html.match(/<h1[\s>]/g) ?? []).length, 1);
@@ -2263,6 +2305,7 @@ test("only a published notice code is rendered, and a failure is not dressed up"
 
 test("the cart carries a proceed-to-checkout control", async () => {
   const cookie = await addPiece(HAAR);
+  closeToOnlineSale(HAAR);
   const cart = await fetchWorker("/cart", {
     headers: { accept: "text/html", cookie: `${CART_COOKIE}=${cookie}` },
   });

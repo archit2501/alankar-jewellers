@@ -176,6 +176,14 @@ function migratedDatabase() {
   }
   sqlite.exec("COMMIT");
 
+  // These suites are about CART MECHANICS -- forged tokens, hold arbitration,
+  // races -- and they drive the two heirloom pieces, which the shop has marked
+  // `enquire_only`. The add path now refuses those, correctly, so the fixture
+  // makes them buyable rather than the tests pretending the refusal is a bug.
+  // Enforcement of `sale_mode` itself is tested separately and in both
+  // directions; see "a piece the shop has not put on sale online".
+  sqlite.prepare("UPDATE products SET sale_mode = 'buy_online'").run();
+
   return sqlite;
 }
 
@@ -196,6 +204,58 @@ function count(sqlite, sql, ...params) {
 /* =========================================================================
  * 1. The token — a bearer credential, validated before any query
  * ====================================================================== */
+
+/**
+ * `sale_mode` IS THE SHOP'S DECISION, AND IT HAS TO HOLD AT THE DOOR.
+ *
+ * The schema is explicit about why the column exists: "so the owner can decide
+ * per piece whether it is buyable at all. Putting the entire catalogue online
+ * as buyable is not the goal; a four lakh bridal set converting through a
+ * private viewing is."
+ *
+ * For weeks the admin wrote it, the audit log tracked it, checkout refused on
+ * it -- and the cart's add path did not read it at all, so an heirloom piece
+ * could be added, priced and shown a total before anything objected. Hiding the
+ * button was not enough either: /api/cart takes a plain form POST.
+ *
+ * Asserted in BOTH directions, because a guard that only proves the refusal
+ * goes quiet the day it starts refusing everything.
+ */
+test("a piece the shop has not put on sale online cannot be added to a cart", async () => {
+  const { sqlite, db } = freshCart();
+
+  // The fixture opens everything; close one piece the way the owner would.
+  sqlite.prepare("UPDATE products SET sale_mode = 'enquire_only' WHERE slug = ?").run(HAAR);
+
+  const refused = await addToCart(db, { token: null, slug: HAAR });
+  assert.equal(refused.ok, false);
+  assert.equal(refused.reason, "not_for_sale_online");
+
+  // Nothing was written: no cart, no line, and no hold on the piece.
+  assert.equal(count(sqlite, "SELECT count(*) AS c FROM carts"), 0);
+  assert.equal(count(sqlite, "SELECT count(*) AS c FROM cart_items"), 0);
+  assert.equal(count(sqlite, "SELECT count(*) AS c FROM stock_reservations"), 0);
+
+  // The other piece is untouched and still works, so the refusal is about this
+  // piece rather than a broken add path.
+  const allowed = await addToCart(db, { token: null, slug: CHOKER });
+  assert.equal(allowed.ok, true);
+});
+
+test("the refusal is about sale mode, not stock, and says so", async () => {
+  const { sqlite, db } = freshCart();
+
+  // In stock AND not for sale online. The two reasons must not be confused:
+  // "sold out" would send a customer away from a piece that is sitting there.
+  sqlite.prepare("UPDATE products SET sale_mode = 'appointment_only' WHERE slug = ?").run(HAAR);
+  const stock = count(sqlite, "SELECT stock_quantity AS c FROM variants WHERE id = ?", HAAR_VARIANT);
+  assert.ok(stock > 0, "the piece must be in stock for this to mean anything");
+
+  const result = await addToCart(db, { token: null, slug: HAAR });
+  assert.equal(result.ok, false);
+  assert.equal(result.reason, "not_for_sale_online");
+});
+
 
 test("a cart token is a random UUID and nothing else is accepted", () => {
   const token = newCartToken();

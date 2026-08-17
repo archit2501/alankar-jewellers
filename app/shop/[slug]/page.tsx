@@ -103,7 +103,7 @@ import type { Interest } from "../../_components/appointment";
  * knows about a piece it knows through `PricedPiece`.
  */
 import { getPricedCataloguePiece, isDemonstrationPiece } from "../../_data/catalogue";
-import { isHallmarkExempt, type PricedPiece } from "../../_data/types";
+import { isBuyable, isHallmarkExempt, type PricedPiece } from "../../_data/types";
 import { images } from "../../_media/images";
 import type { ImageKey } from "../../_media/images";
 import {
@@ -566,7 +566,7 @@ export default async function ProductPage({
                       Unreachable until today: no piece was `buy_online` before
                       the demonstration stock existed, so nothing had ever sold
                       out with a buy control on screen. */}
-                  {piece.stockQuantity > 0 ? (
+                  {isBuyable(piece) ? (
                     <form className="cart-add cart-add--pdp" method="post" action="/api/cart">
                       <input type="hidden" name="action" value="add" />
                       <input type="hidden" name="slug" value={piece.slug} />

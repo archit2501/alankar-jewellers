@@ -18,7 +18,7 @@ import {
   type CatalogueQuery,
   type FilterParam,
 } from "../_data/catalogue";
-import type { PricedPiece } from "../_data/types";
+import { isBuyable, type PricedPiece } from "../_data/types";
 import { site } from "../site-config";
 
 /**
@@ -167,7 +167,7 @@ function ShopCard({ piece }: { piece: PricedPiece }) {
             produced an error the visitor had no way to anticipate. A sold
             one-of-a-kind piece must also stop claiming "there is only this
             one" — present tense about something that is no longer there. */}
-        {piece.stockQuantity > 0 ? (
+        {isBuyable(piece) ? (
           <form className="cart-add" method="post" action="/api/cart">
             <input type="hidden" name="action" value="add" />
             <input type="hidden" name="slug" value={piece.slug} />
