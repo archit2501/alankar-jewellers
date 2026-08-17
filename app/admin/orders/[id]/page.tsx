@@ -198,7 +198,7 @@ function HallmarkRow({ line }: { line: AdminOrderLine }) {
             : "This piece is exempt from hallmarking (QCO cl. 2(3)) and no hallmarking charge was raised on it."}
         </span>
       </th>
-      <td>&mdash;</td>
+      <td>Not applicable</td>
     </tr>
   );
 }
@@ -310,7 +310,7 @@ function Bill({
           {site.name}
           <br />
           {/* Never a blank where a statutory identifier belongs. */}
-          GSTIN &mdash; not yet recorded for this shop
+          GSTIN: not yet recorded for this shop
           <br />
           {order.orderNumber} ·{" "}
           <time dateTime={order.placedAt}>{formatWhen(order.placedAt, nowMs)}</time>
@@ -417,7 +417,7 @@ function CancelPage({ order, csrf }: { order: AdminOrderDetail; csrf: string }) 
 
       <p className="ord__lede">
         This marks the order cancelled and puts the piece back on the website. The order itself
-        stays in the records &mdash; it cannot be removed. Nothing has been charged, so there is
+        stays in the records, it cannot be removed. Nothing has been charged, so there is
         nothing to refund.
       </p>
 
@@ -525,7 +525,7 @@ export default async function AdminOrderPage({
       <Shell title="That is not an order number">
         <p className="ord__lede">
           Order numbers look like <span className="ord__mono">AJ-2608-7QW2XF</span>. Search for
-          the customer&rsquo;s phone number instead &mdash; it is the quickest way to find an
+          the customer&rsquo;s phone number instead, it is the quickest way to find an
           order.
         </p>
       </Shell>
@@ -684,7 +684,7 @@ export default async function AdminOrderPage({
               already does from its own menu is a control that can fail on a
               locked-down shop terminal. The stylesheet does the real work. */}
           <p className="ord__mono">
-            To print this bill, use Print in your browser. Only the panel above prints &mdash;
+            To print this bill, use Print in your browser. Only the panel above prints,
             the buttons, the phone numbers and this note are left off the page.
           </p>
         </>

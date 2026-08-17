@@ -217,7 +217,7 @@ function AddPiece({ csrf, notice }: { csrf: string; notice: string }) {
           is not knowing whether they have to finish. */}
       <p className="pcs__hint">
         It saves straight away as a draft. Nothing goes on the website until you put it there,
-        and you can leave it and come back to it whenever you like &mdash; the weight, the price
+        and you can leave it and come back to it whenever you like, the weight, the price
         and the hallmark are each their own small step afterwards.
       </p>
     </div>
@@ -305,7 +305,7 @@ export default async function AdminPiecesPage({
           <p className="pcs__lede">No pieces yet.</p>
           <p className="pcs__lede">
             The catalogue is empty, and the website says so rather than showing pictures that are
-            not of anything. Two things start a piece &mdash; a name and what kind it is &mdash;
+            not of anything. Two things start a piece, a name and what kind it is,
             and everything else can wait.
           </p>
           <p className="pcs__blocked">{PHOTOGRAPHS_BLOCKED}</p>

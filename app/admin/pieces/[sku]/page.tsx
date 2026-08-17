@@ -294,7 +294,7 @@ function WeightForm({
           />
           <span className="pcs__unit">grams</span>
           <p className="pcs__hint">
-            Just the gold, without the stones. Type it the way you weigh it &mdash; 18.4 and
+            Just the gold, without the stones. Type it the way you weigh it: 18.4 and
             18.400 both work. Leave it empty if the piece has not been weighed yet.
           </p>
         </div>
@@ -340,7 +340,7 @@ function WeightForm({
           </div>
           <p className="pcs__hint">
             Every piece entered here is gold. Silver and platinum need a change to the website
-            &mdash; tell whoever looks after it rather than putting one in as gold.
+           , tell whoever looks after it rather than putting one in as gold.
           </p>
         </fieldset>
 
@@ -496,7 +496,7 @@ function PriceForm({
           <a className="pcs__link" href={pieceHref(piece, "weight")}>
             Add its weight and purity
           </a>{" "}
-          first, or leave it at price on request &mdash; which is a real answer and the website
+          first, or leave it at price on request, which is a real answer and the website
           says so plainly.
         </p>
       )}
@@ -758,7 +758,7 @@ function PriceForm({
               They can buy it on the website
               <span className="pcs__choicewhy">
                 Needs a price. Card and UPI are switched off, so an order is a reservation and the
-                money is settled at the counter &mdash; every screen says so.
+                money is settled at the counter, every screen says so.
               </span>
             </span>
           </label>
@@ -899,7 +899,7 @@ function HallmarkForm({
           />
           <p className="pcs__hint">
             Six characters, stamped on the piece beside the BIS mark. Leave it empty if it is not
-            in front of you &mdash; it will be recorded as not on file, which is the truth.
+            in front of you, it will be recorded as not on file, which is the truth.
           </p>
         </div>
 
@@ -954,7 +954,7 @@ function HallmarkForm({
             autoComplete="off"
             placeholder=""
           />
-          <p className="pcs__hint">IGI, GIA, SGL &mdash; whichever is on the certificate.</p>
+          <p className="pcs__hint">IGI, GIA, SGL: whichever is on the certificate.</p>
         </div>
 
         <div className="pcs__field">
@@ -1183,7 +1183,7 @@ function PiecePage({
               <p className="pcs__what">Hallmark number {piece.huid}.</p>
             ) : piece.hallmarkingPaise === 0 ? (
               <p className="pcs__what">
-                Not hallmarked, and it does not have to be &mdash; Kundan, Polki and Jadau are
+                Not hallmarked, and it does not have to be, Kundan, Polki and Jadau are
                 exempt under QCO cl. 2(3). No hallmarking charge is raised on it.
               </p>
             ) : (
@@ -1241,7 +1241,7 @@ function PiecePage({
         {piece.status !== "active" && !ready ? (
           <p className="pcs__blocked">
             This piece cannot go on the website yet. The hallmark question has not been answered
-            &mdash; say either the piece&rsquo;s hallmark number or that it is exempt, and the
+           , say either the piece&rsquo;s hallmark number or that it is exempt, and the
             control appears here.{" "}
             <a className="pcs__link" href={pieceHref(piece, "hallmark")}>
               Answer it now
@@ -1253,7 +1253,7 @@ function PiecePage({
         {piece.status !== "active" && ready ? (
           <p className="pcs__hint">
             Putting it on the website marks it as one the shop wants listed. It will not appear
-            until it has a photograph, and photographs cannot be added yet &mdash; that is stated
+            until it has a photograph, and photographs cannot be added yet, that is stated
             above rather than discovered later.
           </p>
         ) : null}
@@ -1329,7 +1329,7 @@ export default async function AdminPiecePage({
       <Shell title="No piece with that number" back="/admin/pieces" backLabel="Pieces">
         <p className="pcs__lede">
           Nothing in the catalogue has that number. Go back to the list and open it from there
-          &mdash; the number is printed under every piece&rsquo;s name.
+         , the number is printed under every piece&rsquo;s name.
         </p>
       </Shell>
     );

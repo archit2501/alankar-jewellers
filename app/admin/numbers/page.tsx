@@ -416,7 +416,7 @@ export default async function AdminNumbersPage({
       <Shell>
         <p className="num__notice num__notice--problem">
           Could not work out the figures just now. Nothing is wrong with the orders themselves
-          &mdash; they are all on the <a className="num__link" href="/admin/orders">Orders screen</a>.
+         , they are all on the <a className="num__link" href="/admin/orders">Orders screen</a>.
         </p>
       </Shell>
     );
@@ -507,7 +507,7 @@ export default async function AdminNumbersPage({
 
       <p className="num__note">
         Read {formatWhen(new Date(nowMs).toISOString(), nowMs)}. Nothing on this screen changes
-        what to do next &mdash; that is the{" "}
+        what to do next, that is the{" "}
         <a className="num__link" href="/admin">
           Today
         </a>{" "}

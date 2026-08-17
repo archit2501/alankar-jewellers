@@ -80,7 +80,10 @@ test("no em-dash reaches the page", () => {
   for (const file of components) {
     const lines = withoutComments(readFileSync(file, "utf8")).split("\n");
     lines.forEach((line, i) => {
-      if (line.includes("—")) {
+      // The literal character AND its HTML entities. `&mdash;` renders as an
+      // em-dash and reads as one; it evaded the first two versions of this
+      // guard entirely and left 32 of them on the admin screens.
+      if (/—|&mdash;|&#8212;|&#x2014;/i.test(line)) {
         offences.push(`${file.slice(ROOT.length)}:${i + 1}  ${line.trim().slice(0, 80)}`);
       }
     });
@@ -94,6 +97,12 @@ test("no em-dash reaches the page", () => {
       .forEach((line, i) => {
         for (const m of line.matchAll(STRING_WITH_DASH)) {
           offences.push(`${file.slice(ROOT.length)}:${i + 1}  ${m[2].trim().slice(0, 70)}`);
+        }
+        // A multi-line template literal never closes on the line the dash sits
+        // on, so the literal-matcher above cannot see it. Catch the entity form
+        // and any dash on a line that is plainly prose rather than code.
+        if (/&mdash;|&#8212;|&#x2014;/i.test(line)) {
+          offences.push(`${file.slice(ROOT.length)}:${i + 1}  ${line.trim().slice(0, 70)}`);
         }
       });
   }
@@ -115,7 +124,7 @@ test("no en-dash is used as a separator in visible copy", () => {
     lines.forEach((line, i) => {
       // An en-dash between spaces is a pivot; inside a number range it is
       // typographically correct and left alone.
-      if (/\s–\s/.test(line)) {
+      if (/\s–\s|&ndash;|&#8211;|&#x2013;/i.test(line)) {
         offences.push(`${file.slice(ROOT.length)}:${i + 1}  ${line.trim().slice(0, 80)}`);
       }
     });

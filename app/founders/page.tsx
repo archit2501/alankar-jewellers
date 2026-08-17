@@ -228,7 +228,7 @@ export default function FoundersPage() {
                     its own shape. */}
                 <p className="f-opener__fact">
                   There is no second person. The third generation oversees
-                  everything &mdash; all of the operations.
+                  everything, all of the operations.
                 </p>
               </div>
 
@@ -320,7 +320,7 @@ export default function FoundersPage() {
                         <span />
                       </div>
                       <p className="f-pending">
-                        His own account belongs on those lines &mdash; two or
+                        His own account belongs on those lines, two or
                         three short paragraphs, first person, in his words
                         rather than ours. We have not recorded it yet, and
                         nothing has been written on his behalf.

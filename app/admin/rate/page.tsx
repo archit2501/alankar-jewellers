@@ -332,7 +332,7 @@ function BilledOrders({
         {orders.length === 1
           ? "One order was priced from this figure."
           : `${orders.length} orders were priced from this figure.`}{" "}
-        Their bills do not change when the rate is corrected &mdash; the price they were quoted
+        Their bills do not change when the rate is corrected, the price they were quoted
         is the price on their record. Ring them.
         {PAYMENT_CAPTURE_ENABLED ? null : " Nothing has been charged to any of them."}
       </p>
@@ -383,7 +383,7 @@ function BilledOrders({
 
       {orders.length >= BILLED_LIMIT ? (
         <p className="rate__p">
-          The {BILLED_LIMIT} most recent are listed. There may be more &mdash; the Orders screen
+          The {BILLED_LIMIT} most recent are listed. There may be more, the Orders screen
           has all of them.
         </p>
       ) : null}
@@ -408,7 +408,7 @@ function EnterForm({
     <Shell title="Enter a rate by hand" back={{ href: "/admin/rate", label: "Gold rate" }}>
       <p className="rate__p">
         IBJA publishes gold per 10 grams and silver per kilogram. Type the figure exactly as it
-        is printed on their page. <strong>Do not work out a per-gram price</strong> &mdash; the
+        is printed on their page. <strong>Do not work out a per-gram price</strong>, the
         box takes the published figure and nothing else.
       </p>
 
@@ -455,7 +455,7 @@ function EnterForm({
 
         <p className="rate__field">
           <label className="rate__label" htmlFor="rate-figure">
-            Rate &mdash; {UNIT_WORDS.per_ten_grams} for gold, {UNIT_WORDS.per_kilogram} for silver
+            Rate: {UNIT_WORDS.per_ten_grams} for gold, {UNIT_WORDS.per_kilogram} for silver
           </label>
           <input
             className="rate__input rate__input--figure"
@@ -490,7 +490,7 @@ function EnterForm({
             <input type="checkbox" id="rate-confirm" name="confirmed" value="yes" />
             <span>
               I have read the figure back. Tick this only if the rate has moved by more than a
-              quarter since the last one &mdash; without it a jump that large is refused.
+              quarter since the last one, without it a jump that large is refused.
             </span>
           </label>
         </p>
@@ -534,8 +534,8 @@ function CorrectForm({
   return (
     <Shell title="This rate is wrong" back={{ href: "/admin/rate", label: "Gold rate" }}>
       <p className="rate__mono">
-        {row.label}, ₹{formatPaiseAsRupees(row.ratePerTenGramsPaise)} per 10 grams &mdash; that is
-        ₹{formatPaiseAsRupees(perGram)} a gram &mdash;{" "}
+        {row.label}, ₹{formatPaiseAsRupees(row.ratePerTenGramsPaise)} per 10 grams, that is
+        ₹{formatPaiseAsRupees(perGram)} a gram,{" "}
         {row.source === "manual" ? "entered by hand" : "read from IBJA"}{" "}
         <time dateTime={row.effectiveFrom}>{formatWhen(row.effectiveFrom, nowMs)}</time>.
       </p>
@@ -559,7 +559,7 @@ function CorrectForm({
       ) : (
         <p className="rate__p">
           The rate before it was ₹{formatPaiseAsRupees(previous.ratePerTenGramsPaise)} per 10
-          grams &mdash; ₹{formatPaiseAsRupees(Math.round(previous.ratePerTenGramsPaise / 10))} a
+          grams, ₹{formatPaiseAsRupees(Math.round(previous.ratePerTenGramsPaise / 10))} a
           gram. The new figure is checked against that one, and a figure ten times it or a tenth
           of it is refused outright.
         </p>
@@ -663,7 +663,7 @@ function History({
   return (
     <section className="rate__section">
       <h2 className="rate__section-head">
-        History &mdash; {findRateSlot(metal, fineness)?.label ?? fineness}
+        History: {findRateSlot(metal, fineness)?.label ?? fineness}
       </h2>
 
       {rows.length === 0 ? (
@@ -857,7 +857,7 @@ export default async function AdminRatePage({
         <Shell title="That rate is no longer in force" back={{ href: "/admin/rate", label: "Gold rate" }}>
           <p className="rate__p">
             It has already been closed and replaced, so it cannot be corrected. What it was is
-            part of the record now &mdash; the orders billed from it were billed from it.
+            part of the record now, the orders billed from it were billed from it.
             Correct the rate in force instead.
           </p>
         </Shell>
@@ -1003,7 +1003,7 @@ export default async function AdminRatePage({
       {/* THE APPEND-ONLY RULE, IN ONE LINE OF SHOP ENGLISH. */}
       <p className="rate__p rate__p--rule">
         A rate is never edited. If one goes in wrong you close it and put the right one in its
-        place, and the wrong one stays in the history underneath &mdash; because the orders that
+        place, and the wrong one stays in the history underneath, because the orders that
         were priced from it still have to add up. That is why there is no Edit button on this
         screen, only <strong>This one is wrong</strong>.
       </p>
