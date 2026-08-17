@@ -179,7 +179,7 @@ test("the ratios printed in tokens.css match the tokens it declares", () => {
  * heritage brief, so drifting back to it is a real failure mode, not a
  * hypothetical one.
  */
-test("the retired palette has not crept back in, anywhere", () => {
+test("the retired palette has not crept back in, in any colour notation", () => {
   const retired = {
     "#4a0e17": "oxblood",
     "#2e080e": "oxblood-deep",
@@ -188,33 +188,50 @@ test("the retired palette has not crept back in, anywhere", () => {
     "#f6efe0": "the cream plaster-lift",
     "#dccdb2": "the cream plaster-sunk",
     "#1c1611": "the espresso ink",
-    "#7d6c5b": "the failing 4.40:1 ink-3",
+    "#4f4034": "the espresso ink-2",
+    "#7d6c5b": "the ink-3 that measured 4.40:1",
+    "#1b4d3e": "the old decorative emerald",
   };
-  // Same colours written as rgb() triples, which is how they leaked last time:
-  // four admin hairlines and a four-stop hero gradient were hardcoded as rgba()
-  // and sailed straight past a check that only parsed tokens.css.
-  const triples = {
-    "237, 227, 208": "the cream plaster",
-    "46, 8, 14": "oxblood-deep",
-    "125, 108, 91": "the failing ink-3",
-  };
+
+  /**
+   * WHY THIS NORMALISES INSTEAD OF MATCHING STRINGS.
+   *
+   * The first version of this guard only read tokens.css and missed nine live
+   * declarations. The second listed three rgb() triples by hand and missed a
+   * fourth on the very next deploy — a modal shadow written
+   * `rgba(28, 22, 17, 0.42)`, which is the retired ink and looks like nothing
+   * at all. Enumerating notations is a losing game: #rgb, #rrggbb, #rrggbbaa,
+   * rgb(), rgba(), and any spacing inside them all name the same colour.
+   *
+   * So every colour in every stylesheet is reduced to #rrggbb first, and the
+   * comparison happens there.
+   */
+  const toHex = (r, g, b) =>
+    "#" + [r, g, b].map((n) => Number(n).toString(16).padStart(2, "0")).join("");
+
+  function coloursIn(css) {
+    const found = new Set();
+    for (const m of css.matchAll(/#([0-9a-fA-F]{3,8})\b/g)) {
+      const h = m[1].toLowerCase();
+      if (h.length === 3) found.add("#" + [...h].map((c) => c + c).join(""));
+      else if (h.length >= 6) found.add("#" + h.slice(0, 6));
+    }
+    for (const m of css.matchAll(/rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/g)) {
+      found.add(toHex(m[1], m[2], m[3]));
+    }
+    return found;
+  }
 
   const sheets = [...readdirSyncDeep(`${ROOT}app`)].filter((f) => f.endsWith(".css"));
-  assert.ok(sheets.length >= 5, "stylesheets not found — this guard is not looking at anything");
+  assert.ok(sheets.length >= 5, "no stylesheets found — this guard is looking at nothing");
 
   for (const file of sheets) {
-    const css = stripComments(readFileSync(file, "utf8"));
+    const painted = coloursIn(stripComments(readFileSync(file, "utf8")));
     const rel = file.slice(ROOT.length);
     for (const [hex, name] of Object.entries(retired)) {
       assert.ok(
-        !css.toLowerCase().includes(hex),
-        `${rel} still paints ${hex} (${name}) — that is the retired default family`
-      );
-    }
-    for (const [triple, name] of Object.entries(triples)) {
-      assert.ok(
-        !css.includes(triple),
-        `${rel} still paints rgb(${triple}) (${name}) — the rgba() form of a retired colour`
+        !painted.has(hex),
+        `${rel} still paints ${hex} (${name}), in some notation — that is the retired family`
       );
     }
   }
