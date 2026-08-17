@@ -254,7 +254,7 @@ function CartItem({ row }: { row: CartRow }) {
         <LinePrice piece={piece} />
         <HoldState line={line} />
         {piece.isUniquePiece ? (
-          <p className="cart-item__stock">One of a kind — there is only this one.</p>
+          <p className="cart-item__stock">One of a kind. There is only this one.</p>
         ) : null}
         <RemoveControl slug={piece.slug} title={piece.title} />
       </div>
@@ -308,7 +308,7 @@ function Total({ rows }: { rows: readonly CartRow[] }) {
           : `${priced.length} of ${pieces.length} pieces here have a figure. A total is only shown when every piece in the cart has one, because a partial total is a smaller number than the real one.`}
       </p>
       <p className="cart-total__note">
-        Ask us and we will price the whole cart in front of you, itemised —
+        Ask us and we will price the whole cart in front of you, itemised:
         metal, making, stones and GST, the same way every piece on this site is
         broken up.
       </p>
@@ -334,7 +334,7 @@ function EmptyCart() {
       <p className="cart-empty__body">
         Every piece in the catalogue is one of a kind, photographed face and
         enamelled reverse. Put one here and we will hold it for you while you
-        think — {HOLD_MINUTES} minutes at a time, and nothing is charged for
+        think. {HOLD_MINUTES} minutes at a time, and nothing is charged for
         while it sits.
       </p>
       <div className="cart-empty__actions">
@@ -416,7 +416,6 @@ export default async function CartPage({
           aria-labelledby="cart-title"
         >
           <div className="cart-head">
-            <p className="label">Your cart</p>
             <h1 id="cart-title">Set aside for you.</h1>
             <p className="lede cart-head__lede">
               Nothing here is charged for and nothing here is priced in advance.
@@ -444,7 +443,7 @@ export default async function CartPage({
                 <h2 className="cart-empty__title">We cannot read your cart just now.</h2>
                 <p className="cart-empty__body">
                   This is our end, not yours, and nothing has been lost or
-                  changed. Try again in a moment — or call the shop and we will
+                  changed. Try again in a moment, or call the shop and we will
                   set the piece aside by hand, which is how it was done here for
                   a long time before this page existed.
                 </p>
@@ -488,13 +487,12 @@ export default async function CartPage({
           aria-labelledby="cart-close-title"
         >
           <div className="opener illuminated cart-close__panel">
-            <p className="label">The next step</p>
             <h2 id="cart-close-title">Ask us to price these.</h2>
             <div className="rule-gold rule rule--center" aria-hidden="true" />
             <p className="cart-close__body">
               Paying online is not open yet. What a cart does here is hold a
-              piece while we quote it — itemised, against the rate at the moment
-              you ask — and then you either come and see it or we send it. Every
+              piece while we quote it, itemised, against the rate at the moment
+              you ask. Then you either come and see it or we send it. Every
               piece is one of a kind, so the holding is the part that matters.
             </p>
             <Link className="button" href="/#visit">

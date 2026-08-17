@@ -314,8 +314,8 @@ export default async function AdminOrdersPage({
           <>
             <p className="ord__lede">Nothing matches that.</p>
             <p className="ord__lede">
-              Try the phone number on its own, or the order number exactly as it is printed —
-              they look like <span className="ord__mono">AJ-2608-7QW2XF</span>.
+              Try the phone number on its own, or the order number exactly as it is printed.
+              They look like <span className="ord__mono">AJ-2608-7QW2XF</span>.
             </p>
           </>
         )

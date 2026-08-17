@@ -172,7 +172,7 @@ const PRICE_UNAVAILABLE: Record<
   on_request: {
     tag: "On request",
     headline: "This piece is priced by hand.",
-    body: "Antique and one-off Jadau work is not quoted off a rate card — the stones are individual and so is the setting. Ask us and we will price it in front of you, itemised the same way every other piece on this site is.",
+    body: "Antique and one-off Jadau work is not quoted off a rate card. The stones are individual and so is the setting. Ask us and we will price it in front of you, itemised the same way every other piece on this site is.",
   },
   rate_stale: {
     tag: "Rate unconfirmed",
@@ -331,9 +331,6 @@ export default async function ProductPage({
             </nav>
 
             <div className="pdp-stage__head">
-              <p className="label">
-                {piece.isUniquePiece ? "One of a kind" : "The pieces"}
-              </p>
               <h1 id="pdp-title">{piece.title}</h1>
               {piece.subtitle === null ? null : (
                 <p className="pdp-subtitle">{piece.subtitle}</p>
@@ -435,7 +432,6 @@ export default async function ProductPage({
                   />
                 </figure>
                 <div className="pdp-worn__note">
-                  <p className="label">On the wearer</p>
                   <h2 id="pdp-worn-title">How big it actually is.</h2>
                   <div className="rule-brass rule rule--full" aria-hidden="true" />
                   <p className="pdp-worn__body">
@@ -455,8 +451,7 @@ export default async function ProductPage({
           >
             <div className="wrap pdp-record__grid">
               <div className="pdp-record__spec">
-                <p className="label">The record</p>
-                <h2 id="pdp-record-title">What this piece is — and what it is not.</h2>
+                <h2 id="pdp-record-title">What this piece is, and what it is not.</h2>
                 <div className="rule-brass rule rule--full" aria-hidden="true" />
 
                 {/* Tabular data, which is the one job a hairline is allowed to
@@ -491,7 +486,7 @@ export default async function ProductPage({
                     This piece is not one of the kinds BIS QCO cl. 2(3) exempts,
                     so it does need to be hallmarked before it is sold. No HUID
                     has been recorded against it here yet, and rather than leave
-                    the line blank the page says so — ask us for the number
+                    the line blank the page says so. Ask us for the number
                     struck on the piece itself.
                   </p>
                 ) : null}
@@ -577,7 +572,7 @@ export default async function ProductPage({
                       <input type="hidden" name="slug" value={piece.slug} />
                       <button className="button button--ghost cart-add__button" type="submit">
                         Add to cart
-                        <span className="visually-hidden"> — {piece.title}</span>
+                        <span className="visually-hidden">: {piece.title}</span>
                       </button>
                     </form>
                   ) : null}
@@ -600,7 +595,6 @@ export default async function ProductPage({
               aria-labelledby="pdp-story-title"
             >
               <div className="wrap pdp-story__inner">
-                <p className="label">About the piece</p>
                 <h2 id="pdp-story-title">Made slowly. Worn forever.</h2>
                 <div className="rule-gold rule" aria-hidden="true" />
                 <p className="prose">{piece.description}</p>
@@ -618,7 +612,6 @@ export default async function ProductPage({
             aria-labelledby="pdp-close-title"
           >
             <div className="opener illuminated pdp-close__panel">
-              <p className="label">Come and see it</p>
               <h2 id="pdp-close-title">Turn it over yourself.</h2>
               <div className="rule-gold rule rule--center" aria-hidden="true" />
               <p className="pdp-close__body">

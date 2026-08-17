@@ -249,7 +249,6 @@ export default function Home() {
             <p className="deva hero__deva" aria-hidden="true">
               अलंकार
             </p>
-            <p className="label hero__eyebrow">Jadau · Polki · Kundan — since 1980</p>
             <h1 id="hero-title">Jewels that become heirlooms.</h1>
           </div>
 
@@ -340,7 +339,6 @@ export default function Home() {
         >
           <div className="section-head pieces__head">
             <div>
-              <p className="label">The pieces</p>
               <h2 id="collections-title">Turn one over.</h2>
             </div>
             <p className="lede">
@@ -406,7 +404,6 @@ export default function Home() {
           aria-labelledby="reverse-title"
         >
           <div className="opener">
-            <p className="label">The reverse</p>
             <h2 id="reverse-title">The part with no audience.</h2>
             <div className="rule-gold rule rule--center" aria-hidden="true" />
           </div>
@@ -414,7 +411,7 @@ export default function Home() {
           <div className="reverse">
             <div className="reverse__aside reverse__aside--start">
               <p className="prose">
-                In Jadau and Polki work the back of a piece is enamelled —
+                In Jadau and Polki work the back of a piece is enamelled:
                 opaque green, red and white meenakari fired into gold that
                 nobody but the wearer will ever see.
               </p>
@@ -462,7 +459,6 @@ export default function Home() {
         >
           <div className="craft">
             <div className="craft__copy">
-              <p className="label">At the bench</p>
               <h2 id="craft-title">Made slowly. Worn forever.</h2>
               <div className="rule-gold rule" aria-hidden="true" />
               <p className="prose">
@@ -513,13 +509,12 @@ export default function Home() {
         >
           <div className="house">
             <div className="house__intro">
-              <p className="label">The house</p>
               <h2 id="legacy-title">One date, and no mythology.</h2>
               <div className="rule-brass rule" aria-hidden="true" />
               <p className="prose">
                 Alankar has been setting stones by hand since 1980. Everything
-                else a jeweller usually writes on a page like this — heritage,
-                integrity, generations of trust — could be said by anyone and
+                else a jeweller usually writes on a page like this (heritage,
+                integrity, generations of trust) could be said by anyone and
                 checked by no one, so here is only the part you can check.
               </p>
               <p className="prose">
@@ -578,7 +573,6 @@ export default function Home() {
               />
             </figure>
             <div className="visit__copy">
-              <p className="label">By appointment</p>
               <h2 id="visit-title">A private experience, on your own time.</h2>
               <div className="rule-gold rule" aria-hidden="true" />
               <p className="prose">

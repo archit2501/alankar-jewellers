@@ -185,10 +185,11 @@ test("publishes all three confirmed facts, at the width they were given", async 
     "the page must say there is no second person — it is why there is one portrait"
   );
 
-  // Part E's caption grammar, finally available: the name, then the verb.
+  // Part E's caption grammar: the name, then the verb. The separator moved
+  // from an em-dash to a comma when every visible em-dash was removed.
   assert.equal(
     captionFor(body, "founder-saksham-goel"),
-    `${NAMED} — oversees everything.`,
+    `${NAMED}, oversees everything.`,
     "his caption must be the name and the supplied verb — no title, relationship or date"
   );
 

@@ -138,7 +138,7 @@ function QueueRow({ item, nowMs }: { item: QueueItem; nowMs: number }) {
         <p className={`admin-queue__due${urgent ? " admin-wrong" : ""}`}>
           {urgent ? <span className="admin-mark" aria-hidden="true" /> : null}
           <span>
-            {item.overdue ? "Reply overdue — it was due " : "Reply by "}
+            {item.overdue ? "Reply overdue. It was due " : "Reply by "}
             <time dateTime={item.dueAt}>{formatWhen(item.dueAt, nowMs)}</time>
           </span>
         </p>
@@ -242,7 +242,7 @@ function RateLine({ lookup, nowMs }: { lookup: RateLookup; nowMs: number }) {
       <p className="admin-p">
         {stale ? "While it is out of date" : "Until it is put right"} the website cannot
         price anything. Every piece shows &ldquo;price on request&rdquo; and nobody can
-        check out. That is deliberate — a wrong price is worse than no price.
+        check out. That is deliberate: a wrong price is worse than no price.
       </p>
     </section>
   );
@@ -270,7 +270,7 @@ function TodaySentence({ tally }: { tally: TodayTally }) {
               the two can never be separated. */}
           {PAYMENT_CAPTURE_ENABLED
             ? null
-            : "No money has been taken — card and UPI are not switched on yet."}
+            : "No money has been taken. Card and UPI are not switched on yet."}
         </p>
       ) : null}
       {tally.tornOrders > 0 ? (

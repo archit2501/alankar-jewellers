@@ -199,7 +199,7 @@ function ReceiptLines({ receipt }: { receipt: OrderReceipt }) {
               <dd>
                 {item.hallmarkingPaise > 0
                   ? formatPricePaise(item.hallmarkingPaise)
-                  : "Exempt — Kundan, Polki and Jadau are outside mandatory hallmarking (QCO cl. 2(3))"}
+                  : "Exempt. Kundan, Polki and Jadau are outside mandatory hallmarking (QCO cl. 2(3))"}
               </dd>
             </div>
             {item.huid ? (
@@ -274,7 +274,7 @@ function Confirmation({ receipt }: { receipt: OrderReceipt }) {
     <>
       <div className="checkout-head">
         <p className="label">Order {receipt.orderNumber}</p>
-        <h1 id="checkout-title">Your order is recorded.</h1>
+          <h1 id="checkout-title">Your order is recorded.</h1>
         <p className="lede checkout-head__lede">
           The piece is off the wall and held in your name. It has not been paid
           for, and this page is not a receipt.
@@ -371,7 +371,7 @@ function Confirmation({ receipt }: { receipt: OrderReceipt }) {
                   {receipt.ticketNumber ?? receipt.orderNumber}
                 </strong>{" "}
                 and we will find it in one step. Tell us something is wrong and
-                we open a complaint against it the same day — from that point we
+                we open a complaint against it the same day. From that point we
                 answer within forty-eight hours and settle within a month.
               </p>
             </section>
@@ -418,7 +418,6 @@ function Blocked({ resolution }: { resolution: Extract<CheckoutResolution, { ok:
   return (
     <>
       <div className="checkout-head">
-        <p className="label">Checkout</p>
         <h1 id="checkout-title">Not something we can price.</h1>
         <p className="lede checkout-head__lede">{notice}</p>
         <div className="rule-brass checkout-head__rule" aria-hidden="true" />
@@ -435,7 +434,7 @@ function Blocked({ resolution }: { resolution: Extract<CheckoutResolution, { ok:
                     <Link className="checkout-blocked__link" href={`/shop/${line.slug}`}>
                       {line.title}
                     </Link>{" "}
-                    — {lineBlockCopy(line.reason)}.
+                    : {lineBlockCopy(line.reason)}.
                   </li>
                 ))}
               </ul>
@@ -454,7 +453,7 @@ function Blocked({ resolution }: { resolution: Extract<CheckoutResolution, { ok:
           <p className="checkout-blocked__body">
             {resolution.reason === "shop_state_unknown"
               ? "An invoice has to name the state the supply is made from, because that is what decides whether GST is charged as CGST and SGST or as IGST. Ours is not recorded here yet, so we will not write an order we cannot invoice correctly. This is our gap to close, not yours."
-              : "These pieces are quoted by hand, against the gold rate at the moment you ask, and we would rather create no order at all than one with a figure we cannot stand behind. An enquiry reaches a person, who will price the whole cart in front of you — metal, making, stones and GST, itemised the same way every piece on this site is broken up — and hold it while you decide."}
+              : "These pieces are quoted by hand, against the gold rate at the moment you ask, and we would rather create no order at all than one with a figure we cannot stand behind. An enquiry reaches a person, who will price the whole cart in front of you (metal, making, stones and GST, itemised the same way every piece on this site is broken up) and hold it while you decide."}
           </p>
 
           <div className="checkout-blocked__actions">
@@ -598,7 +597,7 @@ function OrderForm({
             <input type="radio" name="fulfilment" value="ship" />
             <span>
               <strong>Send it to me.</strong> Ordinary couriers ban jewellery
-              outright, so carriage is arranged and insured by hand — we agree it
+              outright, so carriage is arranged and insured by hand. We agree it
               with you before anything leaves the shop, and nothing is charged
               for it here.
             </span>
@@ -608,7 +607,7 @@ function OrderForm({
 
       <fieldset className="checkout-fieldset">
         <legend className="checkout-legend">
-          Address — needed only if the piece is being sent to you
+          Address, needed only if the piece is being sent to you
         </legend>
 
         <label className="checkout-field checkout-field--wide">
@@ -675,7 +674,7 @@ function OrderForm({
                 {formatPricePaise(advance.balanceDuePaise)} at the counter.
               </strong>{" "}
               That is {BOOKING_ADVANCE_BPS / 100}% now. Available only when you
-              are collecting the piece from the shop — we do not send jewellery
+              are collecting the piece from the shop. We do not send jewellery
               with money owing on it, and no courier here collects cash.
             </span>
           </label>
@@ -709,7 +708,7 @@ function OrderForm({
         </label>
         <p className="checkout-note checkout-field--wide">
           {panNeeded
-            ? "This order is ₹2,00,000 or more, and the seller has a statutory duty to ensure PAN is quoted on a sale at or above that figure — whatever the payment method (Income-tax Act 2025 s.262(9), Rule 159). We hold it against the invoice and nothing else."
+            ? "This order is ₹2,00,000 or more, and the seller has a statutory duty to ensure PAN is quoted on a sale at or above that figure, whatever the payment method (Income-tax Act 2025 s.262(9), Rule 159). We hold it against the invoice and nothing else."
             : "Below ₹2,00,000 we do not need your PAN, so we do not ask for it. Above it we must, by law, whatever the payment method."}
         </p>
       </fieldset>
@@ -767,7 +766,6 @@ function Ready({
   return (
     <>
       <div className="checkout-head">
-        <p className="label">Checkout</p>
         <h1 id="checkout-title">Tell us where it goes.</h1>
         <p className="lede checkout-head__lede">
           The figure below is the price of record for this order: quoted against
@@ -889,7 +887,6 @@ export default async function CheckoutPage({
           {unavailable ? (
             <>
               <div className="checkout-head">
-                <p className="label">Checkout</p>
                 <h1 id="checkout-title">We cannot reach our order book.</h1>
                 <p className="lede checkout-head__lede">
                   This is our end, not yours. Nothing has been ordered, nothing
@@ -922,10 +919,10 @@ export default async function CheckoutPage({
             <>
               <div className="checkout-head">
                 <p className="label">Order {receipt.orderNumber}</p>
-                <h1 id="checkout-title">This order does not add up.</h1>
+          <h1 id="checkout-title">This order does not add up.</h1>
                 <p className="lede checkout-head__lede">
                   We hold an order under this number, and our own check on it did
-                  not pass — the pieces recorded against it do not match the
+                  not pass. The pieces recorded against it do not match the
                   count it was written with. We will not print a figure from a
                   record we cannot vouch for.
                 </p>
@@ -965,14 +962,13 @@ export default async function CheckoutPage({
           aria-labelledby="checkout-close-title"
         >
           <div className="opener illuminated checkout-close__panel">
-            <p className="label">However you buy</p>
             <h2 id="checkout-close-title">A person, at the end of it.</h2>
             <div className="rule-gold rule rule--center" aria-hidden="true" />
             <p className="checkout-close__body">
               Card and UPI are not switched on here yet. Whatever you do on this
               page, someone from the shop rings you, tells you what the piece
               weighs and what it costs, and takes payment the way you would
-              rather give it. That is not a stopgap — it is how a ₹4 lakh bridal
+              rather give it. That is not a stopgap. It is how a ₹4 lakh bridal
               set has always been sold here.
             </p>
             <Link className="button" href="/#visit">

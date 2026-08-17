@@ -173,7 +173,7 @@ export default function FoundersPage() {
    * the gap would have been the exact failure the page exists to avoid.
    */
   const shortVerb = publishable(founder.overseesShort) ? founder.overseesShort : null;
-  const caption = name ? (shortVerb ? `${name} — ${shortVerb}.` : name) : undefined;
+  const caption = name ? (shortVerb ? `${name}, ${shortVerb}.` : name) : undefined;
 
   /**
    * The closing line the page was built around. "Ask for X" is an instruction
@@ -218,7 +218,6 @@ export default function FoundersPage() {
           >
             <div className="wrap f-opener__grid">
               <div className="f-opener__statement">
-                <p className="label">The people</p>
                 <h1 id="f-opener-title">
                   The techniques are two hundred years old. The man who keeps
                   them is not.
@@ -281,7 +280,6 @@ export default function FoundersPage() {
               </div>
 
               <div className="f-founder__words">
-                <p className="label">One name</p>
                 <h2 id="f-person-title">{name ?? "The person at Alankar"}</h2>
                 <div className="rule-brass rule rule--full" aria-hidden="true" />
 
@@ -343,7 +341,6 @@ export default function FoundersPage() {
           >
             <div className="wrap">
               <div className="f-strip__head">
-                <p className="label">In the almirah</p>
                 <h2 id="f-objects-title">
                   Five things that outlast whoever is at the bench.
                 </h2>
@@ -390,7 +387,6 @@ export default function FoundersPage() {
           >
             <div className="wrap">
               <div className="f-changed__head">
-                <p className="label">What changed</p>
                 <h2 id="f-changed-title">Four things you can check.</h2>
                 <div className="rule-brass rule rule--full" aria-hidden="true" />
                 <p className="f-changed__lede">
@@ -434,7 +430,6 @@ export default function FoundersPage() {
                 rather than between two stray brackets. */}
             <div className="opener illuminated f-close__panel">
               <div className="illuminated f-close__corners" aria-hidden="true" />
-              <p className="label">Come and see</p>
               <h2 id="f-close-title">
                 {askFor ? `Ask for ${askFor}.` : "Ask for someone by name."}
               </h2>

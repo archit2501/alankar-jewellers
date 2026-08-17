@@ -331,7 +331,6 @@ function AppointmentDialog({
           </div>
         ) : (
           <>
-            <p className="label">By appointment</p>
             <h2 id="appointment-title">Let us curate your private viewing.</h2>
             <p className="dialog-intro">
               Tell us what brings you to Alankar. We’ll shape the experience

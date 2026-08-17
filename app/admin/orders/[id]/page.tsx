@@ -116,7 +116,7 @@ const NOTICES: Readonly<Record<string, { readonly copy: string; readonly problem
     problem: false,
   },
   "not-cancellable": {
-    copy: "This order cannot be cancelled — the piece has already left the shop. That needs a return, which is a different act and a different record.",
+    copy: "This order cannot be cancelled. The piece has already left the shop. That needs a return, which is a different act and a different record.",
     problem: true,
   },
   "needs-reason": {
@@ -194,7 +194,7 @@ function HallmarkRow({ line }: { line: AdminOrderLine }) {
         Hallmark number (HUID)
         <span className="bill__why">
           {charged
-            ? "Not recorded. A hallmarking charge was raised on this piece, so a number is owed against it — find it before this bill is given to anyone."
+            ? "Not recorded. A hallmarking charge was raised on this piece, so a number is owed against it. Find it before this bill is given to anyone."
             : "This piece is exempt from hallmarking (QCO cl. 2(3)) and no hallmarking charge was raised on it."}
         </span>
       </th>
@@ -241,7 +241,7 @@ function BillLine({
       <table className="bill__table">
         <caption>
           What it was priced from
-          {line.quantity > 1 ? ` — per piece, and this line is ${line.quantity}` : null}
+          {line.quantity > 1 ? `, per piece, and this line is ${line.quantity}` : null}
         </caption>
         <tbody>
           {line.breakup.map((entry) => (
@@ -446,7 +446,7 @@ function CancelPage({ order, csrf }: { order: AdminOrderDetail; csrf: string }) 
         </fieldset>
 
         <label className="ord__label" htmlFor="cancel-note">
-          Anything to add — it is kept with the order
+          Anything to add. It is kept with the order
         </label>
         <textarea className="ord__input" id="cancel-note" name="note" rows={3} />
 
@@ -636,7 +636,7 @@ export default async function AdminOrderPage({
         {order.allowedActions.length === 0 ? (
           <p className="ord__what">
             {order.intact
-              ? "There is nothing left to do to this order here. It has been collected, sent or cancelled, and an order is never edited after that — it is a record."
+              ? "There is nothing left to do to this order here. It has been collected, sent or cancelled, and an order is never edited after that. It is a record."
               : "Nothing can be done to this order until someone has looked at why it did not save fully."}
           </p>
         ) : (

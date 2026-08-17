@@ -313,7 +313,7 @@ export default async function AdminPiecesPage({
       ) : (
         <>
           <Group
-            heading="Not finished — not on the website"
+            heading="Not finished, not on the website"
             empty="Nothing is half-done."
             pieces={drafts}
             nowMs={nowMs}

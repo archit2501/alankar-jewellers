@@ -154,7 +154,7 @@ function ShopCard({ piece }: { piece: PricedPiece }) {
         {piece.stockQuantity <= 0 ? (
           <p className="shop-card__stock">This one has left the shop.</p>
         ) : piece.isUniquePiece ? (
-          <p className="shop-card__stock">One of a kind — there is only this one.</p>
+          <p className="shop-card__stock">One of a kind. There is only this one.</p>
         ) : null}
         {/* ADD TO CART. A plain form, like the filters above it: no JavaScript,
             no client island, and it works with scripting switched off.
@@ -173,7 +173,7 @@ function ShopCard({ piece }: { piece: PricedPiece }) {
             <input type="hidden" name="slug" value={piece.slug} />
             <button className="button cart-add__button" type="submit">
               Add to cart
-              <span className="visually-hidden"> — {piece.title}</span>
+              <span className="visually-hidden">: {piece.title}</span>
             </button>
           </form>
         ) : null}
@@ -335,7 +335,7 @@ function Filters({
                 <span className="shop-chip__x" aria-hidden="true">
                   ×
                 </span>
-                <span className="visually-hidden">— remove this filter</span>
+                <span className="visually-hidden">. Removes this filter.</span>
               </Link>
             </li>
           ))}
@@ -400,7 +400,6 @@ export default async function ShopPage({
         >
           <div className="shop-opener__grid">
             <div className="shop-opener__statement">
-              <p className="label">The catalogue</p>
               <h1 id="shop-title">Every piece, from both sides.</h1>
               <p className="lede shop-opener__lede">
                 The front is what the room sees. The back is enamelled, and only
@@ -418,13 +417,13 @@ export default async function ShopPage({
                   These pieces stand in for a catalogue that has not been
                   photographed or weighed yet. The five heirloom pieces carry no
                   weight, purity, hallmark number or certificate, because none of
-                  those has been recorded — so they are priced on request rather
+                  those has been recorded, so they are priced on request rather
                   than given a figure we would be making up.
                 </p>
                 <p>
                   The {DEMONSTRATION_SLUGS.length} pieces you can add to a bag
                   are a <strong>demonstration</strong>. The gold rate behind them
-                  is real — it is IBJA&rsquo;s published rate, refreshed after
+                  is real: it is IBJA&rsquo;s published rate, refreshed after
                   each of their two daily publications. What is invented is the{" "}
                   <strong>pieces</strong>: their weights and making charges are
                   made up, because none of them physically exists. So the
@@ -464,7 +463,6 @@ export default async function ShopPage({
         >
           <div className="shop-section__head">
             <div>
-              <p className="label">The pieces</p>
               <h2 id="catalogue-title">Turn one over.</h2>
             </div>
             <p className="lede">
@@ -493,14 +491,14 @@ export default async function ShopPage({
                   <p>
                     Every piece in the catalogue today is priced on request,
                     because none of them has been weighed. A price band therefore
-                    matches nothing at all — it is not an empty shelf, it is an
+                    matches nothing at all. It is not an empty shelf, it is an
                     unrecorded one.
                   </p>
                 ) : priceFiltered ? (
                   <p>
                     Nothing falls in that band. Most of the catalogue is priced
                     on request rather than given a figure we would be making up,
-                    and a piece with no price cannot sit in a price range — so a
+                    and a piece with no price cannot sit in a price range, so a
                     band only ever searches the few that carry one.
                   </p>
                 ) : (
@@ -530,7 +528,6 @@ export default async function ShopPage({
           aria-labelledby="shop-close-title"
         >
           <div className="opener illuminated shop-close__panel">
-            <p className="label">By appointment</p>
             <h2 id="shop-close-title">Seen properly, in the salon.</h2>
             <div className="rule-gold rule rule--center" aria-hidden="true" />
             <p className="shop-close__body">

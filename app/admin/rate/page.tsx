@@ -135,7 +135,7 @@ const NOTICES: Readonly<Record<string, { copy: string; problem: boolean }>> = {
     problem: true,
   },
   "big-move": {
-    copy: "That is a change of more than a quarter in one step. Nothing was changed — go in again and tick the box to confirm the figure.",
+    copy: "That is a change of more than a quarter in one step. Nothing was changed. Go in again and tick the box to confirm the figure.",
     problem: true,
   },
   "needs-reason": {
@@ -267,8 +267,8 @@ function Alarm({
         {standing === "none"
           ? "Nothing on the website can show a price until one is recorded. Every piece is showing “price on request”, which is the truth rather than a placeholder, and nobody can check out."
           : standing === "stale"
-            ? "While it is out of date the website cannot price anything. Every piece shows “price on request” and nobody can check out. That is deliberate — a wrong price is worse than no price."
-            : "The row that should hold the rate cannot be read, so the website is refusing to quote rather than guessing. That is deliberate — a wrong price is worse than no price."}
+            ? "While it is out of date the website cannot price anything. Every piece shows “price on request” and nobody can check out. That is deliberate. a wrong price is worse than no price."
+            : "The row that should hold the rate cannot be read, so the website is refusing to quote rather than guessing. That is deliberate. a wrong price is worse than no price."}
       </p>
 
       {health.missedPublications > 0 ? (
@@ -681,7 +681,7 @@ function History({
 
               <p className="rate__event-meta">
                 {row.corrects
-                  ? `A correction, entered by hand — ${CORRECTION_REASONS[row.corrects.reason].toLowerCase()}`
+                  ? `A correction, entered by hand: ${CORRECTION_REASONS[row.corrects.reason].toLowerCase()}`
                   : row.source === "ibja"
                     ? "From IBJA, automatically"
                     : "Entered by hand"}

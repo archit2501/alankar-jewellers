@@ -215,7 +215,7 @@ function Preview({ preview }: { preview: PricePreview }) {
   if (!preview.ok) {
     const copy =
       preview.reason === "on_request"
-        ? "The website shows “price on request” for this piece and invites an enquiry. That is a real answer, not a gap — a piece that has not been weighed or has no rate card belongs here."
+        ? "The website shows “price on request” for this piece and invites an enquiry. That is a real answer, not a gap. A piece that has not been weighed or has no rate card belongs here."
         : preview.reason === "no_rate"
           ? "There is no gold rate in force just now, so what this piece would cost cannot be worked out. It is not being guessed at, and the website shows “price on request” until there is one."
           : "This piece cannot be priced as it stands. Nothing is being shown rather than a figure that would be wrong.";
@@ -690,7 +690,7 @@ function PriceForm({
               defaultChecked={values.unique}
             />
             <span className="pcs__choicebody">
-              Just the one — it is one of a kind
+              Just the one. It is one of a kind
               <span className="pcs__choicewhy">
                 The website will not let it be bought twice, and the database refuses a stock of
                 two on a one-of-a-kind piece.
@@ -832,11 +832,11 @@ function HallmarkForm({
               defaultChecked={answer === "exempt"}
             />
             <span className="pcs__choicebody">
-              No — it does not have to be
+              No, it does not have to be
               <span className="pcs__choicewhy">
                 Kundan, Polki and Jadau are outside mandatory hallmarking (QCO cl. 2(3)).
                 {exemptCraft
-                  ? ` This piece is entered as ${craftLabel(piece.craft)}, so that exemption covers it — but only you can say whether it was hallmarked anyway.`
+                  ? ` This piece is entered as ${craftLabel(piece.craft)}, so that exemption covers it, but only you can say whether it was hallmarked anyway.`
                   : ` This piece is entered as ${craftLabel(piece.craft)}, which is not one of those, so choose this only if you know it applies.`}{" "}
                 No hallmarking charge is raised, and the website says the piece is exempt rather
                 than leaving a blank.
@@ -853,7 +853,7 @@ function HallmarkForm({
               defaultChecked={answer === "recorded"}
             />
             <span className="pcs__choicebody">
-              Yes — and the number is below
+              Yes, and the number is below
               <span className="pcs__choicewhy">
                 Type it exactly as it reads on the piece.
               </span>
@@ -869,7 +869,7 @@ function HallmarkForm({
               defaultChecked={answer === "not_to_hand"}
             />
             <span className="pcs__choicebody">
-              Yes — but the number is not to hand
+              Yes, but the number is not to hand
               <span className="pcs__choicewhy">
                 Perfectly normal, and the honest answer. The piece stays off the website until the
                 number turns up, because a hallmarking charge with no number against it is the one
@@ -1101,10 +1101,10 @@ function PiecePage({
       <p className="pcs__what">
         {statusWord}
         {piece.status === "active"
-          ? " — and it will not actually appear there until it has a photograph."
+          ? ", and it will not actually appear there until it has a photograph."
           : piece.status === "archived"
-            ? " — off the website and out of the working list."
-            : " — this is not on the website."}
+            ? ", off the website and out of the working list."
+            : ". This is not on the website."}
       </p>
       <p className="pcs__mono">
         {piece.sku} · {craftLabel(piece.craft)} · Started{" "}

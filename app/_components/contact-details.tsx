@@ -54,14 +54,13 @@ export function ContactDetails() {
           restrained and one that looks unfinished. */}
       <div className="contact__intro">
         <div>
-          <p className="label">Find us</p>
           <h2>Come and see them in person.</h2>
         </div>
 
         {outstanding.length > 0 ? (
           <p className="contact__notice grained">
             <span className="contact__tag">Details pending</span>
-            The phone and WhatsApp numbers below are live — please use them.
+            The phone and WhatsApp numbers below are live. Please use them.
             We have not published {listSentence(outstanding)} yet, and rather
             than print a guess we have left {outstanding.length > 1 ? "those lines" : "that line"}{" "}
             open until the shop confirms {outstanding.length > 1 ? "them" : "it"}.
