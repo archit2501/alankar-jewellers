@@ -831,10 +831,10 @@ h3 {
   inset: 0;
   background: radial-gradient(
     80% 116% at 50% 56%,
-    rgba(46, 8, 14, 0) 12%,
-    rgba(36, 6, 12, 0.5) 46%,
-    rgba(24, 3, 8, 0.72) 74%,
-    rgba(19, 2, 7, 0.84) 100%
+    rgba(6, 23, 16, 0) 12%,
+    rgba(5, 19, 13, 0.5) 46%,
+    rgba(4, 14, 10, 0.72) 74%,
+    rgba(3, 11, 8, 0.84) 100%
   );
   pointer-events: none;
 }

@@ -28,7 +28,7 @@
  * ===========================================================================
  * THE COLOUR RULE, MEASURED
  * ===========================================================================
- * On --plaster #ede3d0:  --ink 14.08 · --ink-2 7.80 · --ink-3 3.96 (captions
+ * On --plaster #eceae4:  --ink 14.68 · --ink-2 7.63 · --ink-3 5.44 (captions
  * only, never body) · --sindoor 6.48 · --brass 2.85 · --gold 1.90.
  *
  *   --brass IS NEVER A LETTERFORM. 2.85:1. Hairlines and brackets only.
@@ -77,8 +77,8 @@
   --adm-meta: var(--ink-3);
   --adm-alert: var(--sindoor);
   --adm-on-alert: var(--plaster);
-  --adm-hair: rgba(125, 108, 91, 0.28);
-  --adm-line: rgba(125, 108, 91, 0.2);
+  --adm-hair: rgba(86, 96, 87, 0.28);
+  --adm-line: rgba(86, 96, 87, 0.2);
 
   min-height: 100vh;
   background: var(--adm-ground);
@@ -528,8 +528,8 @@
     --adm-meta: #b7a68f;
     --adm-alert: #d0674f;
     --adm-on-alert: var(--teak-deep);
-    --adm-hair: rgba(237, 227, 208, 0.28);
-    --adm-line: rgba(237, 227, 208, 0.18);
+    --adm-hair: rgba(236, 234, 228, 0.28);
+    --adm-line: rgba(236, 234, 228, 0.18);
 
     --field: var(--teak-deep);
     --field-ink: var(--plaster);
@@ -549,8 +549,8 @@
   --adm-meta: #b7a68f;
   --adm-alert: #d0674f;
   --adm-on-alert: var(--teak-deep);
-  --adm-hair: rgba(237, 227, 208, 0.28);
-  --adm-line: rgba(237, 227, 208, 0.18);
+  --adm-hair: rgba(236, 234, 228, 0.28);
+  --adm-line: rgba(236, 234, 228, 0.18);
 
   --field: var(--teak-deep);
   --field-ink: var(--plaster);

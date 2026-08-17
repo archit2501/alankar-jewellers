@@ -54,7 +54,7 @@
   --pcs-sunk: var(--adm-sunk, var(--plaster-sunk));
   --pcs-alert: var(--adm-alert, var(--sindoor));
   --pcs-on-alert: var(--adm-on-alert, var(--plaster));
-  --pcs-hair: var(--adm-hair, rgba(125, 108, 91, 0.28));
+  --pcs-hair: var(--adm-hair, rgba(86, 96, 87, 0.28));
   --pcs-focus: var(--field-focus, var(--meena-deep));
   --pcs-label: var(--field-label, var(--sindoor));
 

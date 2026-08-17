@@ -8,7 +8,7 @@
  * palette here at all — which is fortunate, because the brand's jewel notes
  * fail as one. For the record, `dataviz/scripts/validate_palette.js`:
  *
- *   "#1f3a6e,#8c2f23,#1b4d3e,#8a6b18" --mode light --surface "#ede3d0"
+ *   "#1f3a6e,#8c2f23,#163d2b,#8a6b18" --mode light --surface "#eceae4"
  *     [FAIL] CVD separation   worst adjacent emerald↔sindoor ΔE 4.0 (protan)
  *
  * A colourblind owner could not tell "good" from "late", which is why there is
@@ -18,7 +18,7 @@
  * The two colours that do exist were then validated as a pair, in both modes,
  * and every check passes:
  *
- *   "#2f5591,#8c2f23" --mode light --surface "#ede3d0"
+ *   "#2f5591,#8c2f23" --mode light --surface "#eceae4"
  *     PASS lightness · PASS chroma · PASS CVD ΔE 17.7 protan · PASS normal
  *     ΔE 21.6 · PASS contrast
  *   "#5b86c9,#d0674f" --mode dark  --surface "#241409"
@@ -54,7 +54,7 @@
      used on exactly one screen and it must not become available to anything
      that is not a chart mark. */
   --num-data: #2f5591;
-  --num-grid: rgba(125, 108, 91, 0.35);
+  --num-grid: rgba(86, 96, 87, 0.35);
 
   color: var(--adm-ink);
 }
@@ -310,13 +310,13 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .num {
     --num-data: #5b86c9;
-    --num-grid: rgba(237, 227, 208, 0.3);
+    --num-grid: rgba(236, 234, 228, 0.3);
   }
 }
 
 :root[data-theme="dark"] .num {
   --num-data: #5b86c9;
-  --num-grid: rgba(237, 227, 208, 0.3);
+  --num-grid: rgba(236, 234, 228, 0.3);
 }
 
 /* --- Forced colours: the bars stop being colour and become shapes -------- */

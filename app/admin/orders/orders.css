@@ -59,7 +59,7 @@
   --ord-sunk: var(--adm-sunk, var(--plaster-sunk));
   --ord-alert: var(--adm-alert, var(--sindoor));
   --ord-on-alert: var(--adm-on-alert, var(--plaster));
-  --ord-hair: var(--adm-hair, rgba(125, 108, 91, 0.28));
+  --ord-hair: var(--adm-hair, rgba(86, 96, 87, 0.28));
   --ord-focus: var(--field-focus, var(--meena-deep));
   --ord-label: var(--field-label, var(--sindoor));
 

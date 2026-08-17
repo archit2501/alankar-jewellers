@@ -23,7 +23,7 @@
  * WCAG 2.1 relative luminance, sRGB, per the published formula.
  */
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
@@ -49,6 +49,20 @@ function ratio(a, b) {
   const [x, y] = [luminance(a), luminance(b)];
   const [hi, lo] = x > y ? [x, y] : [y, x];
   return (hi + 0.05) / (lo + 0.05);
+}
+
+/** Every file under a directory, recursively. */
+function* readdirSyncDeep(dir) {
+  for (const entry of readdirSync(dir)) {
+    const full = `${dir}/${entry}`;
+    if (statSync(full).isDirectory()) yield* readdirSyncDeep(full);
+    else yield full;
+  }
+}
+
+/** Comments may legitimately discuss the retired palette; declarations may not. */
+function stripComments(css) {
+  return css.replace(/\/\*[\s\S]*?\*\//g, "");
 }
 
 const T = readTokens();
@@ -165,10 +179,43 @@ test("the ratios printed in tokens.css match the tokens it declares", () => {
  * heritage brief, so drifting back to it is a real failure mode, not a
  * hypothetical one.
  */
-test("the retired palette has not crept back in", () => {
-  const retired = ["#4a0e17", "#ede3d0", "#dccdb2", "#f6efe0", "#2e080e", "#61151f"];
-  const live = new Set(T.values());
-  for (const hex of retired) {
-    assert.ok(!live.has(hex), `${hex} is back in tokens.css — that is the banned default family`);
+test("the retired palette has not crept back in, anywhere", () => {
+  const retired = {
+    "#4a0e17": "oxblood",
+    "#2e080e": "oxblood-deep",
+    "#61151f": "oxblood-lift",
+    "#ede3d0": "the cream plaster",
+    "#f6efe0": "the cream plaster-lift",
+    "#dccdb2": "the cream plaster-sunk",
+    "#1c1611": "the espresso ink",
+    "#7d6c5b": "the failing 4.40:1 ink-3",
+  };
+  // Same colours written as rgb() triples, which is how they leaked last time:
+  // four admin hairlines and a four-stop hero gradient were hardcoded as rgba()
+  // and sailed straight past a check that only parsed tokens.css.
+  const triples = {
+    "237, 227, 208": "the cream plaster",
+    "46, 8, 14": "oxblood-deep",
+    "125, 108, 91": "the failing ink-3",
+  };
+
+  const sheets = [...readdirSyncDeep(`${ROOT}app`)].filter((f) => f.endsWith(".css"));
+  assert.ok(sheets.length >= 5, "stylesheets not found — this guard is not looking at anything");
+
+  for (const file of sheets) {
+    const css = stripComments(readFileSync(file, "utf8"));
+    const rel = file.slice(ROOT.length);
+    for (const [hex, name] of Object.entries(retired)) {
+      assert.ok(
+        !css.toLowerCase().includes(hex),
+        `${rel} still paints ${hex} (${name}) — that is the retired default family`
+      );
+    }
+    for (const [triple, name] of Object.entries(triples)) {
+      assert.ok(
+        !css.includes(triple),
+        `${rel} still paints rgb(${triple}) (${name}) — the rgba() form of a retired colour`
+      );
+    }
   }
 });
