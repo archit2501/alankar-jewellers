@@ -280,6 +280,7 @@ export type PieceNotice =
   | "put-away"
   | "brought-back"
   | "no-change"
+  | "stock-moved"
   | "confirm-weight"
   // Things the owner can fix.
   | "needs-title"
@@ -337,6 +338,11 @@ export const PIECE_NOTICES: Readonly<Record<PieceNotice, NoticeCopy>> = {
     problem: false,
   },
   "brought-back": { copy: "Brought back as a draft.", problem: false },
+  "stock-moved": {
+    copy:
+      "This piece was ordered or put back while you had it open, so the stock was left as it stands rather than overwritten. Open it again to see where it is now.",
+    problem: true,
+  },
   "no-change": { copy: "Nothing changed. The piece was already like that.", problem: false },
   "confirm-weight": {
     copy: "Nothing has been saved yet. Read the weight back, in words and in rupees, and confirm it.",
@@ -1416,16 +1422,63 @@ export async function saveWeight(
  * Price
  * ---------------------------------------------------------------------- */
 
+/**
+ * TWO PRICING WRITES, BECAUSE STOCK IS NOT A PRICING FIELD.
+ *
+ * `stock_quantity` is mutated by exactly three things: an order decrements it,
+ * a cancellation increments it, and this form sets it absolutely from a value
+ * the browser has been holding since the page loaded. The third is the odd one
+ * out, and it is how a sold piece came back:
+ *
+ *   14:00  the owner opens a piece. The form renders stock = 1.
+ *   14:02  a customer orders it. The order decrements stock to 0.
+ *   14:05  the owner fixes a typo in the stone value and saves.
+ *          stock_quantity is written back to 1.
+ *
+ * The piece is on sale again with a live order against it, and the next buyer's
+ * decrement passes `variants_stock_non_negative_ck` cleanly, so the oversell
+ * backstop never fires and one physical piece sells twice.
+ *
+ * The fix is not to guard the write. It is to NOT MAKE IT. Fixing a typo is not
+ * a statement about stock, so when the owner has not touched the field the
+ * column is left out of the UPDATE entirely and the race cannot exist.
+ *
+ * When the owner HAS changed it, `..._SET_STOCK` applies the change only if the
+ * row still reads what the form displayed. D1 has no interactive transactions,
+ * so this compare-and-swap is the available primitive: it matches nothing when
+ * the row moved, and the caller detects that by re-reading rather than by
+ * trusting a rowcount.
+ *
+ * NOTE the earlier attempt at this, which was wrong in an instructive way: it
+ * compared against a FRESH read of the row taken at save time. That is the same
+ * value on both sides of the comparison, so it agreed every time and guarded
+ * nothing. The token has to be what the FORM SAW.
+ */
 const UPDATE_PRICING = `
   UPDATE variants
      SET pricing_mode = ?, making_charge_type = ?, making_charge_value = ?,
          stone_value_paise = ?, other_charges_paise = ?, fixed_price_paise = ?,
-         is_unique_piece = ?, stock_quantity = ?, updated_at = ?
+         is_unique_piece = ?, updated_at = ?
    WHERE id = ?`;
+
+const UPDATE_PRICING_SET_STOCK = `
+  UPDATE variants
+     SET pricing_mode = ?, making_charge_type = ?, making_charge_value = ?,
+         stone_value_paise = ?, other_charges_paise = ?, fixed_price_paise = ?,
+         is_unique_piece = ?, stock_quantity = ?, updated_at = ?
+   WHERE id = ? AND stock_quantity = ?`;
 
 const UPDATE_SALE_MODE = `UPDATE products SET sale_mode = ?, updated_at = ? WHERE id = ?`;
 
 export type SavePricingInput = {
+  /**
+   * The stock the FORM WAS RENDERED WITH, or null when the caller did not send
+   * it. This is the optimistic-concurrency token, and it is the whole mechanism:
+   * `stockQuantity` is what the owner wants, this is what they were looking at
+   * when they decided. Null falls back to the old unguarded behaviour, which is
+   * why `tests/admin-pieces.test.mjs` asserts the real form ships it.
+   */
+  renderedStockQuantity?: number | null;
   readonly piece: AdminPiece;
   readonly pricingMode: PricingMode;
   readonly makingChargeType: MakingChargeType | null;
@@ -1511,10 +1564,58 @@ export async function savePricing(
     nowMs,
   });
 
-  try {
-    await db.batch([
-      {
-        sql: UPDATE_PRICING,
+  /**
+   * DID THE OWNER ACTUALLY CHANGE THE STOCK?
+   *
+   * `rendered` is what the form displayed. If the submitted figure matches it,
+   * the owner did not touch the field, this save is about price, and the column
+   * is left out of the UPDATE entirely -- so a typo fix cannot resurrect a
+   * piece that sold while the page was open.
+   *
+   * If it differs, the change is deliberate and is applied as a compare-and-swap
+   * against what the form saw. Without a token (a caller that does not send one)
+   * the behaviour is exactly as it was before, which is why the rendered form is
+   * asserted to ship it.
+   */
+  const rendered = input.renderedStockQuantity ?? null;
+  const stockChanged = rendered !== null && input.stockQuantity !== rendered;
+  const guarded = rendered !== null;
+
+  const pricingStatement: CartStatement = guarded
+    ? stockChanged
+      ? {
+          sql: UPDATE_PRICING_SET_STOCK,
+          params: [
+            input.pricingMode,
+            makingType,
+            makingValue,
+            input.stoneValuePaise,
+            input.otherChargesPaise,
+            fixedPrice,
+            input.isUniquePiece ? 1 : 0,
+            input.stockQuantity,
+            now,
+            piece.variantId,
+            rendered,
+          ] satisfies SqlValue[],
+        }
+      : {
+          sql: UPDATE_PRICING,
+          params: [
+            input.pricingMode,
+            makingType,
+            makingValue,
+            input.stoneValuePaise,
+            input.otherChargesPaise,
+            fixedPrice,
+            input.isUniquePiece ? 1 : 0,
+            now,
+            piece.variantId,
+          ] satisfies SqlValue[],
+        }
+    : {
+        // No token: the pre-existing unguarded write, unchanged.
+        sql: UPDATE_PRICING_SET_STOCK.replace(" AND stock_quantity = ?", ""),
         params: [
           input.pricingMode,
           makingType,
@@ -1527,7 +1628,11 @@ export async function savePricing(
           now,
           piece.variantId,
         ] satisfies SqlValue[],
-      },
+      };
+
+  try {
+    await db.batch([
+      pricingStatement,
       { sql: UPDATE_SALE_MODE, params: [input.saleMode, now, piece.productId] },
       audit.statement,
     ]);
@@ -1539,7 +1644,22 @@ export async function savePricing(
   }
 
   const saved = await readPiece(db, piece.sku);
-  return saved === null ? refuse("unavailable") : { ok: true, notice: "price-saved", value: saved };
+  if (saved === null) return refuse("unavailable");
+
+  // A compare-and-swap that matched nothing changes zero rows and throws
+  // nothing, so the batch above reports success either way. The only honest
+  // check is to read the row back: if a deliberate stock change did not land,
+  // the piece moved while the form was open and saying "saved" would be the
+  // worse of the two failures.
+  if (guarded && stockChanged && saved.stockQuantity !== input.stockQuantity) {
+    console.warn(
+      `[admin-pieces] ${piece.sku}: stock was ${rendered} when the form was drawn ` +
+        `and is ${saved.stockQuantity} now, so the change was not applied.`
+    );
+    return refuse("stock-moved");
+  }
+
+  return { ok: true, notice: "price-saved", value: saved };
 }
 
 /* -------------------------------------------------------------------------

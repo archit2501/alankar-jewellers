@@ -212,6 +212,10 @@ const FIELDS = [
   "pricingMode",
   "makingChargeType",
   "makingCharge",
+  // The stock the form was drawn with. Not ordinary user input: it is the
+  // optimistic-concurrency token, and it must survive this allowlist or the
+  // compare-and-swap it feeds is silently disarmed.
+  "stockWas",
   "stones",
   "other",
   "fixed",
@@ -514,6 +518,11 @@ async function handlePricing(
   const stock = parseCount(submission.stock);
   if (!stock.ok) return reject(request, piece.sku, stock.notice, 400, "price");
 
+  // What the page was drawn with. Absent on any caller that does not send it,
+  // which falls back to the previous unguarded write rather than refusing.
+  const stockWas = parseCount(submission.stockWas);
+  const renderedStock = stockWas.ok ? stockWas.value : null;
+
   const isUniquePiece = submission.unique !== "no";
   const saleMode: SaleMode = isSaleMode(submission.saleMode) ? submission.saleMode : "enquire_only";
 
@@ -542,6 +551,7 @@ async function handlePricing(
     fixedPricePaise: fixed.value,
     isUniquePiece,
     stockQuantity: stock.value ?? piece.stockQuantity,
+    renderedStockQuantity: renderedStock,
     saleMode,
     actor,
   });

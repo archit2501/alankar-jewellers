@@ -373,6 +373,140 @@ after(() => {
  * about a legal exemption. This asserts the table has not drifted away from the
  * rule it describes.
  */
+/** A piece that is weighed, priced, on sale and in stock. */
+async function aPricedPiece() {
+  recordRate();
+  const sku = await startPiece();
+  const weighed = await post({
+    intent: "save_weight",
+    sku,
+    net: "20",
+    gross: "20",
+    fineness: "916",
+    confirm: "yes",
+    csrf: session.csrf,
+  });
+  assert.equal(weighed.response.status, 200, JSON.stringify(weighed.body));
+
+  const priced = await post({
+    intent: "save_pricing",
+    sku,
+    pricingMode: "dynamic_metal",
+    makingChargeType: "percent",
+    makingCharge: "12",
+    unique: "yes",
+    stock: "1",
+    stockWas: "1",
+    saleMode: "buy_online",
+    csrf: session.csrf,
+  });
+  assert.equal(priced.response.status, 200, JSON.stringify(priced.body));
+  assert.equal(variantOf(sku).stock_quantity, 1);
+  return sku;
+}
+
+/**
+ * FIXING A TYPO IS NOT A STATEMENT ABOUT STOCK.
+ *
+ * This is the actual fix. The old write set `stock_quantity` absolutely from a
+ * form value the browser had held since the page loaded, so a save made after
+ * the piece sold put it back on sale with a live order against it -- and the
+ * next buyer's decrement then passed `variants_stock_non_negative_ck` cleanly,
+ * so the oversell backstop never fired.
+ */
+test("a price save that does not touch stock leaves a sold piece sold", async () => {
+  const sku = await aPricedPiece();
+  const variantId = variantOf(sku).id;
+
+  // The owner's form is open, drawn with stock = 1. A customer buys the piece.
+  one("UPDATE variants SET stock_quantity = 0 WHERE id = ?", variantId);
+  assert.equal(variantOf(sku).stock_quantity, 0);
+
+  // The owner corrects the making charge and saves. The stock field still reads
+  // what the page was drawn with, because they never touched it.
+  const fixed = await post({
+    intent: "save_pricing",
+    sku,
+    pricingMode: "dynamic_metal",
+    makingChargeType: "percent",
+    makingCharge: "14",
+    unique: "yes",
+    stock: "1",
+    stockWas: "1",
+    saleMode: "buy_online",
+    csrf: session.csrf,
+  });
+
+  // The price change lands...
+  assert.equal(fixed.response.status, 200, JSON.stringify(fixed.body));
+  assert.equal(variantOf(sku).making_charge_value, 1400);
+  // ...and the piece stays sold. This is the whole point.
+  assert.equal(variantOf(sku).stock_quantity, 0, "a sold piece was put back on sale");
+});
+
+/**
+ * A DELIBERATE stock change still has to be safe. Here the owner really does
+ * mean to change the figure, so the write happens -- but only if the row still
+ * reads what the form was drawn with.
+ */
+test("a deliberate stock change is refused when the piece moved underneath it", async () => {
+  const sku = await aPricedPiece();
+  const variantId = variantOf(sku).id;
+
+  one("UPDATE variants SET stock_quantity = 0 WHERE id = ?", variantId);
+
+  const stale = await post({
+    intent: "save_pricing",
+    sku,
+    pricingMode: "dynamic_metal",
+    makingChargeType: "percent",
+    makingCharge: "12",
+    unique: "no",
+    stock: "5",
+    stockWas: "1",
+    saleMode: "buy_online",
+    csrf: session.csrf,
+  });
+
+  assert.equal(stale.body.notice, "stock-moved", JSON.stringify(stale.body));
+  assert.equal(variantOf(sku).stock_quantity, 0, "a stale change was applied anyway");
+});
+
+test("a deliberate stock change lands when nothing moved", async () => {
+  const sku = await aPricedPiece();
+
+  const changed = await post({
+    intent: "save_pricing",
+    sku,
+    pricingMode: "dynamic_metal",
+    makingChargeType: "percent",
+    makingCharge: "12",
+    unique: "no",
+    stock: "5",
+    stockWas: "1",
+    saleMode: "buy_online",
+    csrf: session.csrf,
+  });
+
+  assert.equal(changed.response.status, 200, JSON.stringify(changed.body));
+  assert.equal(variantOf(sku).stock_quantity, 5, "a legitimate stock change was refused");
+});
+
+/**
+ * The guard only protects anyone if the REAL form sends the token. Without this
+ * the two tests above pass while every actual save takes the unguarded path.
+ */
+test("the pricing form ships the concurrency token", async () => {
+  const sku = await aPricedPiece();
+  // The price form lives behind ?section=price, which is where the stock field
+  // and its token are.
+  const { html } = await getPage(`/admin/pieces/${sku}?section=price`);
+
+  assert.match(html, /name="stockWas"/, "the form does not send what it was drawn with");
+  assert.match(html, /name="stockWas"[^>]*value="1"/, "the token does not carry the current stock");
+});
+
+
 test("the craft table agrees with the shared hallmarking rule", async () => {
   const { CRAFTS, craftIsHallmarkExempt } = await import("../app/_admin/pieces-data.ts");
   const { isHallmarkExempt } = await import("../app/_data/types.ts");

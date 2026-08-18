@@ -712,6 +712,11 @@ function PriceForm({
             <label className="pcs__label" htmlFor="stock">
               How many in stock
             </label>
+            {/* OPTIMISTIC CONCURRENCY. `stock` is what the owner may change;
+                `stockWas` is what this page was drawn with. The server compares
+                the two, because comparing a fresh read against itself would
+                agree every time and guard nothing. */}
+            <input type="hidden" name="stockWas" value={String(piece.stockQuantity)} />
             <input
               className="pcs__input"
               id="stock"
