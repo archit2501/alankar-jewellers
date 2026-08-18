@@ -1161,6 +1161,17 @@ function pricePiece(
       console.error(`[catalogue] "${piece.slug}" has no priceable metal (${piece.metal}).`);
       return unpriced(piece, "rate_missing");
     }
+    if (piece.makingChargeType !== null && piece.makingChargeValue === null) {
+      // Configured and then left blank. Show "price on request" rather than a
+      // tag that quietly omits the making charge. This used to read `?? 0`,
+      // and price.ts emits no component for a zero, so the charge fell out
+      // of the tag and out of the breakup at the same time.
+      console.error(
+        `[catalogue] "${piece.slug}" has makingChargeType=${piece.makingChargeType} ` +
+          `with no value, so it cannot be priced.`
+      );
+      return unpriced(piece, "on_request");
+    }
 
     const lookup = lookups.get(rateKey(piece.metal, piece.fineness));
     if (lookup === undefined || !lookup.ok) {

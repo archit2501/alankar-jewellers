@@ -330,6 +330,58 @@ const PICKUP_DETAILS = {
  * 1. Pure — the guarantees that need no database
  * ====================================================================== */
 
+/**
+ * A MAKING CHARGE THAT WAS CONFIGURED AND LEFT BLANK IS NOT A CHARGE OF ZERO.
+ *
+ * `making_charge_type = 'percent'` with `making_charge_value = NULL` is a
+ * writable row: no CHECK pairs the two columns and the admin field carries no
+ * `required`. Both price consumers used to coerce it with `?? 0`, and
+ * `price.ts` emits NO component for a zero -- so the piece sold at metal plus
+ * stones plus GST, the breakup footed perfectly, and nothing anywhere said the
+ * making charge had gone missing.
+ *
+ * On a 20 g piece at 12% of metal that is roughly 33,000 rupees per order the
+ * shop does not receive, silently.
+ */
+test("a making charge configured with no value refuses the whole cart", async () => {
+  const { sqlite, db } = freshOrders();
+
+  // Priceable in every other respect: weighed, assayed, on sale, and with a
+  // rate on file. `makePriceable` sets a making charge of 1200 bps; the point
+  // of this test is what happens when that one figure is taken away.
+  makePriceable(sqlite);
+  const added = await addToCart(db, { token: null, slug: HAAR });
+  assert.equal(added.ok, true, "the fixture must produce a cart to test against");
+
+  sqlite
+    .prepare("UPDATE variants SET making_charge_value = NULL WHERE id = ?")
+    .run(HAAR_VARIANT);
+
+  const resolution = await resolveCheckout(db, {
+    token: added.cartId,
+    shopStateCode: SHOP_STATE,
+  });
+
+  assert.equal(resolution.ok, false, "a piece with no making-charge figure must not price");
+  assert.deepEqual(
+    resolution.blocked.map((line) => line.reason),
+    ["not_priceable"],
+    "the refusal must name the piece, not fall through to a silent zero"
+  );
+
+  // And with a figure, the same row prices. Without this arm the guard could be
+  // refusing everything and still look correct.
+  sqlite
+    .prepare("UPDATE variants SET making_charge_value = 1200 WHERE id = ?")
+    .run(HAAR_VARIANT);
+  const second = await resolveCheckout(db, {
+    token: added.cartId,
+    shopStateCode: SHOP_STATE,
+  });
+  assert.equal(second.ok, true, "a configured making charge with a value must price");
+});
+
+
 test("an order number is dated, unguessable and not a sequence", () => {
   const number = newOrderNumber(Date.parse("2026-08-09T20:15:00.000Z"));
 

@@ -699,8 +699,29 @@ test("the transition table cannot express a payment state, by construction", () 
     }
   }
 
-  for (const status of PAYMENT_BEARING_STATUSES) {
-    assert.equal(isPaymentBearingStatus(status), true);
+  // PINNED TO LITERALS, NOT TO ITSELF.
+  //
+  // This used to loop PAYMENT_BEARING_STATUSES asserting isPaymentBearingStatus
+  // returned true for each -- but that function IS `ARRAY.includes(x)`, so the
+  // loop reduced to "every member of A is in A", which holds for any contents
+  // of A. Mutation-checked: dropping "paid" from the array left all 436 tests
+  // green, and `assertNoPaymentClaim()` in app/api/admin/orders/route.ts is
+  // described in its own header as the check that survives someone editing this
+  // table later. It did not survive one.
+  assert.deepEqual(
+    [...PAYMENT_BEARING_STATUSES].sort(),
+    ["advance_paid", "paid", "refunded"],
+    "the set of statuses that assert money arrived changed. That is either a " +
+      "deliberate decision about what counts as payment, or a mistake that " +
+      "just disarmed the guard protecting it."
+  );
+
+  // The predicate still has to agree with the table, in both directions.
+  for (const status of ["advance_paid", "paid", "refunded"]) {
+    assert.equal(isPaymentBearingStatus(status), true, `${status} asserts money arrived`);
+  }
+  for (const status of ["placed", "confirmed", "making", "ready", "collected", "cancelled"]) {
+    assert.equal(isPaymentBearingStatus(status), false, `${status} claims no money`);
   }
 
   // The three cancellable-from states that ARE payment states stay reachable

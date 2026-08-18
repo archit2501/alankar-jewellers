@@ -799,8 +799,31 @@ export type ResolveOptions = {
   readonly shopStateCode?: string | null;
 };
 
-function makingChargeOf(row: CheckoutRow): MakingCharge | undefined {
-  const value = row.makingChargeValue ?? 0;
+/**
+ * The making charge, or a refusal.
+ *
+ * THREE STATES, AND THE MIDDLE ONE USED TO BE INVISIBLE.
+ *
+ *   no type at all      -> `undefined`. There is genuinely no making charge on
+ *                          this piece, and the engine emits no component.
+ *   a type AND a value  -> the charge.
+ *   a type, NO value    -> `"incoherent"`. Someone chose "per cent of the gold
+ *                          value" and left the box empty.
+ *
+ * That third state used to read `row.makingChargeValue ?? 0`, which produced a
+ * charge of zero, and `price.ts` emits NO component for a zero -- so the piece
+ * sold at metal plus stones plus GST with a breakup that footed perfectly and
+ * said nothing. On a 20 g piece at 12% that is roughly 33,000 rupees the shop
+ * does not get, per order, silently. The admin form has no `required` on the
+ * field and no CHECK pairs the two columns, so the row is writable today.
+ *
+ * It now refuses. A missing figure is not a figure of zero.
+ */
+function makingChargeOf(row: CheckoutRow): MakingCharge | undefined | "incoherent" {
+  if (row.makingChargeType === null) return undefined;
+  if (row.makingChargeValue === null) return "incoherent";
+
+  const value = row.makingChargeValue;
   switch (row.makingChargeType) {
     case "percent":
       return { type: "percent", value };
@@ -809,7 +832,9 @@ function makingChargeOf(row: CheckoutRow): MakingCharge | undefined {
     case "flat":
       return { type: "flat", value };
     default:
-      return undefined;
+      // A type the engine cannot read is the same class of problem: refuse
+      // rather than drop the charge on the floor.
+      return "incoherent";
   }
 }
 
@@ -940,6 +965,19 @@ export async function resolveCheckout(
       ratePerTenGramsPaise: lookup.rate.ratePerTenGramsPaise,
     };
 
+    const makingCharge = makingChargeOf(row);
+    if (makingCharge === "incoherent") {
+      // A making charge that was configured and then left blank. Refusing is
+      // the only safe answer: pricing it at zero undercharges silently, and
+      // guessing a rate invents a number the shop never set.
+      console.error(
+        `[orders] "${row.slug}" has making_charge_type=${String(row.makingChargeType)} ` +
+          `with no value. Refusing to price it.`
+      );
+      block("not_priceable");
+      continue;
+    }
+
     lines.push({
       row,
       input: {
@@ -948,9 +986,7 @@ export async function resolveCheckout(
         metal: row.metal,
         fineness: row.fineness,
         netMetalWeightMg: row.netMetalWeightMg,
-        ...(makingChargeOf(row) === undefined
-          ? {}
-          : { makingCharge: makingChargeOf(row) as MakingCharge }),
+        ...(makingCharge === undefined ? {} : { makingCharge }),
         stoneValuePaise: row.stoneValuePaise,
         hallmarkingPaise: row.hallmarkingPaise,
         otherChargesPaise: row.otherChargesPaise,
