@@ -1,0 +1,79 @@
+name: Backup
+
+# ============================================================================
+# NIGHTLY BACKUP OF THE PRODUCTION D1 DATABASE.
+#
+# D1 holds every order, every customer row including PAN, the rate history and
+# the admin seats, and until this workflow existed there was no copy of any of
+# it. Cloudflare Time Travel is always on but it is a rewind button rather than
+# a copy: 7 days on the free plan, never once exercised, and it is deleted with
+# the database it belongs to.
+#
+# THE DUMP IS ENCRYPTED BEFORE IT LEAVES THE RUNNER. This repository is public,
+# and artifacts on a public repository can be downloaded by anyone who can see
+# it, so a plaintext dump here would publish customers' names, addresses and PAN
+# on a nightly schedule. See scripts/backup-d1.sh.
+#
+# EVERY NIGHT'S BACKUP IS RESTORED BEFORE IT IS KEPT. Producing a file proves
+# nothing; the drill decrypts the artifact and applies it to a throwaway
+# database, so a backup that cannot be restored fails the job on the night it
+# breaks rather than on the day it is needed.
+#
+# SECRETS REQUIRED (Settings -> Secrets and variables -> Actions):
+#   CLOUDFLARE_API_TOKEN   scoped to D1:read on this account. Read only: this
+#                          workflow never writes to D1.
+#   CLOUDFLARE_ACCOUNT_ID  the account the database lives in.
+#   BACKUP_PASSPHRASE      a long random string. LOSING IT MAKES EVERY BACKUP
+#                          UNREADABLE, so keep it wherever ADMIN_PASSWORD_PEPPER
+#                          is kept.
+# ============================================================================
+
+on:
+  schedule:
+    # 19:10 UTC = 00:40 IST, comfortably after the shop is shut and well clear
+    # of the 17:10 IST gold-rate ingest, so a backup never races a write.
+    - cron: "10 19 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: d1-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.18"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Export, verify and encrypt
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+          BACKUP_DIR: ./backup
+        run: ./scripts/backup-d1.sh
+
+      # The half that is usually missing. If tonight's archive cannot be turned
+      # back into a database, that is tonight's problem, not next year's.
+      - name: Restore drill on tonight's archive
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: ./scripts/restore-d1.sh --drill "$(ls -t ./backup/*.sql.enc | head -1)"
+
+      - name: Keep it
+        uses: actions/upload-artifact@v4
+        with:
+          name: d1-backup-${{ github.run_id }}
+          path: ./backup/*.sql.enc
+          # The artifact is encrypted, so retention is about how far back we can
+          # recover rather than about exposure. 90 days is the free-tier maximum
+          # and comfortably longer than Time Travel's 7.
+          retention-days: 90
+          if-no-files-found: error
