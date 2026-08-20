@@ -22,6 +22,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AppointmentProvider, AppointmentTrigger } from "../_components/appointment";
 import { Flip } from "../_components/flip";
+import { SiteHeader } from "../_components/site-header";
 import { images, type ImageKey } from "../_media/images";
 import { founder, site } from "../site-config";
 import "./founders.css";
@@ -191,24 +192,7 @@ export default function FoundersPage() {
   return (
     <AppointmentProvider>
       <div className="f-page">
-        {/* ---- DARBAR: the lintel ------------------------------------- */}
-        <header className="f-topbar section--darbar-deep grained">
-          <div className="wrap f-topbar__inner">
-            <Link className="f-wordmark" href="/">
-              <span className="f-wordmark__name">Alankar Jewellers</span>
-              <span className="f-wordmark__since">Since {site.foundedYear}</span>
-            </Link>
-            {/* The shared SiteHeader navigates by homepage hash anchors, which
-                are dead on this route, so this page carries its own bar. */}
-            <nav className="f-nav" aria-label="Alankar Jewellers">
-              <Link href="/">The shop</Link>
-              <Link href="/founders" aria-current="page">
-                The people
-              </Link>
-            </nav>
-          </div>
-          <div className="rule-gold" aria-hidden="true" />
-        </header>
+        <SiteHeader current="founders" />
 
         <main>
           {/* ---- 1. DARBAR: the sentence, and the shape of the page ---- */}

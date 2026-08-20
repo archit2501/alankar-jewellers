@@ -113,6 +113,7 @@ import {
   productPath,
 } from "../../_seo/product-schema";
 import { serializeJsonLd } from "../../_seo/structured-data";
+import { SiteHeader } from "../../_components/site-header";
 import { site } from "../../site-config";
 
 export const dynamic = "force-dynamic";
@@ -293,24 +294,7 @@ export default async function ProductPage({
   return (
     <AppointmentProvider>
       <div className="pdp">
-        {/* ---- DARBAR: the lintel ------------------------------------- */}
-        {/* The shared SiteHeader navigates by homepage hash anchors, which are
-            dead on this route, so this page carries its own bar — the same
-            decision /founders made, for the same reason. */}
-        <header className="pdp-topbar section--darbar-deep grained">
-          <div className="wrap pdp-topbar__inner">
-            <Link className="pdp-wordmark" href="/">
-              <span className="pdp-wordmark__name">{site.name}</span>
-              <span className="pdp-wordmark__since">Since {site.foundedYear}</span>
-            </Link>
-            <nav className="pdp-nav" aria-label={site.name}>
-              <Link href="/">The shop</Link>
-              <Link href="/shop">All pieces</Link>
-              <Link href="/founders">The people</Link>
-            </nav>
-          </div>
-          <div className="rule-gold" aria-hidden="true" />
-        </header>
+        <SiteHeader current="pdp" />
 
         <main>
           {/* ---- DARBAR: the piece, face and reverse ------------------- */}

@@ -19,6 +19,8 @@ import {
   type FilterParam,
 } from "../_data/catalogue";
 import { isBuyable, type PricedPiece } from "../_data/types";
+import { AppointmentProvider } from "../_components/appointment";
+import { SiteHeader } from "../_components/site-header";
 import { site } from "../site-config";
 
 /**
@@ -228,19 +230,26 @@ function Filters({
 
   return (
     <section className="shop-filters" aria-labelledby="shop-filters-title">
-      <div className="shop-filters__head">
-        {/* h3, not h2: this section is nested inside the catalogue's own h2, and
-            the card titles below sit at the same level. */}
-        <h3 className="label" id="shop-filters-title">
-          Narrow the wall
-        </h3>
-        {/* Deliberately NOT a live region. Nothing on this page updates without
-            a full navigation, so `role="status"` would be a promise of dynamic
-            behaviour that does not exist. */}
-        <p className="shop-filters__count">
-          Showing {shown} of {total} {total === 1 ? "piece" : "pieces"}.
-        </p>
-      </div>
+      {/* Twelve pieces do not need four select boxes standing between a shopper
+          and the wall: open, the form was another 570px of chrome above the
+          first card. It opens itself whenever a filter is actually applied, so
+          arriving on a filtered URL still shows what is narrowing it. */}
+      <details className="shop-filters__disclosure" open={filtered}>
+        <summary className="shop-filters__summary">
+          {/* h3, not h2: this section is nested inside the catalogue's own h2,
+              and the card titles below sit at the same level. A heading is
+              permitted inside summary, and dropping it would cost the page a
+              landmark. */}
+          <h3 className="label" id="shop-filters-title">
+            Narrow the wall
+          </h3>
+          {/* Deliberately NOT a live region. Nothing on this page updates
+              without a full navigation, so `role="status"` would be a promise
+              of dynamic behaviour that does not exist. */}
+          <span className="shop-filters__count">
+            Showing {shown} of {total} {total === 1 ? "piece" : "pieces"}.
+          </span>
+        </summary>
 
       {/* method="get" is the whole no-JavaScript story: the browser builds the
           query string, the server reads it, and the result has a URL. */}
@@ -318,6 +327,7 @@ function Filters({
           ) : null}
         </div>
       </form>
+      </details>
 
       {active.length > 0 ? (
         <ul className="shop-chips" aria-label="Filters applied">
@@ -371,26 +381,9 @@ export default async function ShopPage({
   const anythingPriceable = everything.some((piece) => piece.pricingMode !== "on_request");
 
   return (
-    <div className="shop-page">
-      {/* The shared SiteHeader navigates by homepage hash anchors, which are
-          dead on this route, so this page carries its own court band — the same
-          decision /founders made, for the same reason. */}
-      <header className="shop-topbar section--darbar-deep grained">
-        <div className="shop-topbar__inner">
-          <Link className="shop-wordmark" href="/">
-            <span className="shop-wordmark__name">Alankar Jewellers</span>
-            <span className="shop-wordmark__since">Since {site.foundedYear}</span>
-          </Link>
-          <nav className="shop-nav" aria-label="Alankar Jewellers">
-            <Link href="/">The shop</Link>
-            <Link href="/shop" aria-current="page">
-              The catalogue
-            </Link>
-            <Link href="/founders">The people</Link>
-          </nav>
-        </div>
-        <div className="rule-gold" aria-hidden="true" />
-      </header>
+    <AppointmentProvider>
+      <div className="shop-page">
+        <SiteHeader current="shop" />
 
       <main>
         {/* DARBAR. The court, because this is the page announcing itself. */}
@@ -409,10 +402,26 @@ export default async function ShopPage({
             </div>
 
             {CATALOGUE_IS_PLACEHOLDER ? (
-              <aside className="panel--lift illuminated shop-notice">
-                <p>
+              /* THIS USED TO BE FOUR OPEN PARAGRAPHS, AND IT COST THE PAGE ITS
+                 JOB. At 360px they ran to roughly 1,200px, which put the first
+                 product card about seven screens down on a phone: a shop that
+                 opened with a disclaimer and buried the stock behind it.
+
+                 It is collapsed rather than moved below the grid, which was the
+                 other option considered. The Add to cart button lives inside
+                 the grid, so a disclosure sitting after the grid is one a
+                 shopper can walk straight past on the way to buying a piece
+                 that does not exist. The summary carries the whole claim in one
+                 line, so it is read whether or not anyone opens the rest, and
+                 <details> needs no JavaScript to work. */
+              <details className="panel--lift illuminated shop-notice">
+                <summary className="shop-notice__summary">
                   <span className="shop-tag">Placeholder catalogue</span>
-                </p>
+                  <span className="shop-notice__gist">
+                    Some of these pieces do not exist yet, and every photograph
+                    on this site is generated. Read what that means.
+                  </span>
+                </summary>
                 <p>
                   These pieces stand in for a catalogue that has not been
                   photographed or weighed yet. The five heirloom pieces carry no
@@ -446,7 +455,7 @@ export default async function ShopPage({
                     Come and see the real ones
                   </Link>
                 </p>
-              </aside>
+              </details>
             ) : null}
           </div>
         </section>
@@ -548,6 +557,7 @@ export default async function ShopPage({
           {site.name}, since {site.foundedYear}. <Link href="/">Back to the shop</Link>
         </p>
       </footer>
-    </div>
+      </div>
+    </AppointmentProvider>
   );
 }

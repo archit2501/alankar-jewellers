@@ -84,6 +84,8 @@ import {
   type OrderReceipt,
   type OrderReceiptResult,
 } from "../_data/orders";
+import { AppointmentProvider } from "../_components/appointment";
+import { SiteHeader } from "../_components/site-header";
 import { site } from "../site-config";
 
 export const dynamic = "force-dynamic";
@@ -97,28 +99,6 @@ export const metadata: Metadata = {
 /* -------------------------------------------------------------------------
  * Shared furniture
  * ---------------------------------------------------------------------- */
-
-function TopBar() {
-  return (
-    <header className="checkout-topbar section--darbar-deep grained">
-      <div className="checkout-topbar__inner">
-        <Link className="checkout-wordmark" href="/">
-          <span className="checkout-wordmark__name">{site.name}</span>
-          <span className="checkout-wordmark__since">Since {site.foundedYear}</span>
-        </Link>
-        <nav className="checkout-nav" aria-label={site.name}>
-          <Link href="/">The shop</Link>
-          <Link href="/shop">The catalogue</Link>
-          <Link href="/cart">Your cart</Link>
-          <Link href="/checkout" aria-current="page">
-            Checkout
-          </Link>
-        </nav>
-      </div>
-      <div className="rule-gold" aria-hidden="true" />
-    </header>
-  );
-}
 
 function Colophon() {
   return (
@@ -866,8 +846,9 @@ export default async function CheckoutPage({
   }
 
   return (
-    <div className="checkout-page">
-      <TopBar />
+    <AppointmentProvider>
+      <div className="checkout-page">
+        <SiteHeader current="checkout" />
 
       <main>
         <section
@@ -979,6 +960,7 @@ export default async function CheckoutPage({
       </main>
 
       <Colophon />
-    </div>
+      </div>
+    </AppointmentProvider>
   );
 }

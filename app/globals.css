@@ -618,7 +618,14 @@ h3 {
 .site-nav {
   display: flex;
   align-items: center;
-  gap: var(--s-6);
+
+  /* FLUID, BECAUSE A FIXED GAP PUT A TWO-LINE BUTTON IN THE BAND.
+     Just above the hamburger breakpoint the six items needed 715px and the
+     gutters left them 695px, so "Book an Appointment" wrapped and the header
+     grew from 82px to 108px. Tightening the gap as the viewport narrows gives
+     the row the ~40px it was short of, and at 1440px 2.2vw resolves past --s-6
+     anyway, so wide screens keep exactly the spacing they had. */
+  gap: clamp(var(--s-4), 2.2vw, var(--s-6));
 }
 
 .site-nav a {
@@ -632,10 +639,25 @@ h3 {
   color: var(--gold-leaf);
 }
 
+/* One band serves six routes now, so it has to be able to say which one you are
+   on. Gold-leaf plus a hairline underline, matching what the five retired
+   topbars each did on their own. */
+.site-nav a[aria-current="page"] {
+  color: var(--gold-leaf);
+  text-decoration: underline;
+  text-decoration-thickness: var(--rule-hair);
+  text-underline-offset: 6px;
+}
+
 /* Small enough to sit in a 56px band, so it gets the plaque treatment without
    the doubled outer frame. */
 .nav-appointment {
   min-height: 44px;
+
+  /* Three words on one line or the control is broken. With the fluid gap above
+     there is room for it; this makes a future longer label fail loudly instead
+     of quietly doubling the height of the band. */
+  white-space: nowrap;
   padding: var(--s-2) var(--s-5);
   border: var(--rule-hair) solid var(--gold);
   background: transparent;
@@ -855,7 +877,16 @@ h3 {
 .hero__glow {
   position: absolute;
   z-index: 0;
-  inset: -8% -52% -16%;
+  top: -8%;
+  bottom: -16%;
+  /* The bleed is capped at the niche's own side margin. At 52% of a 440px arch
+     it is 229px, which fits comfortably beside a desktop opening and is far
+     wider than the 43px of margin a 360px phone has, so on a phone it used to
+     push ~99px of the document past the viewport. Capping it at the margin
+     keeps the wash identical on desktop and stops it at the screen edge on a
+     phone, rather than relying on `overflow-x: clip` on the body to hide it. */
+  right: calc(-1 * min(52%, (100vw - 100%) / 2));
+  left: calc(-1 * min(52%, (100vw - 100%) / 2));
   background: radial-gradient(
     46% 44% at 50% 44%,
     rgba(255, 214, 152, 0.22),
@@ -2405,6 +2436,30 @@ a.contact__value:hover {
     overflow-wrap: break-word;
   }
 
+  /* THE MENU BUTTON USED TO HANG 12px OFF THE RIGHT EDGE OF EVERY PAGE.
+     "JEWELLERS · SINCE 1980" is 22 tracked capitals, and at the header's
+     0.16em it runs to roughly 205px. With the Devanagari beside it the mark
+     measured 257px inside a 297px content box, leaving 16px for a button with
+     a 44px touch target. The mark is what gives, not the button: a control you
+     cannot reach is worse than a slightly smaller wordmark. Only the header's
+     copy shrinks; the footer's compact mark is untouched. */
+  .site-header .brand-mark {
+    gap: 0 var(--s-3);
+  }
+
+  .site-header .brand-mark__deva {
+    font-size: 1.25rem;
+  }
+
+  .site-header .brand-mark__name {
+    font-size: 1.2rem;
+  }
+
+  .site-header .brand-mark__meta {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+  }
+
   .footer__closing {
     align-items: flex-start;
     flex-direction: column;
@@ -2458,40 +2513,10 @@ a.contact__value:hover {
 
 /* --- The lintel ---------------------------------------------------------- */
 
-.pdp-topbar {
-  padding-inline: var(--gutter);
-}
 
-.pdp-topbar__inner {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  padding-block: var(--s-5);
-  gap: var(--s-4) var(--s-6);
-}
 
-.pdp-wordmark {
-  display: inline-flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: var(--s-1);
-}
 
-.pdp-wordmark__name {
-  color: var(--plaster);
-  font-family: var(--font-display);
-  font-size: 1.45rem;
-  line-height: 1;
-}
 
-.pdp-wordmark__since {
-  color: var(--gold);
-  font-size: var(--t-2xs);
-  font-weight: 500;
-  letter-spacing: var(--tracking-label);
-  text-transform: uppercase;
-}
 
 .pdp-nav {
   display: flex;
@@ -2866,9 +2891,10 @@ a.contact__value:hover {
 
 .pdp-breakup dd {
   color: var(--ink);
-  font-family: var(--font-data);
+  font-family: var(--font-body);
   font-size: var(--t-sm);
   font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
   text-align: right;
 }
 
@@ -3059,67 +3085,14 @@ a.contact__value:hover {
 
 /* --- The lintel ---------------------------------------------------------- */
 
-.shop-topbar {
-  padding-inline: var(--gutter);
-}
 
-.shop-topbar__inner {
-  display: flex;
-  max-width: var(--content-max);
-  align-items: baseline;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  margin-inline: auto;
-  padding-block: var(--s-5);
-  gap: var(--s-4) var(--s-6);
-}
 
-.shop-wordmark {
-  display: inline-flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 2px;
-  color: var(--gold-leaf); /* 11.10:1 on meena-deep */
-}
 
-.shop-wordmark__name {
-  font-family: var(--font-display);
-  font-size: 1.45rem;
-  line-height: 1.1;
-}
 
-.shop-wordmark__since {
-  color: var(--gold); /* 7.63:1 on meena-deep */
-  font-size: var(--t-2xs);
-  font-weight: 600;
-  letter-spacing: var(--tracking-label);
-  text-transform: uppercase;
-}
 
-.shop-nav {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: var(--s-5) var(--s-6);
-}
 
-.shop-nav a {
-  padding-block: var(--s-2);
-  color: var(--plaster); /* 15.34:1 on meena-deep */
-  font-size: var(--t-sm);
-  transition: color var(--motion-fast);
-}
 
-.shop-nav a:hover,
-.shop-nav a[aria-current="page"] {
-  color: var(--gold-leaf);
-}
 
-.shop-nav a[aria-current="page"] {
-  text-decoration: underline;
-  text-decoration-thickness: var(--rule-hair);
-  text-underline-offset: 6px;
-}
 
 /* --- The opener — DARBAR ------------------------------------------------- */
 
@@ -3146,6 +3119,38 @@ a.contact__value:hover {
   gap: var(--s-4);
   color: var(--plaster-sunk); /* 8.48:1 on meena-lift */
   font-size: var(--t-sm);
+}
+
+/* The default triangle is a browser artefact in the middle of a gold-ruled
+   panel, so it goes, and the whole summary becomes the target instead. */
+.shop-notice__summary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  cursor: pointer;
+  gap: var(--s-3);
+  list-style: none;
+}
+
+.shop-notice__summary::-webkit-details-marker {
+  display: none;
+}
+
+.shop-notice__gist {
+  color: var(--plaster); /* 10.05:1 on meena-lift */
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-decoration-thickness: var(--rule-hair);
+  text-underline-offset: 5px;
+}
+
+.shop-notice[open] .shop-notice__gist {
+  text-decoration-color: transparent;
+}
+
+.shop-notice__summary:focus-visible {
+  outline: var(--rule-hair) solid var(--gold-leaf);
+  outline-offset: var(--s-2);
 }
 
 /* A filled chip, never a coloured word. Gold ground carrying teak-deep letters
@@ -3204,16 +3209,35 @@ a.contact__value:hover {
   pointer-events: none;
 }
 
-.shop-filters__head {
+.shop-filters__summary {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
   justify-content: space-between;
+  cursor: pointer;
   gap: var(--s-3) var(--s-5);
+  list-style: none;
 }
 
-.shop-filters__head .label {
+.shop-filters__summary::-webkit-details-marker {
+  display: none;
+}
+
+.shop-filters__summary .label {
   margin: 0;
+  text-decoration: underline;
+  text-decoration-color: var(--brass);
+  text-decoration-thickness: var(--rule-hair);
+  text-underline-offset: 6px;
+}
+
+.shop-filters__disclosure[open] .shop-filters__summary .label {
+  text-decoration-color: transparent;
+}
+
+.shop-filters__summary:focus-visible {
+  outline: var(--rule-hair) solid var(--sindoor);
+  outline-offset: var(--s-2);
 }
 
 .shop-filters__count {
@@ -3405,9 +3429,11 @@ a.contact__value:hover {
 
 .shop-card__figure {
   color: var(--ink);
-  font-family: var(--font-data);
+  font-family: var(--font-body);
   font-size: var(--t-md);
-  letter-spacing: 0.01em;
+  letter-spacing: normal;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
 }
 
 /* "Price on request" is a statement, not a missing value, so it is set in the
@@ -3597,67 +3623,14 @@ a.contact__value:hover {
 
 /* --- The lintel ---------------------------------------------------------- */
 
-.cart-topbar {
-  padding-inline: var(--gutter);
-}
 
-.cart-topbar__inner {
-  display: flex;
-  max-width: var(--content-max);
-  align-items: baseline;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  margin-inline: auto;
-  padding-block: var(--s-5);
-  gap: var(--s-4) var(--s-6);
-}
 
-.cart-wordmark {
-  display: inline-flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 2px;
-  color: var(--gold-leaf); /* 11.10:1 on meena-deep */
-}
 
-.cart-wordmark__name {
-  font-family: var(--font-display);
-  font-size: 1.45rem;
-  line-height: 1.1;
-}
 
-.cart-wordmark__since {
-  color: var(--gold); /* 7.63:1 on meena-deep */
-  font-size: var(--t-2xs);
-  font-weight: 600;
-  letter-spacing: var(--tracking-label);
-  text-transform: uppercase;
-}
 
-.cart-nav {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: var(--s-5) var(--s-6);
-}
 
-.cart-nav a {
-  padding-block: var(--s-2);
-  color: var(--plaster); /* 15.34:1 on meena-deep */
-  font-size: var(--t-sm);
-  transition: color var(--motion-fast);
-}
 
-.cart-nav a:hover,
-.cart-nav a[aria-current="page"] {
-  color: var(--gold-leaf);
-}
 
-.cart-nav a[aria-current="page"] {
-  text-decoration: underline;
-  text-decoration-thickness: var(--rule-hair);
-  text-underline-offset: 6px;
-}
 
 /* --- The head ------------------------------------------------------------ */
 
@@ -3818,9 +3791,11 @@ a.contact__value:hover {
 
 .cart-item__figure {
   color: var(--ink);
-  font-family: var(--font-data);
+  font-family: var(--font-body);
   font-size: var(--t-md);
-  letter-spacing: 0.01em;
+  letter-spacing: normal;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
 }
 
 /* "Price on request" is a statement, not a missing value, so it is set in the
@@ -3880,9 +3855,9 @@ a.contact__value:hover {
 
 .cart-total__figure {
   color: var(--ink); /* 15.65:1 on plaster-lift */
-  font-family: var(--font-data);
+  font-family: var(--font-display);
   font-size: var(--d-m);
-  letter-spacing: 0.01em;
+  letter-spacing: normal;
   line-height: 1.1;
 }
 
@@ -4087,67 +4062,14 @@ a.contact__value:hover {
 
 /* --- The lintel ---------------------------------------------------------- */
 
-.checkout-topbar {
-  padding-inline: var(--gutter);
-}
 
-.checkout-topbar__inner {
-  display: flex;
-  max-width: var(--content-max);
-  align-items: baseline;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  margin-inline: auto;
-  padding-block: var(--s-5);
-  gap: var(--s-4) var(--s-6);
-}
 
-.checkout-wordmark {
-  display: inline-flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 2px;
-  color: var(--gold-leaf); /* 11.10:1 on meena-deep */
-}
 
-.checkout-wordmark__name {
-  font-family: var(--font-display);
-  font-size: 1.45rem;
-  line-height: 1.1;
-}
 
-.checkout-wordmark__since {
-  color: var(--gold); /* 7.63:1 on meena-deep */
-  font-size: var(--t-2xs);
-  font-weight: 600;
-  letter-spacing: var(--tracking-label);
-  text-transform: uppercase;
-}
 
-.checkout-nav {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: var(--s-5) var(--s-6);
-}
 
-.checkout-nav a {
-  padding-block: var(--s-2);
-  color: var(--plaster); /* 15.34:1 on meena-deep */
-  font-size: var(--t-sm);
-  transition: color var(--motion-fast);
-}
 
-.checkout-nav a:hover,
-.checkout-nav a[aria-current="page"] {
-  color: var(--gold-leaf);
-}
 
-.checkout-nav a[aria-current="page"] {
-  text-decoration: underline;
-  text-decoration-thickness: var(--rule-hair);
-  text-underline-offset: 6px;
-}
 
 /* --- The head ------------------------------------------------------------ */
 
@@ -4542,9 +4464,11 @@ a.contact__value:hover {
 
 .order-line__figure {
   color: var(--ink);
-  font-family: var(--font-data);
+  font-family: var(--font-body);
   font-size: var(--t-md);
-  letter-spacing: 0.01em;
+  letter-spacing: normal;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
 }
 
 .order-line__spec {
@@ -4578,7 +4502,9 @@ a.contact__value:hover {
 .order-line__breakuprow dd,
 .order-totals__row dd {
   color: var(--ink);
-  font-family: var(--font-data);
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
   white-space: nowrap;
 }
 
@@ -4632,9 +4558,9 @@ a.contact__value:hover {
 
 .order-summary__figure {
   color: var(--ink); /* 15.65:1 on plaster-lift */
-  font-family: var(--font-data);
+  font-family: var(--font-display);
   font-size: var(--d-m);
-  letter-spacing: 0.01em;
+  letter-spacing: normal;
   line-height: 1.1;
 }
 

@@ -94,6 +94,8 @@ import {
 } from "../_data/cart";
 import type { PricedPiece } from "../_data/types";
 import { images } from "../_media/images";
+import { AppointmentProvider } from "../_components/appointment";
+import { SiteHeader } from "../_components/site-header";
 import { site } from "../site-config";
 
 export const dynamic = "force-dynamic";
@@ -388,26 +390,9 @@ export default async function CartPage({
   }));
 
   return (
-    <div className="cart-page">
-      {/* The shared SiteHeader navigates by homepage hash anchors, which are
-          dead on this route, so this page carries its own court band — the
-          same decision /shop and /founders made, for the same reason. */}
-      <header className="cart-topbar section--darbar-deep grained">
-        <div className="cart-topbar__inner">
-          <Link className="cart-wordmark" href="/">
-            <span className="cart-wordmark__name">{site.name}</span>
-            <span className="cart-wordmark__since">Since {site.foundedYear}</span>
-          </Link>
-          <nav className="cart-nav" aria-label={site.name}>
-            <Link href="/">The shop</Link>
-            <Link href="/shop">The catalogue</Link>
-            <Link href="/cart" aria-current="page">
-              Your cart
-            </Link>
-          </nav>
-        </div>
-        <div className="rule-gold" aria-hidden="true" />
-      </header>
+    <AppointmentProvider>
+      <div className="cart-page">
+        <SiteHeader current="cart" />
 
       <main>
         {/* HAVELI. The house, not the court: this is a working page. */}
@@ -508,6 +493,7 @@ export default async function CartPage({
           <Link href="/shop">Back to the catalogue</Link>
         </p>
       </footer>
-    </div>
+      </div>
+    </AppointmentProvider>
   );
 }

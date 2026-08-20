@@ -127,66 +127,14 @@
 
 /* ---- 0. DARBAR — the lintel --------------------------------------------- */
 
-.f-topbar {
-  padding-inline: var(--gutter);
-}
 
-.f-topbar__inner {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-4) var(--s-6);
-  align-items: baseline;
-  justify-content: space-between;
-  padding-block: var(--s-5);
-}
 
-.f-wordmark {
-  display: inline-flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 2px;
-  color: var(--gold-leaf); /* 11.10:1 on meena-deep */
-}
 
-.f-wordmark__name {
-  font-family: var(--font-display);
-  font-size: var(--t-lg);
-  line-height: var(--leading-tight);
-}
 
-.f-wordmark__since {
-  color: var(--plaster-sunk); /* 12.94:1 on meena-deep */
-  font-family: var(--font-data);
-  font-size: var(--t-2xs);
-  letter-spacing: var(--tracking-label);
-  text-transform: uppercase;
-}
 
-.f-nav {
-  display: flex;
-  min-width: 0;
-  flex-wrap: wrap;
-  gap: var(--s-3) var(--s-5);
-}
 
-.f-nav a {
-  color: var(--gold-leaf);
-  font-size: var(--t-sm);
-  transition: color var(--motion-fast);
-}
 
-.f-nav a:hover {
-  color: var(--plaster);
-  text-decoration: underline;
-  text-underline-offset: var(--s-1);
-}
 
-.f-nav a[aria-current="page"] {
-  color: var(--plaster); /* 15.34:1 on meena-deep */
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-underline-offset: var(--s-1);
-}
 
 /* ---- 1. DARBAR — the opener --------------------------------------------- */
 

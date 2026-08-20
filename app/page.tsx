@@ -258,7 +258,7 @@ export default function Home() {
   return (
     <AppointmentProvider>
       <main id="top">
-        <SiteHeader />
+        <SiteHeader current="home" />
 
         {/* DARBAR. The court, and the only symmetrical composition on the page.
             It is built as a DOORWAY YOU ARE LOOKING THROUGH rather than as a
@@ -685,7 +685,7 @@ export default function Home() {
 
         <footer className="site-footer grained">
           <div className="footer__brand">
-            <BrandMark compact />
+            <BrandMark compact href="#top" />
             <p>
               Antique Jadau, Polki and Kundan. Set by hand, and shown from both
               sides.
