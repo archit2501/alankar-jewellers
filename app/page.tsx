@@ -147,7 +147,42 @@ const facts = [
   },
 ];
 
-const heroImage = images["jadau-haar-front"];
+/**
+ * THE HERO IS A PIECE ON A PERSON, NOT AN OBJECT ON A SWEEP.
+ *
+ * It was `jadau-haar-front`: a necklace on the flat grey studio sweep every
+ * catalogue photograph is shot on. At hero size that sweep was the largest
+ * single area on the screen, and the lamp overlay below exists entirely to stop
+ * it reading as a grey slab dropped on the meena green. That is a fix for a
+ * problem the photograph should not have had.
+ *
+ * A worn shot has no sweep to hide. It also answers the question a jewellery
+ * hero is actually being asked -- how big is it, how does it sit -- which no
+ * amount of lighting on an object can.
+ */
+const heroImage = images["rani-haar-worn"];
+
+/**
+ * The three pieces shown on a person, chosen to span the scale rather than to
+ * flatter: the smallest everyday earring, a wrist, and a full bridal collar.
+ */
+const WORN = [
+  {
+    key: "gold-jhumka-worn",
+    alt: "A small gold jhumka with a seed-pearl fringe, worn in the ear",
+    caption: "Gold jhumka. Small enough for a working day.",
+  },
+  {
+    key: "jadau-kangan-worn",
+    alt: "A wide jadau kangan set with uncut polki, worn on the wrist",
+    caption: "Jadau kangan. The width is the point.",
+  },
+  {
+    key: "bridal-tikka-worn",
+    alt: "A bridal maang tikka resting at the hairline, its chain over the parting",
+    caption: "Bridal tikka. It sits where the parting starts.",
+  },
+] as const;
 
 type Piece = (typeof pieces)[number];
 
@@ -290,7 +325,7 @@ export default function Home() {
 
           <div className="hero__foot">
             <p className="hero__caption">
-              The Jadau haar, face up. Like everything below it, it turns over.
+              The rani haar, worn. Like everything below it, it turns over.
             </p>
             <p className="hero__lede">
               Every piece here is shown from both sides. The front is what the
@@ -446,6 +481,59 @@ export default function Home() {
         <div className="jali-break" aria-hidden="true">
           <div className="jali-band" />
         </div>
+
+          {/* ON A PERSON.
+              The rest of this page is objects: an alcove, a diptych, a bench.
+              That is the right register for showing what a piece IS, and it is
+              useless for showing what a piece is LIKE to wear -- scale, weight,
+              where it sits. Every photograph above is on a studio sweep, and a
+              sweep has no size.
+
+              Cropped tight and faces out of frame on purpose. The subject is the
+              jewellery; a model looking down the lens turns a jeweller's page
+              into a fashion campaign, which this shop is not. */}
+          <section
+            className="section section--haveli grained worn-band"
+            id="worn"
+            aria-labelledby="worn-title"
+          >
+            <div className="wrap">
+              <div className="worn-band__head">
+                <h2 id="worn-title">On, rather than under glass.</h2>
+                <div className="rule-brass rule rule--center" aria-hidden="true" />
+                <p className="lede worn-band__lede">
+                  A piece photographed alone has no size. These are the same
+                  pieces on a person, which is the only honest answer to how they
+                  will sit on you.
+                </p>
+              </div>
+
+              <ul className="worn-band__list">
+                {WORN.map((entry) => {
+                  const asset = images[entry.key];
+                  return (
+                    <li className="worn-band__item" key={entry.key}>
+                      <figure className="worn-band__figure">
+                        <img
+                          className="worn-band__image"
+                          src={asset.src}
+                          srcSet={asset.srcSet}
+                          sizes="(max-width: 780px) 86vw, 30vw"
+                          width={asset.width}
+                          height={asset.height}
+                          alt={entry.alt}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                        <figcaption className="worn-band__caption">{entry.caption}</figcaption>
+                      </figure>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </section>
+
 
         {/* VITRINE — the inside of the case. Warm dark teak rather than red:
             this is the workroom, not the showroom. The bench photograph stays a

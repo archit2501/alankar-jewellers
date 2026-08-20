@@ -4795,3 +4795,68 @@ a.contact__value:hover {
   font-size: var(--t-sm);
   color: var(--ink-2);
 }
+
+/* =========================================================================
+ * ON A PERSON — the worn band.
+ *
+ * Three photographs, equal weight, on the domestic field. Deliberately NOT cut
+ * to the cusped arch: the arch is the alcove that frames an object in a case,
+ * and these are the opposite argument. A plain rectangle with a hairline is the
+ * honest container for a photograph of a body.
+ * ====================================================================== */
+
+.worn-band__head {
+  max-width: 46ch;
+  margin: 0 auto clamp(2rem, 5vw, 3.5rem);
+  text-align: center;
+}
+
+.worn-band__lede {
+  margin: 0;
+  color: var(--ink-2);
+}
+
+.worn-band__list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1rem, 2.5vw, 2rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.worn-band__item {
+  margin: 0;
+}
+
+.worn-band__figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.worn-band__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border: 1px solid var(--brass);
+  border-radius: 2px;
+}
+
+.worn-band__caption {
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+  text-align: center;
+}
+
+@media (max-width: 780px) {
+  /* One column rather than a cramped three. A worn shot that is 100px wide
+     shows nothing, which defeats the entire point of the section. */
+  .worn-band__list {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+  }
+}
