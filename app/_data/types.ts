@@ -54,6 +54,22 @@ export function isHallmarkExempt(craft: string): boolean {
   return (HALLMARK_EXEMPT_CRAFTS as readonly string[]).includes(craft);
 }
 
+/**
+ * The BIS hallmarking fee per article, in paise: Rs 45.
+ *
+ * ONE FIGURE, DERIVED FROM THE CRAFT, NOT TYPED PER PIECE. The heirloom seed
+ * used to hardcode 0 for every piece with a comment asserting the QCO
+ * exemption, which was true of the invented jadau, polki and kundan set and is
+ * false the moment a plain gold temple piece goes on the wall. A literal per
+ * piece is how that drifts; a function of `craft` cannot.
+ */
+export const BIS_HALLMARK_FEE_PAISE = 4500;
+
+/** 0 where QCO cl. 2(3) exempts the craft, the BIS per-article fee otherwise. */
+export function hallmarkingFeeFor(craft: string): number {
+  return isHallmarkExempt(craft) ? 0 : BIS_HALLMARK_FEE_PAISE;
+}
+
 export type SaleMode = "buy_online" | "enquire_only" | "appointment_only";
 
 /** True only for a piece the shop has decided may be bought online. */
@@ -125,7 +141,7 @@ export type CataloguePiece = {
   alt: string;
   altBack: string | null;
   /**
-   * The piece on a body. Null where none exists — the five heirloom pieces have
+   * The piece on a body. Null where none exists — the five pieces from the counter have
    * never been worn for a camera, and a missing worn shot is a fact about the
    * photography rather than a hole to fill with something approximate.
    */

@@ -57,3 +57,12 @@ next-env.d.ts
 # is safe in an artifact but neither form belongs in git.
 /backup/
 *.sql.enc
+
+# Flick/Remotion ad workspace. Node modules and rendered MP4s do not belong in
+# a public site repo; the composition source is copied out when it is kept.
+/flick-output/
+
+# Raw shop photographs carry price tags and SKU stickers, and the retouch
+# workspace holds codex intermediates. Only the finished webps under
+# public/images/catalogue/ are meant for the public repo.
+/photoshoot/

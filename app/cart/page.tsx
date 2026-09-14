@@ -56,7 +56,7 @@
  * ===========================================================================
  * THE REGISTER IS HAVELI
  * ===========================================================================
- * The wall of lit alcoves, same as `/shop` and the homepage's "Turn one over."
+ * The wall of lit alcoves, same as `/shop` and the homepage's catalogue
  * — `.piece__alcove`, `.piece__mount`, `.piece__recess` and `.piece__lamp` are
  * reused UNCHANGED. Gold is text on the two Darbar bands only; on the plaster
  * field brass is ornament (the mount, the rules) and never a letterform, and

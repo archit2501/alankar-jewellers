@@ -39,6 +39,7 @@ const {
   DEMONSTRATION_SLUGS,
   isDemonstrationPiece,
   PRICE_BANDS,
+  RETIRED_CATALOGUE_SLUGS,
   catalogueFacets,
   catalogueHref,
   formatPricePaise,
@@ -51,6 +52,8 @@ const {
   toFineness,
   withoutFilter,
 } = await import("../app/_data/catalogue.ts");
+
+const { BIS_HALLMARK_FEE_PAISE, hallmarkingFeeFor } = await import("../app/_data/types.ts");
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 
@@ -92,7 +95,12 @@ function usableRate(overrides = {}) {
 /** A piece with real pricing inputs, for the arms the placeholder seed cannot reach. */
 function pricedInputPiece(overrides = {}) {
   return {
-    ...CATALOGUE_SEED[0],
+    // PINNED BY SLUG, NOT BY INDEX. This used to spread CATALOGUE_SEED[0], which
+    // silently changed from an exempt piece to a plain gold one when the real
+    // pieces went up, and put a Rs 45 hallmark fee (plus GST) into a total that
+    // is derived by hand below without one. The arithmetic under test is the
+    // rate and the making charge, so the base is the exempt choker.
+    ...CATALOGUE_SEED.find((piece) => piece.slug === "meenakari-bridal-choker"),
     slug: "test-dynamic",
     pricingMode: "dynamic_metal",
     metal: "gold",
@@ -104,6 +112,21 @@ function pricedInputPiece(overrides = {}) {
   };
 }
 
+/**
+ * THE WALL HAS TWO ORDERS, AND THEY MUST BE THE SAME ONE.
+ *
+ * The database path orders by `variants.position`; the offline fallback serves
+ * `CATALOGUE_SEED_ROWS` in array order. Moving a piece by editing its position
+ * without moving its row made the two disagree, which only showed up because a
+ * hand-written list happened to be checked against the fallback.
+ */
+test("seed rows are written in the order their positions hang them", () => {
+  const positions = CATALOGUE_SEED_ROWS.map((row) => row.position);
+  const sorted = [...positions].sort((a, b) => a - b);
+  assert.deepEqual(positions, sorted, "array order and position order have drifted apart");
+  assert.equal(new Set(positions).size, positions.length, "two pieces share a position");
+});
+
 test("serves the compiled seed when D1 is unreachable", async () => {
   // There is no DB binding in-process, so `getDb()` throws. A placeholder
   // catalogue is not a reason to serve a 500.
@@ -112,11 +135,11 @@ test("serves the compiled seed when D1 is unreachable", async () => {
   assert.deepEqual(
     pieces.map((piece) => piece.slug),
     [
-      "jadau-haar",
-      "polki-choker",
-      "chandbali-earrings",
-      "kundan-kada",
-      "maang-tikka",
+      "peacock-temple-haar",
+      "meenakari-bridal-choker",
+      "parrot-temple-haar",
+      "medallion-temple-haar",
+      "temple-arch-haar",
       "gold-jhumka",
       "polki-ring",
       "lotus-pendant",
@@ -125,7 +148,7 @@ test("serves the compiled seed when D1 is unreachable", async () => {
       "bridal-tikka",
       "jadau-kangan",
     ],
-    "the fallback must serve the seed in wall order, heirlooms before demonstration stock"
+    "the fallback must serve the seed in wall order, the counter pieces before demonstration stock"
   );
 });
 
@@ -156,7 +179,7 @@ test("the demonstration set is declared, and matches what is actually priced", (
   }
 });
 
-test("the heirloom pieces invent no weight, purity, hallmark or certificate", () => {
+test("the pieces from the counter invent no weight, purity, hallmark or certificate", () => {
   for (const piece of CATALOGUE_SEED) {
     if (isDemonstrationPiece(piece.slug)) continue;
 
@@ -168,9 +191,9 @@ test("the heirloom pieces invent no weight, purity, hallmark or certificate", ()
     assert.equal(piece.makingChargeValue, null, `${piece.slug} asserts a making charge`);
     assert.equal(piece.fixedPricePaise, null, `${piece.slug} asserts a price`);
 
-    // QCO cl. 2(3) exempts Kundan, Polki and Jadau, so a hallmarking charge of
-    // zero is the correct figure and not an unfilled blank.
-    assert.equal(piece.hallmarkingPaise, 0);
+    // QCO cl. 2(3) exempts Kundan, Polki and Jadau, so zero is correct for
+    // those. The temple haars are plain gold and owe the fee.
+    assert.equal(piece.hallmarkingPaise, hallmarkingFeeFor(piece.craft), `${piece.slug} fee`);
   }
 });
 
@@ -258,7 +281,7 @@ test("a worn photograph exists only where one was actually made", () => {
       assert.notEqual(piece.altWorn, piece.altBack, `${piece.slug} reuses the reverse alt`);
       assert.ok(
         isDemonstrationPiece(piece.slug),
-        `${piece.slug} is an heirloom piece claiming a worn photograph nobody took`
+        `${piece.slug} is a counter piece claiming a worn photograph nobody took`
       );
     } else {
       assert.equal(
@@ -485,10 +508,12 @@ test("filters the catalogue by collection and by metal", async () => {
   const earrings = await listPricedCatalogue({ collection: "earrings" });
   assert.deepEqual(
     earrings.map((piece) => piece.slug),
-    ["chandbali-earrings", "gold-jhumka"]
+    // The invented chandbali pair was the only other pair of earrings. All five
+    // pieces from the counter are necklaces, so the jhumka stands alone here.
+    ["gold-jhumka"]
   );
 
-  // Bridal holds the five heirloom pieces plus the three demonstration pieces
+  // Bridal holds the choker from the counter plus the three demonstration pieces
   // that are bridal BY CONSTRUCTION — a tikka is a headpiece and a rani haar is
   // bridal, so the collection describes them rather than being a place they
   // were filed to fill a gap.
@@ -640,7 +665,7 @@ test("the seed applies to the real schema, and is idempotent", () => {
     );
 
     // created_at is written once and never rewritten.
-    const created = db.prepare("SELECT created_at FROM products WHERE id = 'prd_jadau-haar'").get();
+    const created = db.prepare("SELECT created_at FROM products WHERE id = 'prd_meenakari-bridal-choker'").get();
     assert.equal(created.created_at, "2026-08-09T00:00:00.000Z");
   } finally {
     db.close();
@@ -663,6 +688,7 @@ test("the seeded rows leave every compliance column NULL", () => {
 
     assert.equal(rows.length, CATALOGUE_SEED.length);
 
+    const CRAFT_BY_SKU = new Map(CATALOGUE_SEED_ROWS.map((r) => [r.sku, r.piece.craft]));
     const demoSkus = new Set(
       CATALOGUE_SEED_ROWS.filter((r) => isDemonstrationPiece(r.piece.slug)).map((r) => r.sku)
     );
@@ -703,7 +729,14 @@ test("the seeded rows leave every compliance column NULL", () => {
       ]) {
         assert.equal(row[column], null, `${row.sku} asserts ${column}`);
       }
-      assert.equal(row.hallmarking_paise, 0, `${row.sku} charges for a hallmark it does not have`);
+      // Derived from craft: 0 where QCO cl. 2(3) exempts it, the BIS fee for
+      // plain gold. A flat 0 was right for the invented set and is wrong for a
+      // gold temple haar, which does owe the fee.
+      assert.equal(
+        row.hallmarking_paise,
+        hallmarkingFeeFor(CRAFT_BY_SKU.get(row.sku)),
+        `${row.sku} carries the wrong hallmarking fee for its craft`
+      );
     }
   } finally {
     db.close();
@@ -717,7 +750,7 @@ test("a membership dropped from the seed is dropped from the database", () => {
     // Something the seed does not declare, added by hand, is cleaned up on the
     // next run — which is what makes re-running after an edit truly idempotent.
     db.exec(
-      "INSERT INTO product_collections (product_id, collection_id, position) VALUES ('prd_maang-tikka', 'col_necklaces', 99);"
+      "INSERT INTO product_collections (product_id, collection_id, position) VALUES ('prd_meenakari-bridal-choker', 'col_earrings', 99);"
     );
     assert.equal(
       db.prepare("SELECT count(*) AS c FROM product_collections").get().c,
@@ -730,6 +763,69 @@ test("a membership dropped from the seed is dropped from the database", () => {
     );
   } finally {
     db.close();
+  }
+});
+
+/**
+ * A FLAT ZERO WOULD PASS THE FEE ASSERTIONS ABOVE IF EVERY PIECE WERE EXEMPT.
+ * So the catalogue has to actually contain both kinds, or "derived from craft"
+ * is a claim no test ever exercised.
+ */
+test("the seed carries both an exempt piece and a fee-paying one", () => {
+  const counter = CATALOGUE_SEED.filter((piece) => !isDemonstrationPiece(piece.slug));
+  assert.ok(
+    counter.some((piece) => piece.hallmarkingPaise === 0),
+    "no exempt piece among the counter pieces"
+  );
+  assert.ok(
+    counter.some((piece) => piece.hallmarkingPaise === BIS_HALLMARK_FEE_PAISE),
+    "no plain gold piece paying the BIS fee among the counter pieces"
+  );
+});
+
+/**
+ * THE INVENTED FIVE HAVE TO COME OFF A DATABASE THAT ALREADY HAS THEM.
+ *
+ * Upserts never deleted a product, so removing rows from the seed left them
+ * active in any database seeded before, production included. And the owner's
+ * own stock must survive: archiving "whatever the seed does not list" would take
+ * a piece entered through the admin panel off the site.
+ */
+test("re-seeding archives the retired pieces and leaves the owner's own stock alone", () => {
+  const db = migratedDatabase();
+  try {
+    applySeed(db);
+    // A database from before the swap: the retired pieces still active, plus a
+    // piece the owner added by hand. Cloned from a seeded row so every column the
+    // schema requires is present.
+    const clone = (id, slug) =>
+      db.exec(
+        `INSERT INTO products (id, slug, title, subtitle, description, craft, status, sale_mode, seo_title, seo_description, created_at, updated_at)
+         SELECT '${id}', '${slug}', title, subtitle, description, craft, 'active', sale_mode, seo_title, seo_description, created_at, updated_at
+         FROM products WHERE id = 'prd_meenakari-bridal-choker';`
+      );
+    for (const slug of RETIRED_CATALOGUE_SLUGS) clone(`prd_${slug}`, slug);
+    clone("prd_owner-entered-piece", "owner-entered-piece");
+
+    applySeed(db);
+
+    const status = (id) => db.prepare("SELECT status FROM products WHERE id = ?").get(id).status;
+    for (const slug of RETIRED_CATALOGUE_SLUGS) {
+      assert.equal(status(`prd_${slug}`), "archived", `${slug} is still on the wall`);
+    }
+    assert.equal(status("prd_owner-entered-piece"), "active", "the owner's own piece was archived");
+    for (const row of CATALOGUE_SEED_ROWS) {
+      assert.equal(status(row.piece.id), "active", `${row.piece.slug} was archived`);
+    }
+  } finally {
+    db.close();
+  }
+});
+
+test("a retired slug is never also seeded", () => {
+  const seeded = new Set(CATALOGUE_SEED_ROWS.map((row) => row.piece.slug));
+  for (const slug of RETIRED_CATALOGUE_SLUGS) {
+    assert.ok(!seeded.has(slug), `${slug} is both seeded and retired`);
   }
 });
 
@@ -879,9 +975,12 @@ test("filters work with a plain GET form — no JavaScript involved", async () =
 test("a collection filter narrows the wall and offers a way back", async () => {
   const body = await shop("?collection=earrings");
 
-  assert.ok(body.includes("Chandbali earrings"));
-  assert.ok(!body.includes("Kundan kada"), "the filter did not narrow anything");
-  assert.match(body, showing(2, CATALOGUE_SEED.length));
+  assert.ok(body.includes("Gold jhumka"));
+  // A title that is actually on the unfiltered wall. The old check named a piece
+  // that no longer exists, so it would have passed whether or not anything was
+  // filtered out.
+  assert.ok(!body.includes("Peacock temple haar"), "the filter did not narrow anything");
+  assert.match(body, showing(1, CATALOGUE_SEED.length));
   // The chip is a link that removes the filter, so it works without script,
   // and it names the collection rather than echoing its slug back.
   assert.match(body, /href="\/shop"/);

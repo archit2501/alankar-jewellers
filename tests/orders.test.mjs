@@ -213,9 +213,9 @@ function freshOrders() {
   return { sqlite, db: d1CartDb(binding) };
 }
 
-const HAAR = "jadau-haar";
-const HAAR_VARIANT = "var_jadau-haar";
-const CHOKER = "polki-choker";
+const BRIDAL = "meenakari-bridal-choker";
+const BRIDAL_VARIANT = "var_meenakari-bridal-choker";
+const HAAR = "peacock-temple-haar";
 const SHOP_STATE = "08"; // Rajasthan, for the intra-state case.
 const AWAY_STATE = "27"; // Maharashtra, for the inter-state case.
 
@@ -235,8 +235,8 @@ const AWAY_STATE = "27"; // Maharashtra, for the inter-state case.
  */
 function makePriceable(sqlite, options = {}) {
   const {
-    slug = HAAR,
-    variantId = HAAR_VARIANT,
+    slug = BRIDAL,
+    variantId = BRIDAL_VARIANT,
     netMetalWeightMg = 12_345,
     fineness = 916,
     stockQuantity = 1,
@@ -302,7 +302,7 @@ function count(sqlite, sql, ...params) {
 /** A cart holding one priceable piece, resolved and ready to place. */
 async function readyCheckout(sqlite, db, options = {}) {
   makePriceable(sqlite, options);
-  const added = await addToCart(db, { token: null, slug: options.slug ?? HAAR });
+  const added = await addToCart(db, { token: null, slug: options.slug ?? BRIDAL });
   assert.equal(added.ok, true);
 
   const resolution = await resolveCheckout(db, {
@@ -350,12 +350,12 @@ test("a making charge configured with no value refuses the whole cart", async ()
   // rate on file. `makePriceable` sets a making charge of 1200 bps; the point
   // of this test is what happens when that one figure is taken away.
   makePriceable(sqlite);
-  const added = await addToCart(db, { token: null, slug: HAAR });
+  const added = await addToCart(db, { token: null, slug: BRIDAL });
   assert.equal(added.ok, true, "the fixture must produce a cart to test against");
 
   sqlite
     .prepare("UPDATE variants SET making_charge_value = NULL WHERE id = ?")
-    .run(HAAR_VARIANT);
+    .run(BRIDAL_VARIANT);
 
   const resolution = await resolveCheckout(db, {
     token: added.cartId,
@@ -373,7 +373,7 @@ test("a making charge configured with no value refuses the whole cart", async ()
   // refusing everything and still look correct.
   sqlite
     .prepare("UPDATE variants SET making_charge_value = 1200 WHERE id = ?")
-    .run(HAAR_VARIANT);
+    .run(BRIDAL_VARIANT);
   const second = await resolveCheckout(db, {
     token: added.cartId,
     shopStateCode: SHOP_STATE,
@@ -765,8 +765,8 @@ test("AN UNPRICEABLE CART CANNOT PRODUCE AN ORDER — the shop as it stands toda
   // That is a real sequence, and it is why the checkout guard has to exist even
   // though the cart guard does too.
   sqlite.prepare("UPDATE products SET sale_mode = 'buy_online'").run();
-  const added = await addToCart(db, { token: null, slug: HAAR });
-  await addToCart(db, { token: added.cartId, slug: CHOKER });
+  const added = await addToCart(db, { token: null, slug: BRIDAL });
+  await addToCart(db, { token: added.cartId, slug: HAAR });
   sqlite.prepare("UPDATE products SET sale_mode = 'enquire_only'").run();
 
   const resolution = await resolveCheckout(db, {
@@ -808,7 +808,7 @@ test("a piece with no readable gold rate is refused, and says which", async () =
   const { sqlite, db } = freshOrders();
 
   makePriceable(sqlite, { withRate: false });
-  const added = await addToCart(db, { token: null, slug: HAAR });
+  const added = await addToCart(db, { token: null, slug: BRIDAL });
 
   const resolution = await resolveCheckout(db, {
     token: added.cartId,
@@ -827,7 +827,7 @@ test("an order cannot be created while the shop's own state is unrecorded", asyn
   const { sqlite, db } = freshOrders();
 
   makePriceable(sqlite);
-  const added = await addToCart(db, { token: null, slug: HAAR });
+  const added = await addToCart(db, { token: null, slug: BRIDAL });
 
   const resolution = await resolveCheckout(db, {
     token: added.cartId,
@@ -902,8 +902,8 @@ test("A PRICED CART PRODUCES EXACTLY ONE ORDER, WITH A SNAPSHOT THAT FOOTS", asy
   // THE FULL COMPOSITION IS SNAPSHOTTED — BIS Reg. 5(11) requires description,
   // net weight of precious metal, purity in carat AND fineness, and hallmarking
   // charges to appear separately, reproducibly, years later.
-  assert.equal(item.sku, "AJ-JADAU-HAAR-01");
-  assert.equal(item.title_snapshot, "Jadau haar");
+  assert.equal(item.sku, "AJ-MEENA-CHOKER-01");
+  assert.equal(item.title_snapshot, "Meenakari bridal choker");
   assert.equal(item.net_metal_weight_mg, 12_345);
   assert.equal(item.fineness_snapshot, 916);
   assert.equal(item.purity_carat_label_snapshot, "22K (916)");
@@ -942,7 +942,7 @@ test("A PRICED CART PRODUCES EXACTLY ONE ORDER, WITH A SNAPSHOT THAT FOOTS", asy
     1
   );
   assert.equal(
-    sqlite.prepare("SELECT stock_quantity AS q FROM variants WHERE id = ?").get(HAAR_VARIANT).q,
+    sqlite.prepare("SELECT stock_quantity AS q FROM variants WHERE id = ?").get(BRIDAL_VARIANT).q,
     0
   );
 
@@ -1070,7 +1070,7 @@ test("A DUPLICATE PLACEMENT COLLIDES ON THE PRIMARY KEY AND IS DISCARDED WHOLE",
   });
   assert.equal(first.ok, true);
   assert.equal(
-    sqlite.prepare("SELECT stock_quantity AS q FROM variants WHERE id = ?").get(HAAR_VARIANT).q,
+    sqlite.prepare("SELECT stock_quantity AS q FROM variants WHERE id = ?").get(BRIDAL_VARIANT).q,
     4
   );
 
@@ -1092,7 +1092,7 @@ test("A DUPLICATE PLACEMENT COLLIDES ON THE PRIMARY KEY AND IS DISCARDED WHOLE",
   assert.equal(count(sqlite, "SELECT count(*) AS c FROM price_quotes"), 1);
   assert.equal(count(sqlite, "SELECT count(*) AS c FROM webhook_events"), 1);
   assert.equal(
-    sqlite.prepare("SELECT stock_quantity AS q FROM variants WHERE id = ?").get(HAAR_VARIANT).q,
+    sqlite.prepare("SELECT stock_quantity AS q FROM variants WHERE id = ?").get(BRIDAL_VARIANT).q,
     4,
     "the duplicate decremented stock a second time"
   );
@@ -1124,7 +1124,7 @@ test("OVERSELLING IS REFUSED BY THE CHECK, NOT BY APPLICATION CODE", async () =>
   // The piece is taken between the quote and the commit. This is the race the
   // reservation is a courtesy against and the constraint is a guarantee
   // against; the application has already decided the stock was there.
-  sqlite.prepare("UPDATE variants SET stock_quantity = 0 WHERE id = ?").run(HAAR_VARIANT);
+  sqlite.prepare("UPDATE variants SET stock_quantity = 0 WHERE id = ?").run(BRIDAL_VARIANT);
 
   const placed = await placeOrder(db, resolution.checkout, PICKUP_DETAILS, {
     shopStateCode: SHOP_STATE,
@@ -1139,7 +1139,7 @@ test("OVERSELLING IS REFUSED BY THE CHECK, NOT BY APPLICATION CODE", async () =>
     assert.equal(count(sqlite, `SELECT count(*) AS c FROM ${table}`), 0, table);
   }
   assert.equal(
-    sqlite.prepare("SELECT stock_quantity AS q FROM variants WHERE id = ?").get(HAAR_VARIANT).q,
+    sqlite.prepare("SELECT stock_quantity AS q FROM variants WHERE id = ?").get(BRIDAL_VARIANT).q,
     0,
     "the aborted batch left stock negative"
   );
@@ -1147,7 +1147,7 @@ test("OVERSELLING IS REFUSED BY THE CHECK, NOT BY APPLICATION CODE", async () =>
   // And the constraint itself is real, asserted without going through any of
   // our code at all.
   assert.throws(
-    () => sqlite.prepare("UPDATE variants SET stock_quantity = -1 WHERE id = ?").run(HAAR_VARIANT),
+    () => sqlite.prepare("UPDATE variants SET stock_quantity = -1 WHERE id = ?").run(BRIDAL_VARIANT),
     /CHECK constraint failed/i
   );
   sqlite.close();
@@ -1156,11 +1156,11 @@ test("OVERSELLING IS REFUSED BY THE CHECK, NOT BY APPLICATION CODE", async () =>
 test("lineItemCount matches the rows written, and a torn order is detected", async () => {
   const { sqlite, db } = freshOrders();
 
-  makePriceable(sqlite, { slug: HAAR, variantId: HAAR_VARIANT });
-  makePriceable(sqlite, { slug: CHOKER, variantId: "var_polki-choker" });
+  makePriceable(sqlite, { slug: BRIDAL, variantId: BRIDAL_VARIANT });
+  makePriceable(sqlite, { slug: HAAR, variantId: "var_peacock-temple-haar" });
 
-  const added = await addToCart(db, { token: null, slug: HAAR });
-  await addToCart(db, { token: added.cartId, slug: CHOKER });
+  const added = await addToCart(db, { token: null, slug: BRIDAL });
+  await addToCart(db, { token: added.cartId, slug: HAAR });
 
   const resolution = await resolveCheckout(db, {
     token: added.cartId,
@@ -1188,7 +1188,7 @@ test("lineItemCount matches the rows written, and a torn order is detected", asy
 
   // Tear it, the way a half-committed batch would have. D1 cannot roll a
   // partial write back for us, so this is how one is found on read.
-  sqlite.prepare("DELETE FROM order_items WHERE order_id = ? AND sku LIKE 'AJ-POLKI%'").run(order.id);
+  sqlite.prepare("DELETE FROM order_items WHERE order_id = ? AND sku LIKE 'AJ-PEACOCK%'").run(order.id);
   assert.deepEqual(await assertOrderIntact(db, order.id, 2), { ok: false, found: 1 });
 
   const receipt = await readOrderForCart(db, {
@@ -1523,7 +1523,7 @@ const CANCELLATION = {
   note: "Called twice over four days; no answer. Piece back on the wall.",
 };
 
-function stockOf(sqlite, variantId = HAAR_VARIANT) {
+function stockOf(sqlite, variantId = BRIDAL_VARIANT) {
   return sqlite.prepare("SELECT stock_quantity AS q FROM variants WHERE id = ?").get(variantId).q;
 }
 
@@ -1546,7 +1546,7 @@ test("CANCELLING RESTORES THE STOCK, IN THE SAME BATCH AS THE TRANSITION", async
   const cancelled = await cancelOrder(db, { orderNumber: placed.orderNumber, ...CANCELLATION });
 
   assert.equal(cancelled.ok, true, JSON.stringify(cancelled));
-  assert.deepEqual(cancelled.restored, [{ variantId: HAAR_VARIANT, quantity: 1 }]);
+  assert.deepEqual(cancelled.restored, [{ variantId: BRIDAL_VARIANT, quantity: 1 }]);
   // Nothing was captured, so nothing is owed back.
   assert.equal(cancelled.refundDuePaise, 0);
 
@@ -1582,7 +1582,7 @@ test("CANCELLING RESTORES THE STOCK, IN THE SAME BATCH AS THE TRANSITION", async
   assert.equal(audit.actor_email, CANCELLATION.actor);
   const diff = JSON.parse(audit.diff_json);
   assert.deepEqual(diff.status, { from: "pending_payment", to: "cancelled" });
-  assert.deepEqual(diff.restored, [{ variantId: HAAR_VARIANT, quantity: 1 }]);
+  assert.deepEqual(diff.restored, [{ variantId: BRIDAL_VARIANT, quantity: 1 }]);
   assert.ok(!audit.diff_json.includes(CANCELLATION.note));
   assert.ok(!audit.diff_json.includes(PICKUP_DETAILS.name));
   assert.ok(!audit.diff_json.includes(PICKUP_DETAILS.phone));
@@ -1604,7 +1604,7 @@ test("CANCELLING TWICE RESTORES ONCE, AND THE PRIMARY KEY IS WHY", async () => {
   assert.equal(again.reason, "already_cancelled");
   assert.equal(again.cancelledAt, first.cancelledAt);
 
-  // ONE piece, not two. There is no second Jadau haar.
+  // ONE piece, not two. There is no second bridal choker.
   assert.equal(stockOf(sqlite), 1);
   assert.equal(count(sqlite, "SELECT count(*) AS c FROM admin_audit_log"), 1);
 
@@ -1643,7 +1643,7 @@ test("A DOUBLE RESTORE IS DESTROYED BY THE CHECK, NOT BY APPLICATION CODE", () =
     () =>
       sqlite
         .prepare("UPDATE variants SET stock_quantity = stock_quantity + 1 WHERE id = ?")
-        .run(HAAR_VARIANT),
+        .run(BRIDAL_VARIANT),
     /CHECK constraint failed/i
   );
   sqlite.close();
@@ -1760,7 +1760,7 @@ test("a cancelled piece is buyable again, all the way through checkout", async (
 
   // The piece is off the wall, and the shop's own cart layer says so — this is
   // the state that used to be permanent.
-  const refused = await addToCart(db, { token: null, slug: HAAR });
+  const refused = await addToCart(db, { token: null, slug: BRIDAL });
   assert.equal(refused.ok, false);
   assert.equal(refused.reason, "sold_out");
 
@@ -1769,7 +1769,7 @@ test("a cancelled piece is buyable again, all the way through checkout", async (
 
   // And now it can be sold — which is the whole point, asserted through the
   // production resolution path rather than by reading the column back.
-  const third = await addToCart(db, { token: null, slug: HAAR });
+  const third = await addToCart(db, { token: null, slug: BRIDAL });
   const open = await resolveCheckout(db, { token: third.cartId, shopStateCode: SHOP_STATE });
   assert.equal(open.ok, true, JSON.stringify(open));
 
@@ -1786,10 +1786,10 @@ test("a cancelled piece is buyable again, all the way through checkout", async (
 test("a multi-line order gives every piece back, once each", async () => {
   const { sqlite, db } = freshOrders();
 
-  makePriceable(sqlite, { slug: HAAR, variantId: HAAR_VARIANT });
-  makePriceable(sqlite, { slug: CHOKER, variantId: "var_polki-choker" });
-  const added = await addToCart(db, { token: null, slug: HAAR });
-  await addToCart(db, { token: added.cartId, slug: CHOKER });
+  makePriceable(sqlite, { slug: BRIDAL, variantId: BRIDAL_VARIANT });
+  makePriceable(sqlite, { slug: HAAR, variantId: "var_peacock-temple-haar" });
+  const added = await addToCart(db, { token: null, slug: BRIDAL });
+  await addToCart(db, { token: added.cartId, slug: HAAR });
 
   const resolution = await resolveCheckout(db, {
     token: added.cartId,
@@ -1801,13 +1801,13 @@ test("a multi-line order gives every piece back, once each", async () => {
   });
   assert.equal(placed.ok, true);
   assert.equal(stockOf(sqlite), 0);
-  assert.equal(stockOf(sqlite, "var_polki-choker"), 0);
+  assert.equal(stockOf(sqlite, "var_peacock-temple-haar"), 0);
 
   const cancelled = await cancelOrder(db, { orderNumber: placed.orderNumber, ...CANCELLATION });
   assert.equal(cancelled.ok, true);
   assert.equal(cancelled.restored.length, 2);
   assert.equal(stockOf(sqlite), 1);
-  assert.equal(stockOf(sqlite, "var_polki-choker"), 1);
+  assert.equal(stockOf(sqlite, "var_peacock-temple-haar"), 1);
   sqlite.close();
 });
 
@@ -1870,7 +1870,7 @@ test("the reservation stays consumed — it is a checkout lock, not inventory", 
   assert.equal(count(sqlite, "SELECT count(*) AS c FROM stock_reservations WHERE status = 'held'"), 0);
   assert.equal(count(sqlite, "SELECT count(*) AS c FROM stock_reservations WHERE status = 'consumed'"), 1);
   // Which is why the piece is claimable by the next cart at once.
-  const next = await addToCart(db, { token: null, slug: HAAR });
+  const next = await addToCart(db, { token: null, slug: BRIDAL });
   assert.equal(next.ok, true);
   assert.equal(count(sqlite, "SELECT count(*) AS c FROM stock_reservations WHERE status = 'held'"), 1);
   sqlite.close();
@@ -2027,7 +2027,7 @@ function tokenOf(response) {
  * Add a piece through the real cart endpoint.
  *
  * The endpoint now refuses an `enquire_only` piece outright, and the seeded
- * heirloom pieces are exactly that, so the piece is opened for online sale
+ * pieces from the counter are exactly that, so the piece is opened for online sale
  * first. It is NOT closed again here: most callers want a cart that works. The
  * three tests that need a non-buyable piece in front of checkout close it
  * themselves with `closeToOnlineSale()`, which is also the only real-world
@@ -2081,8 +2081,8 @@ const SUBMISSION = {
 };
 
 test("POST refuses to create an order for a cart it cannot price", async () => {
-  const cookie = await addPiece(HAAR);
-  closeToOnlineSale(HAAR);
+  const cookie = await addPiece(BRIDAL);
+  closeToOnlineSale(BRIDAL);
   const { response, body } = await order(SUBMISSION, { cookie });
 
   assert.equal(response.status, 409);
@@ -2090,12 +2090,12 @@ test("POST refuses to create an order for a cart it cannot price", async () => {
   assert.equal(body.reason, "unpriceable");
   assert.equal(count(worker, "SELECT count(*) AS c FROM orders"), 0);
   // The refusal names the piece and the reason rather than going silent.
-  assert.deepEqual(body.blocked, [{ slug: HAAR, reason: "not_for_sale_online" }]);
+  assert.deepEqual(body.blocked, [{ slug: BRIDAL, reason: "not_for_sale_online" }]);
 });
 
 test("POST places one real order and claims no payment whatsoever", async () => {
   makePriceable(worker);
-  const cookie = await addPiece(HAAR);
+  const cookie = await addPiece(BRIDAL);
   const { response, body } = await order(SUBMISSION, { cookie });
 
   assert.equal(response.status, 201);
@@ -2128,9 +2128,9 @@ test("POST places one real order and claims no payment whatsoever", async () => 
 
 test("a second, legitimate order is placed and never throttled away", async () => {
   makePriceable(worker);
-  makePriceable(worker, { slug: CHOKER, variantId: "var_polki-choker" });
+  makePriceable(worker, { slug: HAAR, variantId: "var_peacock-temple-haar" });
 
-  const firstCookie = await addPiece(HAAR);
+  const firstCookie = await addPiece(BRIDAL);
   const first = await order(SUBMISSION, { cookie: firstCookie });
   assert.equal(first.response.status, 201);
 
@@ -2138,7 +2138,7 @@ test("a second, legitimate order is placed and never throttled away", async () =
   // why the idempotency key can be the cart without suppressing real repeat
   // business. The appointments route's throttle would have answered this with
   // a fabricated success and written nothing.
-  const secondCookie = await addPiece(CHOKER, firstCookie);
+  const secondCookie = await addPiece(HAAR, firstCookie);
   const second = await order(SUBMISSION, { cookie: secondCookie });
 
   assert.equal(second.response.status, 201);
@@ -2149,7 +2149,7 @@ test("a second, legitimate order is placed and never throttled away", async () =
 
 test("a browser form is answered with a redirect, and the outcome survives it", async () => {
   makePriceable(worker);
-  const cookie = await addPiece(HAAR);
+  const cookie = await addPiece(BRIDAL);
 
   const placed = await order(SUBMISSION, { cookie, form: true });
   assert.equal(placed.response.status, 303);
@@ -2164,7 +2164,7 @@ test("a browser form is answered with a redirect, and the outcome survives it", 
 
 test("incomplete details are refused, specifically, and nothing is ordered", async () => {
   makePriceable(worker);
-  const cookie = await addPiece(HAAR);
+  const cookie = await addPiece(BRIDAL);
 
   const { response, body } = await order(
     { ...SUBMISSION, phone: "12", consent: "" },
@@ -2183,7 +2183,7 @@ test("incomplete details are refused, specifically, and nothing is ordered", asy
 
 test("a cross-site POST cannot place an order in someone else's name", async () => {
   makePriceable(worker);
-  const cookie = await addPiece(HAAR);
+  const cookie = await addPiece(BRIDAL);
 
   const foreign = await fetchWorker("/api/orders", {
     method: "POST",
@@ -2208,7 +2208,7 @@ test("GET /api/orders is not a way to read a stranger's order", async () => {
 
 test("NO FAKE SUCCESS: an unreachable order book is reported, never answered 201", async () => {
   makePriceable(worker);
-  const cookie = await addPiece(HAAR);
+  const cookie = await addPiece(BRIDAL);
 
   const saved = env.DB;
   delete env.DB;
@@ -2239,13 +2239,13 @@ async function checkoutHtml(cookie, query = "") {
 }
 
 test("an unpriceable cart is shown the refusal and NO ORDER FORM AT ALL", async () => {
-  const cookie = await addPiece(HAAR);
-  closeToOnlineSale(HAAR);
+  const cookie = await addPiece(BRIDAL);
+  closeToOnlineSale(BRIDAL);
   const html = await checkoutHtml(cookie);
 
   assert.equal((html.match(/<h1[\s>]/g) ?? []).length, 1);
   assert.ok(html.includes("Not something we can price."));
-  assert.ok(html.includes("Jadau haar"));
+  assert.ok(html.includes("Meenakari bridal choker"));
   // The refusal is not a disabled button. The control is simply not there.
   assert.doesNotMatch(html, /<form[^>]*action="\/api\/orders"/);
   assert.doesNotMatch(html, /Place this order/);
@@ -2259,7 +2259,7 @@ test("an unpriceable cart is shown the refusal and NO ORDER FORM AT ALL", async 
 
 test("a priceable cart is shown an itemised quote and a form that takes no money", async () => {
   makePriceable(worker);
-  const cookie = await addPiece(HAAR);
+  const cookie = await addPiece(BRIDAL);
   const html = await checkoutHtml(cookie);
 
   assert.equal((html.match(/<h1[\s>]/g) ?? []).length, 1);
@@ -2293,7 +2293,7 @@ test("a priceable cart is shown an itemised quote and a form that takes no money
 
 test("the confirmation states what happened and does not dress it up", async () => {
   makePriceable(worker);
-  const cookie = await addPiece(HAAR);
+  const cookie = await addPiece(BRIDAL);
   const placed = await order(SUBMISSION, { cookie });
   assert.equal(placed.response.status, 201);
 
@@ -2324,7 +2324,7 @@ test("the confirmation states what happened and does not dress it up", async () 
 
 test("a stranger holding the order number sees nothing of the order", async () => {
   makePriceable(worker);
-  const cookie = await addPiece(HAAR);
+  const cookie = await addPiece(BRIDAL);
   const placed = await order(SUBMISSION, { cookie });
 
   const html = await checkoutHtml(newCartToken(), `?ref=${placed.body.orderNumber}`);
@@ -2334,7 +2334,7 @@ test("a stranger holding the order number sees nothing of the order", async () =
 
 test("checkout is not indexable and never renders the cart token", async () => {
   makePriceable(worker);
-  const cookie = await addPiece(HAAR);
+  const cookie = await addPiece(BRIDAL);
   const html = await checkoutHtml(cookie);
 
   assert.match(html, /name="robots"[^>]*content="[^"]*noindex/i);
@@ -2356,8 +2356,8 @@ test("only a published notice code is rendered, and a failure is not dressed up"
  * ====================================================================== */
 
 test("the cart carries a proceed-to-checkout control", async () => {
-  const cookie = await addPiece(HAAR);
-  closeToOnlineSale(HAAR);
+  const cookie = await addPiece(BRIDAL);
+  closeToOnlineSale(BRIDAL);
   const cart = await fetchWorker("/cart", {
     headers: { accept: "text/html", cookie: `${CART_COOKIE}=${cookie}` },
   });

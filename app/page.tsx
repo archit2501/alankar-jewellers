@@ -30,9 +30,12 @@ import { images } from "./_media/images";
 import type { ImageKey } from "./_media/images";
 
 /**
- * The catalogue. Every entry has a photographed reverse of its own. If a future
- * piece does not, give it no `back` and the Flip degrades to a plain figure —
- * never borrow another piece's back to fill the gap.
+ * The five pieces from the counter. None has its reverse photographed yet, so
+ * none has a `back`, and each Flip renders as a plain figure rather than a
+ * control. Never borrow another piece's back to fill the gap: it would be a
+ * photograph of a different object. Names, specs and copy match
+ * `app/_data/catalogue.ts`, and describe the photograph rather than name
+ * deities or gemstones nobody has confirmed.
  * Nothing here asserts a weight, a karat, a stone count or a price, because
  * none of those numbers is known yet and inventing them is the one thing this
  * category's buyers are best at catching.
@@ -49,63 +52,49 @@ const pieces: {
   interest: Interest;
 }[] = [
   {
-    id: "jadau",
-    name: "Jadau haar",
-    front: "jadau-haar-front",
-    back: "jadau-haar-reverse",
-    alt: "Jadau haar of uncut polki closed-set in gold, hung with carved ruby and emerald drops on a red silk cord",
-    altBack:
-      "The same haar turned over: every plate enamelled on a red ground with a white and green lotus",
-    spec: "Uncut polki · carved ruby and emerald drops · silk cord",
-    copy: "Gold and stone on the face. On the back, a lotus fired into every single plate.",
-    interest: "Jadau and Polki",
+    id: "peacock",
+    name: "Peacock temple haar",
+    front: "peacock-temple-haar-front",
+    alt: "Long antique gold temple haar with two peacocks, rows of green stones and a seated figure at the centre, on a black velvet bust",
+    spec: "Antique gold · green stones · pearl-finish drops",
+    copy: "Two peacocks meet over a seated figure, with a six-sided green stone set above it.",
+    interest: "Temple jewellery",
   },
   {
-    id: "polki",
-    name: "Polki choker",
-    front: "polki-choker-front",
-    back: "polki-choker-reverse",
-    alt: "Polki choker of kundan-set uncut diamonds with a pearl fringe, strung on a red silk cord and tassel",
-    altBack:
-      "The same choker turned over: a green enamel ground carrying one white and red flower per cell",
-    spec: "Kundan-set polki · pearl fringe · silk cord and tassel",
-    copy: "Close-set stones sit shoulder to shoulder in front. Behind them, green enamel and thirty small flowers.",
-    interest: "Jadau and Polki",
-  },
-  {
-    id: "chandbali",
-    name: "Chandbali earrings",
-    front: "chandbali-earrings-front",
-    back: "chandbali-earrings-reverse",
-    alt: "Pair of crescent chandbali earrings in granulated gold with rose-cut polki and pearl and emerald bead drops",
-    altBack:
-      "The same pair turned over: a green, red and white lotus spread across the whole of each crescent",
-    spec: "Crescent chandbali · rose-cut polki · pearl and emerald drops",
-    copy: "Worn, the reverse faces the wearer's neck. It is still the more decorated of the two sides.",
+    id: "choker",
+    name: "Meenakari bridal choker",
+    front: "meenakari-bridal-choker-front",
+    alt: "Bridal antique gold choker with a row of red stones, a kundan row, cream enamelled panels and a long fringe of red and pearl-finish drops, on a black velvet bust",
+    spec: "Kundan row · enamelled panels · pearl-finish drops",
+    copy: "A kundan row and red stones over a field of gold paisley, then enamelled panels and a long fringe.",
     interest: "Bridal jewellery",
   },
   {
-    id: "kada",
-    name: "Kundan kada",
-    front: "kundan-kada-front",
-    back: "kundan-kada-reverse",
-    alt: "Hinged gold kada set with kundan flowerheads, rimmed in seed pearls, with carved emerald terminals",
-    altBack:
-      "The same kada turned over: a red and green flowering vine enamelled around the inner face",
-    spec: "Closed-set kundan · seed-pearl rim · carved emerald terminals",
-    copy: "The inside of a bangle touches only the wrist, which is exactly why this one is enamelled.",
-    interest: "Jadau and Polki",
+    id: "parrot",
+    name: "Parrot temple haar",
+    front: "parrot-temple-haar-front",
+    alt: "Long antique gold temple haar with a parrot at each shoulder, green stones, and two seated figures at the centre, one holding a flute, on a black velvet bust",
+    spec: "Parrots at the shoulders · green stones · pearl-finish drops",
+    copy: "Two seated figures at the centre, one holding a flute, under a crown set with green stones.",
+    interest: "Temple jewellery",
   },
   {
-    id: "tikka",
-    name: "Maang tikka",
-    front: "maang-tikka-front",
-    back: "maang-tikka-reverse",
-    alt: "Round gold maang tikka set with kundan around a ruby centre, a polki drop below and a woven chain above",
-    altBack: "Turn over to see the concentric floral meenakari rosette on the back of the disc",
-    spec: "Kundan-set polki · ruby centre · woven chain",
-    copy: "The smallest piece here, and the back of it is worked as carefully as the front nobody questions.",
-    interest: "Bridal jewellery",
+    id: "medallion",
+    name: "Medallion temple haar",
+    front: "medallion-temple-haar-front",
+    alt: "Long antique gold haar of embossed medallions, with red-set crescents at the sides and a seated figure on the pendant, on a black velvet bust",
+    spec: "Embossed gold medallions · red-set crescents",
+    copy: "Every link is its own embossed disc, and the pendant carries a seated figure between two green stones.",
+    interest: "Temple jewellery",
+  },
+  {
+    id: "arch",
+    name: "Temple arch haar",
+    front: "temple-arch-haar-front",
+    alt: "Heavy antique gold temple necklace with a standing figure under an arch, seated figures on either side, red stones and gold bell drops, on a black velvet bust",
+    spec: "Red stones · gold bell drops",
+    copy: "A standing figure under a temple arch, a seated figure on either side, and gold bells along the lower edge.",
+    interest: "Temple jewellery",
   },
 ];
 
@@ -139,7 +128,7 @@ const pieces: {
  */
 const facts = [
   { label: "Techniques", value: "Jadau, Polki and Kundan, set by hand" },
-  { label: "Every piece", value: "Shown face and reverse, or not shown" },
+  { label: "Every piece", value: "Shown as it is, with the reverse wherever it has been photographed" },
   {
     label: "How to buy",
     value:
@@ -229,7 +218,7 @@ function PieceBody({ piece }: { piece: Piece }) {
       <p className="piece__spec">{piece.spec}</p>
       <p className="piece__copy">{piece.copy}</p>
       {/* The visible word is "Enquire" — under a heading that already reads
-          "Jadau haar", a link reading "Enquire about Jadau haar" says the name
+          "Peacock temple haar", a link reading "Enquire about Peacock temple haar" says the name
           twice. The accessible name keeps the full phrase, because out of
           context (a screen-reader link list) "Enquire" five times over is
           useless. */}
@@ -303,7 +292,7 @@ export default function Home() {
                   sizes="(max-width: 780px) 74vw, 440px"
                   width={heroImage.width}
                   height={heroImage.height}
-                  alt="Jadau haar of uncut polki with carved ruby and emerald drops, photographed on a grey sweep"
+                  alt="The rani haar worn: three strands falling below the collarbone with the drop at the centre"
                   fetchPriority="high"
                   decoding="sync"
                 />
@@ -325,12 +314,12 @@ export default function Home() {
 
           <div className="hero__foot">
             <p className="hero__caption">
-              The rani haar, worn. Like everything below it, it turns over.
+              The rani haar, worn.
             </p>
             <p className="hero__lede">
-              Every piece here is shown from both sides. The front is what the
-              room sees. The back is enamelled, and only the person wearing it
-              ever knows it is there.
+              The front is what the room sees. The back is often enamelled, and
+              only the person wearing it knows it is there. Where a back has been
+              photographed, it is shown here too.
             </p>
             <div className="hero__actions">
               <a className="button" href="#collections">
@@ -374,11 +363,11 @@ export default function Home() {
         >
           <div className="section-head pieces__head">
             <div>
-              <h2 id="collections-title">Turn one over.</h2>
+              <h2 id="collections-title">In the shop now.</h2>
             </div>
             <p className="lede">
-              Each one is photographed twice, face and reverse, on the same grey
-              sweep. Hover on a desktop, tap on a phone.
+              Five pieces from the counter, each one of a kind. They are priced
+              on request, so ask to see any of them.
             </p>
             <div className="rule-brass section-head__rule" aria-hidden="true" />
           </div>
@@ -409,9 +398,8 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* The shelf. Four alcoves on one sill line, sized down the row —
-                  the choker widest, the tikka narrowest — so the crowns
-                  stagger and the row still closes flush. */}
+              {/* The shelf. Four alcoves on one sill line, the choker first
+                  because it is the one piece that is wider than it is tall. */}
               <div className="pieces__band pieces__band--shelf">
                 {pieces.slice(1).map((piece) => (
                   <article className="piece" id={piece.id} key={piece.id}>
@@ -687,8 +675,7 @@ export default function Home() {
           <div className="footer__brand">
             <BrandMark compact href="#top" />
             <p>
-              Antique Jadau, Polki and Kundan. Set by hand, and shown from both
-              sides.
+              Antique Jadau, Polki, Kundan and temple jewellery, since 1980.
             </p>
           </div>
           <div className="footer__column">

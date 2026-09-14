@@ -171,8 +171,8 @@ const SESSION_SECRET = "test-session-secret-fedcba9876543210";
 const ADMIN_EMAIL = "owner@alankar.test";
 const ORIGIN = "http://localhost";
 
-const HAAR = "jadau-haar";
-const HAAR_VARIANT = "var_jadau-haar";
+const BRIDAL = "meenakari-bridal-choker";
+const BRIDAL_VARIANT = "var_meenakari-bridal-choker";
 const SHOP_STATE = "08"; // Rajasthan.
 
 const CUSTOMER = {
@@ -245,7 +245,7 @@ async function signIn() {
 
 /** Turn a placeholder seed piece into a real, priceable, buyable one. */
 function makePriceable({ stockQuantity = 1 } = {}) {
-  sqlite.prepare("UPDATE products SET sale_mode = 'buy_online' WHERE slug = ?").run(HAAR);
+  sqlite.prepare("UPDATE products SET sale_mode = 'buy_online' WHERE slug = ?").run(BRIDAL);
   sqlite
     .prepare(
       `UPDATE variants
@@ -259,7 +259,7 @@ function makePriceable({ stockQuantity = 1 } = {}) {
               is_unique_piece = 1
         WHERE id = ?`
     )
-    .run(stockQuantity, HAAR_VARIANT);
+    .run(stockQuantity, BRIDAL_VARIANT);
 
   const effectiveFrom = new Date(mostRecentPublicationAtOrBefore(Date.now())).toISOString();
   const existing = sqlite
@@ -282,7 +282,7 @@ function makePriceable({ stockQuantity = 1 } = {}) {
 /** One real order, placed the way a customer places one. */
 async function placeAnOrder() {
   makePriceable();
-  const added = await addToCart(db, { token: null, slug: HAAR });
+  const added = await addToCart(db, { token: null, slug: BRIDAL });
   assert.equal(added.ok, true);
 
   const resolution = await resolveCheckout(db, {
@@ -314,7 +314,7 @@ function rows(sql, ...params) {
   return sqlite.prepare(sql).all(...params);
 }
 
-function stockOf(variantId = HAAR_VARIANT) {
+function stockOf(variantId = BRIDAL_VARIANT) {
   return one("SELECT stock_quantity AS q FROM variants WHERE id = ?", variantId).q;
 }
 

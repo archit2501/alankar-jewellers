@@ -14,6 +14,7 @@ import { known, site, whatsappUrl } from "../site-config";
 
 export const INTEREST_OPTIONS = [
   "Jadau and Polki",
+  "Temple jewellery",
   "Diamond jewellery",
   "Bridal jewellery",
   "A bespoke piece",

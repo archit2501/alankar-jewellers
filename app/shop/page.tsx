@@ -42,7 +42,7 @@ import { site } from "../site-config";
  * ===========================================================================
  * THE REGISTER IS HAVELI — a wall of lit alcoves
  * ===========================================================================
- * This is the same room as the homepage's "Turn one over." section, and it is
+ * This is the same room as the homepage's catalogue section, and it is
  * built from the same primitives rather than a new look: `.piece__alcove` with
  * its brass mount, its arch-cut teak recess and its lamp, all from
  * `app/globals.css`, unchanged. Only the grid around them is new (`.shop-*`),
@@ -78,7 +78,7 @@ export async function generateMetadata({
     title: TITLE,
     description: DESCRIPTION,
     alternates: { canonical: "/shop" },
-    // A filtered view is a slice of the same five pieces. Letting a crawler
+    // A filtered view is a slice of the same wall. Letting a crawler
     // index every metal x purity x collection x band combination is duplicate
     // content and crawl budget spent on nothing.
     ...(filtered ? { robots: { index: false, follow: true } } : {}),
@@ -393,11 +393,11 @@ export default async function ShopPage({
         >
           <div className="shop-opener__grid">
             <div className="shop-opener__statement">
-              <h1 id="shop-title">Every piece, from both sides.</h1>
+              <h1 id="shop-title">What is on the wall.</h1>
               <p className="lede shop-opener__lede">
-                The front is what the room sees. The back is enamelled, and only
-                the person wearing it ever knows it is there. Hover on a desktop,
-                tap on a phone.
+                The front is what the room sees, and the back is often enamelled.
+                Where a back has been photographed, hover on a desktop or tap on a
+                phone to turn the piece over.
               </p>
             </div>
 
@@ -418,16 +418,19 @@ export default async function ShopPage({
                 <summary className="shop-notice__summary">
                   <span className="shop-tag">Placeholder catalogue</span>
                   <span className="shop-notice__gist">
-                    Some of these pieces do not exist yet, and every photograph
-                    on this site is generated. Read what that means.
+                    Some of these pieces do not exist yet, and most photographs
+                    on this site are generated. Read what that means.
                   </span>
                 </summary>
                 <p>
-                  These pieces stand in for a catalogue that has not been
-                  photographed or weighed yet. The five heirloom pieces carry no
-                  weight, purity, hallmark number or certificate, because none of
-                  those has been recorded, so they are priced on request rather
-                  than given a figure we would be making up.
+                  The first five pieces on the wall are real, and they are in the
+                  shop. They were photographed at the counter and retouched with
+                  an image tool: the backdrop, the display bust and the light are
+                  new, and each was checked against the original photograph. None
+                  of them yet carries a weight, purity, hallmark number or
+                  certificate here, because none of those has been recorded, so
+                  they are priced on request rather than given a figure we would
+                  be making up.
                 </p>
                 <p>
                   The {DEMONSTRATION_SLUGS.length} pieces you can add to a bag
@@ -442,13 +445,12 @@ export default async function ShopPage({
                   would be a forged credential rather than a placeholder.
                 </p>
                 <p>
-                  <strong>Every photograph on this site is generated, not
+                  <strong>Every other photograph on this site is generated, not
                   taken.</strong>{" "}
-                  Nobody in these pictures is a customer of ours, and no piece in
-                  them has ever been in the shop. They are here so the site can
-                  be built and reviewed before the real stock is photographed,
-                  and every one of them will be replaced by a photograph of an
-                  actual piece.
+                  That means the demonstration pieces and every picture of
+                  jewellery being worn. Nobody in those pictures is a customer of
+                  ours, and none of those pieces has ever been in the shop. They
+                  will be replaced as the real stock is photographed.
                 </p>
                 <p>
                   <Link className="text-action" href="/#visit">
@@ -475,9 +477,10 @@ export default async function ShopPage({
               <h2 id="catalogue-title">Turn one over.</h2>
             </div>
             <p className="lede">
-              Each one is photographed twice, face and reverse, on the same grey
-              sweep. Every piece is one of a kind, so what is on the wall is what
-              there is.
+              The demonstration pieces are photographed face and reverse. The
+              five from the counter show their face for now, because their backs
+              have not been photographed yet. Every piece is one of a kind, so
+              what is on the wall is what there is.
             </p>
             <div className="rule-brass section-head__rule" aria-hidden="true" />
           </div>

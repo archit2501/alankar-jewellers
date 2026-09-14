@@ -72,11 +72,11 @@ const { jewelryStoreJsonLd, serializeJsonLd } = await import(
 function placeholderPiece(overrides = {}) {
   return {
     id: "piece_01HZ",
-    slug: "jadau-haar",
-    title: "Jadau haar",
+    slug: "meenakari-bridal-choker",
+    title: "Meenakari bridal choker",
     subtitle: null,
     description: null,
-    spec: "Uncut polki · carved ruby and emerald drops · silk cord",
+    spec: "Kundan row · enamelled panels · pearl-finish drops",
     pricingMode: "on_request",
     fineness: null,
     metal: "gold",
@@ -94,9 +94,10 @@ function placeholderPiece(overrides = {}) {
     certificateLab: null,
     stockQuantity: 1,
     isUniquePiece: true,
-    mediaKey: { front: "jadau-haar-front", back: "jadau-haar-reverse" },
-    alt: "Jadau haar of uncut polki closed-set in gold",
-    altBack: "The same haar turned over, enamelled on a red ground",
+    // The real pieces have no reverse photographed yet, so neither does this.
+    mediaKey: { front: "meenakari-bridal-choker-front", back: null },
+    alt: "Bridal antique gold choker with a kundan row and enamelled panels",
+    altBack: null,
     collections: [],
     price: null,
     priceUnavailableReason: "on_request",
@@ -360,9 +361,9 @@ test("the product is a Product hung on the existing JewelryStore node", () => {
 
   assert.equal(data["@context"], "https://schema.org");
   assert.equal(data["@type"], "Product");
-  assert.equal(data["@id"], `${productUrl("jadau-haar")}#product`);
-  assert.equal(data.url, productUrl("jadau-haar"));
-  assert.equal(productPath("jadau-haar"), "/shop/jadau-haar");
+  assert.equal(data["@id"], `${productUrl("meenakari-bridal-choker")}#product`);
+  assert.equal(data.url, productUrl("meenakari-bridal-choker"));
+  assert.equal(productPath("meenakari-bridal-choker"), "/shop/meenakari-bridal-choker");
   assert.match(data["@id"], /^https:\/\//);
 
   // Referenced, never duplicated: one business entity with products attached,
@@ -374,14 +375,18 @@ test("the product is a Product hung on the existing JewelryStore node", () => {
 });
 
 test("images are absolute, and only the piece's own reverse is published", () => {
-  const both = productJsonLd(documentedPiece());
+  // A piece that HAS a reverse, borrowed as a whole pair from one piece. Never a
+  // front from one piece and a back from another.
+  const both = productJsonLd(
+    documentedPiece({ mediaKey: { front: "rani-haar-front", back: "rani-haar-reverse" } })
+  );
   assert.equal(both.image.length, 2);
   for (const url of both.image) {
     assert.match(url, /^https:\/\/[^/]+\/images\/catalogue\//);
   }
 
   const frontOnly = productJsonLd(
-    documentedPiece({ mediaKey: { front: "jadau-haar-front", back: null } })
+    documentedPiece({ mediaKey: { front: "meenakari-bridal-choker-front", back: null } })
   );
   assert.equal(frontOnly.image.length, 1);
 });
@@ -394,7 +399,7 @@ test("a real price is published in full, GST included", () => {
   assert.equal(offers.priceCurrency, "INR");
   assert.equal(offers.valueAddedTaxIncluded, true);
   assert.equal(offers.availability, "https://schema.org/InStock");
-  assert.equal(offers["@id"], `${productUrl("jadau-haar")}#offer`);
+  assert.equal(offers["@id"], `${productUrl("meenakari-bridal-choker")}#offer`);
 });
 
 test("an unavailable price is OMITTED from the offer, never published as zero", () => {
@@ -505,13 +510,13 @@ test("the JSON-LD survives being embedded in a script tag", () => {
 /**
  * There is no D1 binding in-process, and `readCatalogue()` falls back to the
  * compiled seed when the binding throws — so the route genuinely renders here,
- * against the same five placeholder pieces the site ships with. Every one of
- * them is `on_request` with no weights and no HUID, which is exactly the state
- * the honesty rules below exist for.
+ * against the catalogue the site ships with. The choker is one of the five
+ * pieces from the counter: `on_request`, no weight, no HUID, and no reverse
+ * photographed, which is exactly the state the honesty rules below exist for.
  */
 let cached;
 async function productHtml() {
-  cached ??= await renderPage("/shop/jadau-haar");
+  cached ??= await renderPage("/shop/meenakari-bridal-choker");
   return cached;
 }
 
@@ -526,14 +531,14 @@ function structuredData(body) {
 }
 
 test("serves a piece as HTML, with exactly one h1", async () => {
-  const response = await renderPage("/shop/jadau-haar", { raw: true });
+  const response = await renderPage("/shop/meenakari-bridal-choker", { raw: true });
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const body = await productHtml();
   assert.equal((body.match(/<h1/g) ?? []).length, 1, "expected exactly one h1");
-  assert.match(body, /<h1[^>]*>Jadau haar<\/h1>/);
-  assert.match(body, /<link rel="canonical" href="https:\/\/[^"]*\/shop\/jadau-haar"/);
+  assert.match(body, /<h1[^>]*>Meenakari bridal choker<\/h1>/);
+  assert.match(body, /<link rel="canonical" href="https:\/\/[^"]*\/shop\/meenakari-bridal-choker"/);
 });
 
 test("an unknown slug is a 404, not an empty product page", async () => {
@@ -545,9 +550,21 @@ test("an unknown slug is a 404, not an empty product page", async () => {
   assert.doesNotMatch(body, /application\/ld\+json[\s\S]*"Product"/);
 });
 
+/** The face-and-reverse stage alone, so a worn shot further down is not counted as a plate. */
+function stageOf(body) {
+  const stage = body.match(/<section[^>]*\bpdp-stage\b[\s\S]*?<\/section>/);
+  assert.ok(stage, "no pdp-stage section on the page");
+  return stage[0];
+}
+
+/**
+ * The real pieces have no reverse, so this renders a demonstration piece that
+ * has one. Scoped to the stage: that piece also has a worn photograph lower down,
+ * which is a different kind of picture and not a third plate.
+ */
 test("the reverse is hung at the same size as the face, not as a thumbnail", async () => {
-  const body = await productHtml();
-  const imgs = body.match(/<img\b[^>]*>/g) ?? [];
+  const body = await renderPage("/shop/rani-haar");
+  const imgs = stageOf(body).match(/<img\b[^>]*>/g) ?? [];
   assert.equal(imgs.length, 2, `the diptych is two plates, found ${imgs.length} images`);
 
   for (const img of imgs) {
@@ -572,6 +589,19 @@ test("the reverse is hung at the same size as the face, not as a thumbnail", asy
   // The reverse carries its own alt text, not the face's.
   const alts = imgs.map((img) => img.match(/\balt="([^"]+)"/)[1]);
   assert.notEqual(alts[0], alts[1]);
+});
+
+/**
+ * NO REVERSE IS NOT A GAP TO FILL. A piece from the counter shows its face and
+ * says the back has not been photographed, rather than borrowing another piece's
+ * reverse or quietly dropping the plate.
+ */
+test("a piece with no reverse photographed shows one plate and says so", async () => {
+  const body = await productHtml();
+  const imgs = stageOf(body).match(/<img\b[^>]*>/g) ?? [];
+  assert.equal(imgs.length, 1, `expected the face alone, found ${imgs.length} images`);
+  assert.match(body, /Not photographed/);
+  assert.doesNotMatch(stageOf(body), /reverse-1400\.webp|reverse-800\.webp/);
 });
 
 test("every compliance field is disclosed, and a missing one says so", async () => {
@@ -624,8 +654,10 @@ test("the page publishes Product/Offer hung on the layout's JewelryStore node", 
   // One business entity with products attached, not a second copy per page.
   assert.equal(product.brand["@id"], business["@id"]);
   assert.equal(product.offers.seller["@id"], business["@id"]);
-  assert.match(product.url, /^https:\/\/[^/]+\/shop\/jadau-haar$/);
-  assert.equal(product.image.length, 2);
+  assert.match(product.url, /^https:\/\/[^/]+\/shop\/meenakari-bridal-choker$/);
+  // One image, not two: the reverse of this piece has not been photographed,
+  // and publishing a borrowed one would be an image of a different object.
+  assert.equal(product.image.length, 1);
 
   // The gate, end to end: a piece with no price publishes no price.
   assert.ok(!("price" in product.offers));

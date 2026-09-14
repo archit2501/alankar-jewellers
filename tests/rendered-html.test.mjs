@@ -43,7 +43,7 @@ test("server-renders every section", async () => {
   for (const copy of [
     "Jewels that",
     "become heirlooms.",
-    "Turn one over.",
+    "In the shop now.",
     "The part with no audience.",
     "Made slowly.",
     "One date, and no mythology.",
@@ -244,7 +244,7 @@ test("collection links point at real anchors", async () => {
   const body = await html();
 
   // Previously all three footer links pointed at the same #collections anchor.
-  for (const id of ["jadau", "polki", "chandbali", "kada", "tikka"]) {
+  for (const id of ["peacock", "choker", "parrot", "medallion", "arch"]) {
     assert.match(body, new RegExp(`id="${id}"`), `missing anchor target #${id}`);
     assert.match(body, new RegExp(`href="#${id}"`), `missing link to #${id}`);
   }
@@ -263,7 +263,7 @@ test("exposes navigation and honest calls to action", async () => {
   // The card CTA must describe what it actually does (it opens the enquiry
   // dialog; it does not navigate to a collection page). React emits a `<!-- -->`
   // separator between literal text and an interpolated value.
-  assert.match(body, /Enquire about (<!-- -->)?Jadau/);
+  assert.match(body, /Enquire about (<!-- -->)?Peacock temple haar/);
 });
 
 test("serves robots.txt and sitemap.xml with absolute URLs", async () => {

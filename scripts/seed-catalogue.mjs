@@ -42,8 +42,8 @@
  * also what the storefront falls back to when D1 is unreachable — one definition,
  * so the database and the fallback cannot disagree.
  *
- * These are PLACEHOLDER pieces for a shop whose real catalogue has not been
- * photographed or weighed. So:
+ * The five pieces from the counter are real and photographed, but nothing about
+ * them has been weighed, assayed or certified for this site. So:
  *
  *   pricing_mode           'on_request' for all five. No figure is invented.
  *   net_metal_weight_mg    NULL — nothing has been weighed.
@@ -57,11 +57,12 @@
  *   certificate_number     NULL — same argument.
  *   certificate_lab        NULL — same argument.
  *
- *   hallmarking_paise      0, and this is NOT a placeholder. QCO cl. 2(3)
- *                          exempts Kundan, Polki and Jadau from mandatory
- *                          hallmarking, and app/_pricing/price.ts emits no
- *                          component at all for a zero, so no invoice can imply
- *                          a hallmark that does not exist.
+ *   hallmarking_paise      DERIVED FROM CRAFT, never typed. QCO cl. 2(3)
+ *                          exempts Kundan, Polki and Jadau, so those are 0 and
+ *                          app/_pricing/price.ts emits no component for them.
+ *                          Plain gold is not exempt and carries the BIS fee.
+ *                          This used to be 0 for all five, which was true of the
+ *                          invented set and false for the temple haars.
  *   is_unique_piece        1 and stock_quantity 1 — one-of-a-kind is the norm
  *                          here, and `variants_unique_piece_stock_ck` enforces
  *                          the pairing.
@@ -71,11 +72,19 @@
  *                          asserted and the enum has no "unknown" member. No UI
  *                          reads this column; it must be set properly by the
  *                          admin when a real piece is entered.
- *   status/sale_mode       'active'. The five heirloom pieces are
+ *   status/sale_mode       'active'. The five pieces from the counter are
  *                          'enquire_only'; the demonstration stock is
  *                          'buy_online'. Read off the piece, not the row, so
  *                          there is one literal per piece. Online ordering is not
  *                          open, which is what the homepage already says.
+ *
+ *   RETIRED PIECES         set 'archived', BY NAME, from RETIRED_CATALOGUE_SLUGS.
+ *                          Upserts never deleted a product, so removing a piece
+ *                          from the seed used to leave it active in every
+ *                          database already seeded. Archived rather than deleted
+ *                          so any order or audit row that references it stays
+ *                          whole. Never "everything not in the seed": the admin
+ *                          panel creates pieces the seed does not know about.
  */
 
 import { existsSync, readdirSync } from "node:fs";
@@ -135,7 +144,7 @@ registerHooks({
   },
 });
 
-const { CATALOGUE_COLLECTIONS, CATALOGUE_SEED_ROWS } = await import(
+const { CATALOGUE_COLLECTIONS, CATALOGUE_SEED_ROWS, RETIRED_CATALOGUE_SLUGS } = await import(
   "../app/_data/catalogue.ts"
 );
 
@@ -298,6 +307,20 @@ export function buildSeedSql({ now = new Date().toISOString() } = {}) {
         },
         updatable(PRODUCT_COLUMNS)
       )
+    );
+  }
+
+  // Retire by name. A slug that is both seeded and retired would be written
+  // active and archived in the same run, so refuse it rather than pick one.
+  const seeded = new Set(CATALOGUE_SEED_ROWS.map((row) => row.piece.slug));
+  for (const slug of RETIRED_CATALOGUE_SLUGS) {
+    if (seeded.has(slug)) {
+      throw new Error(`"${slug}" is both seeded and retired. It can only be one.`);
+    }
+  }
+  if (RETIRED_CATALOGUE_SLUGS.length > 0) {
+    statements.push(
+      `UPDATE products\nSET status = 'archived', updated_at = ${sqlLiteral(now)}\nWHERE id IN (${RETIRED_CATALOGUE_SLUGS.map((slug) => sqlLiteral(`prd_${slug}`)).join(", ")})\n  AND status <> 'archived';`
     );
   }
 

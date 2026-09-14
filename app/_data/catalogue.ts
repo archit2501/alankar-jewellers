@@ -52,17 +52,23 @@
  *                                      placeholder, it is a fake credential.
  *   certificateNumber / certificateLab NULL — same argument.
  *
- * `hallmarkingPaise: 0` is NOT a placeholder and must not be "filled in later"
- * by default: QCO cl. 2(3) exempts Kundan, Polki and Jadau from mandatory
- * hallmarking, and `app/_pricing/price.ts` deliberately emits no component at
- * all for a zero, so no invoice implies a hallmark that does not exist. Note the
- * word "exempts" is doing real work — it is NOT true of the two plain gold
- * demonstration pieces described next, which do carry the fee.
+ * THE FIVE PIECES ARE REAL; THEIR RECORDS ARE NOT FILLED IN. They were
+ * photographed at the counter, so the storefront shows actual stock, but nobody
+ * has weighed, assayed or hallmark-checked them for this site. So everything
+ * above still holds for them: on request, and NULL wherever a checkable claim
+ * would go.
+ *
+ * `hallmarkingPaise` is DERIVED FROM CRAFT by `hallmarkingFeeFor()`, never typed
+ * per piece. QCO cl. 2(3) exempts Kundan, Polki and Jadau, so those carry 0 and
+ * `app/_pricing/price.ts` emits no component for it. Plain gold, which is what
+ * the four temple haars are, is NOT exempt and carries the BIS fee. The seed
+ * used to hardcode 0 for all five, which was correct for the invented set it
+ * replaced and wrong the day a gold piece went up.
  *
  * ===========================================================================
  * 3a. FOUR PIECES BELOW ARE DEMONSTRATION STOCK, AND ARE PRICED
  * ===========================================================================
- * The five heirloom pieces above remain exactly as (3) describes. Beneath them
+ * The five pieces from the counter remain exactly as (3) describes. Beneath them
  * sit four small everyday pieces built by `demoPiece()` which DO carry a weight,
  * a fineness and a making charge, and which are `saleMode: "buy_online"`.
  *
@@ -115,6 +121,7 @@ import type {
   PricedPiece,
   SaleMode,
 } from "./types";
+import { BIS_HALLMARK_FEE_PAISE, hallmarkingFeeFor } from "./types";
 
 /* =========================================================================
  * Presentation manifest — the half that is not in the database. See (1).
@@ -140,48 +147,41 @@ type Presentation = {
  * different ways.
  */
 const PRESENTATION: Readonly<Record<string, Presentation>> = {
-  "jadau-haar": {
-    mediaKey: { front: "jadau-haar-front", back: "jadau-haar-reverse", worn: null },
-    alt: "Jadau haar of uncut polki closed-set in gold, hung with carved ruby and emerald drops on a red silk cord",
-    altBack:
-      "The same haar turned over: every plate enamelled on a red ground with a white and green lotus",
+  "peacock-temple-haar": {
+    mediaKey: { front: "peacock-temple-haar-front", back: null, worn: null },
+    alt: "Long antique gold temple haar with two peacocks, rows of green stones and a seated figure at the centre, on a black velvet bust",
+    altBack: null,
     altWorn: null,
-    spec: "Uncut polki · carved ruby and emerald drops · silk cord",
+    spec: "Antique gold · green stones · pearl-finish drops",
   },
-  "polki-choker": {
-    mediaKey: { front: "polki-choker-front", back: "polki-choker-reverse", worn: null },
-    alt: "Polki choker of kundan-set uncut diamonds with a pearl fringe, strung on a red silk cord and tassel",
-    altBack:
-      "The same choker turned over: a green enamel ground carrying one white and red flower per cell",
+  "parrot-temple-haar": {
+    mediaKey: { front: "parrot-temple-haar-front", back: null, worn: null },
+    alt: "Long antique gold temple haar with a parrot at each shoulder, green stones, and two seated figures at the centre, one holding a flute, on a black velvet bust",
+    altBack: null,
     altWorn: null,
-    spec: "Kundan-set polki · pearl fringe · silk cord and tassel",
+    spec: "Parrots at the shoulders · green stones · pearl-finish drops",
   },
-  "chandbali-earrings": {
-    mediaKey: { front: "chandbali-earrings-front", back: "chandbali-earrings-reverse", worn: null },
-    alt: "Pair of crescent chandbali earrings in granulated gold with rose-cut polki and pearl and emerald bead drops",
-    altBack:
-      "The same pair turned over: a green, red and white lotus spread across the whole of each crescent",
+  "medallion-temple-haar": {
+    mediaKey: { front: "medallion-temple-haar-front", back: null, worn: null },
+    alt: "Long antique gold haar of embossed medallions, with red-set crescents at the sides and a seated figure on the pendant, on a black velvet bust",
+    altBack: null,
     altWorn: null,
-    spec: "Crescent chandbali · rose-cut polki · pearl and emerald drops",
+    spec: "Embossed gold medallions · red-set crescents",
   },
-  "kundan-kada": {
-    mediaKey: { front: "kundan-kada-front", back: "kundan-kada-reverse", worn: null },
-    alt: "Hinged gold kada set with kundan flowerheads, rimmed in seed pearls, with carved emerald terminals",
-    altBack:
-      "The same kada turned over: a red and green flowering vine enamelled around the inner face",
+  "temple-arch-haar": {
+    mediaKey: { front: "temple-arch-haar-front", back: null, worn: null },
+    alt: "Heavy antique gold temple necklace with a standing figure under an arch, seated figures on either side, red stones and gold bell drops, on a black velvet bust",
+    altBack: null,
     altWorn: null,
-    spec: "Closed-set kundan · seed-pearl rim · carved emerald terminals",
+    spec: "Red stones · gold bell drops",
   },
-  "maang-tikka": {
-    mediaKey: { front: "maang-tikka-front", back: "maang-tikka-reverse", worn: null },
-    alt: "Round gold maang tikka set with kundan around a ruby centre, a polki drop below and a woven chain above",
-    altBack: "Turn over to see the concentric floral meenakari rosette on the back of the disc",
+  "meenakari-bridal-choker": {
+    mediaKey: { front: "meenakari-bridal-choker-front", back: null, worn: null },
+    alt: "Bridal antique gold choker with a row of red stones, a kundan row, cream enamelled panels and a long fringe of red and pearl-finish drops, on a black velvet bust",
+    altBack: null,
     altWorn: null,
-    spec: "Kundan-set polki · ruby centre · woven chain",
+    spec: "Kundan row · enamelled panels · pearl-finish drops",
   },
-
-  /* --- The four demonstration pieces. See (3a). ------------------------- */
-
   "gold-jhumka": {
     mediaKey: { front: "gold-jhumka-front", back: "gold-jhumka-reverse", worn: "gold-jhumka-worn" },
     alt: "Pair of small gold jhumka earrings, each a granulated dome hung with a fringe of seed pearls",
@@ -361,8 +361,8 @@ function seedPiece(input: {
     makingChargeType: null,
     makingChargeValue: null,
     stoneValuePaise: 0,
-    // Not a placeholder: QCO cl. 2(3) exempts Kundan, Polki and Jadau.
-    hallmarkingPaise: 0,
+    // Derived, not typed: 0 for an exempt craft, the BIS fee for plain gold.
+    hallmarkingPaise: hallmarkingFeeFor(input.craft),
     otherChargesPaise: 0,
     fixedPricePaise: null,
 
@@ -469,87 +469,93 @@ function demoPiece(input: {
 }
 
 /**
- * The five pieces, in the order the wall hangs them. Titles, specs, copy and alt
- * text are verbatim from `app/page.tsx`.
+ * The five pieces from the counter, in the order the wall hangs them. Titles,
+ * specs, copy and alt text are verbatim from `app/page.tsx`.
+ *
+ * THE NAMES ARE DESCRIPTIVE, NOT THE SHOP'S. They describe what the photograph
+ * shows. Figures are not named as deities, because a wrong name is a real error
+ * for someone buying devotional work, and stones are described by colour,
+ * because "emerald" and "ruby" are gemstone claims nobody has tested. The shop
+ * replaces all of it with its own words.
  */
 export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
   {
     piece: seedPiece({
-      slug: "jadau-haar",
+      slug: "peacock-temple-haar",
       saleMode: "enquire_only",
-      title: "Jadau haar",
-      subtitle: "Necklace",
+      title: "Peacock temple haar",
+      subtitle: "Long necklace",
       description:
-        "Gold and stone on the face. On the back, a lotus fired into every single plate.",
-      craft: "jadau",
-      collections: ["necklaces", "jadau-polki", "meenakari", "bridal"],
+        "Two peacocks meet over a seated figure, with a six-sided green stone set above it.",
+      craft: "gold",
+      collections: ["necklaces"],
     }),
-    variantId: "var_jadau-haar",
-    sku: "AJ-JADAU-HAAR-01",
+    variantId: "var_peacock-temple-haar",
+    sku: "AJ-PEACOCK-HAAR-01",
     status: "active",
     position: 10,
   },
   {
     piece: seedPiece({
-      slug: "polki-choker",
+      slug: "meenakari-bridal-choker",
       saleMode: "enquire_only",
-      title: "Polki choker",
+      title: "Meenakari bridal choker",
       subtitle: "Choker",
       description:
-        "Close-set stones sit shoulder to shoulder in front. Behind them, green enamel and thirty small flowers.",
-      craft: "polki",
-      collections: ["necklaces", "jadau-polki", "meenakari", "bridal"],
+        "A kundan row and red stones over a field of gold paisley, then enamelled panels and a long fringe.",
+      craft: "kundan",
+      collections: ["necklaces", "kundan", "bridal"],
     }),
-    variantId: "var_polki-choker",
-    sku: "AJ-POLKI-CHOKER-01",
+    variantId: "var_meenakari-bridal-choker",
+    sku: "AJ-MEENA-CHOKER-01",
     status: "active",
     position: 20,
   },
   {
     piece: seedPiece({
-      slug: "chandbali-earrings",
+      slug: "parrot-temple-haar",
       saleMode: "enquire_only",
-      title: "Chandbali earrings",
-      subtitle: "Earrings",
+      title: "Parrot temple haar",
+      subtitle: "Long necklace",
       description:
-        "Worn, the reverse faces the wearer's neck. It is still the more decorated of the two sides.",
-      craft: "polki",
-      collections: ["earrings", "jadau-polki", "meenakari", "bridal"],
+        "Two seated figures at the centre, one holding a flute, under a crown set with green stones.",
+      craft: "gold",
+      collections: ["necklaces"],
     }),
-    variantId: "var_chandbali-earrings",
-    sku: "AJ-CHANDBALI-01",
+    variantId: "var_parrot-temple-haar",
+    sku: "AJ-PARROT-HAAR-01",
     status: "active",
     position: 30,
   },
   {
     piece: seedPiece({
-      slug: "kundan-kada",
+      slug: "medallion-temple-haar",
       saleMode: "enquire_only",
-      title: "Kundan kada",
-      subtitle: "Bangle",
+      title: "Medallion temple haar",
+      subtitle: "Long necklace",
       description:
-        "The inside of a bangle touches only the wrist, which is exactly why this one is enamelled.",
-      craft: "kundan",
-      collections: ["bangles", "kundan", "meenakari", "bridal"],
+        "Every link is its own embossed disc, and the pendant carries a seated figure between two green stones.",
+      craft: "gold",
+      collections: ["necklaces"],
     }),
-    variantId: "var_kundan-kada",
-    sku: "AJ-KUNDAN-KADA-01",
+    variantId: "var_medallion-temple-haar",
+    sku: "AJ-MEDALLION-HAAR-01",
     status: "active",
     position: 40,
   },
   {
     piece: seedPiece({
-      slug: "maang-tikka",
+      slug: "temple-arch-haar",
       saleMode: "enquire_only",
-      title: "Maang tikka",
-      subtitle: "Headpiece",
+      title: "Temple arch haar",
+      subtitle: "Necklace",
       description:
-        "The smallest piece here, and the back of it is worked as carefully as the front nobody questions.",
-      craft: "kundan",
-      collections: ["headpieces", "kundan", "meenakari", "bridal"],
+        "A standing figure under a temple arch, a seated figure on either side, and gold bells along the lower edge.",
+      craft: "gold",
+      collections: ["necklaces"],
     }),
-    variantId: "var_maang-tikka",
-    sku: "AJ-MAANG-TIKKA-01",
+    variantId: "var_temple-arch-haar",
+    sku: "AJ-ARCH-HAAR-01",
     status: "active",
     position: 50,
   },
@@ -580,7 +586,7 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
       makingChargeType: "percent",
       makingChargeValue: 1400, // 14% of metal value
       stoneValuePaise: 0, // seed pearls, carried in the making charge
-      hallmarkingPaise: 4500, // plain gold: NOT exempt, BIS fee per article
+      hallmarkingPaise: BIS_HALLMARK_FEE_PAISE, // plain gold: NOT exempt, BIS fee per article
     }),
     variantId: "var_gold-jhumka",
     sku: "AJ-JHUMKA-01",
@@ -649,7 +655,7 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
       makingChargeType: "per_gram",
       makingChargeValue: 65_000, // ₹650 per gram
       stoneValuePaise: 0,
-      hallmarkingPaise: 4500, // plain gold: NOT exempt
+      hallmarkingPaise: BIS_HALLMARK_FEE_PAISE, // plain gold: NOT exempt
     }),
     variantId: "var_slim-kada",
     sku: "AJ-KADA-01",
@@ -744,7 +750,27 @@ export const CATALOGUE_SEED_ROWS: readonly CatalogueSeedRow[] = [
   },
 ];
 
-/** The five pieces as the storefront sees them. */
+/** The whole seeded catalogue as the storefront sees it. */
+/**
+ * THE FIVE INVENTED HEIRLOOM PIECES THAT THE REAL FIVE REPLACED.
+ *
+ * The seed upserts by deterministic id and never deleted a product, so dropping
+ * these rows from `CATALOGUE_SEED_ROWS` alone would leave them `active` in any
+ * database already seeded, production included, still on the wall with their
+ * images deleted. The seed archives exactly these ids.
+ *
+ * NAMED, NOT "EVERYTHING NOT IN THE SEED": the admin panel creates pieces with
+ * its own SKUs, and archiving whatever the seed does not list would quietly take
+ * the owner's own stock off the site.
+ */
+export const RETIRED_CATALOGUE_SLUGS: readonly string[] = [
+  "jadau-haar",
+  "polki-choker",
+  "chandbali-earrings",
+  "kundan-kada",
+  "maang-tikka",
+];
+
 export const CATALOGUE_SEED: readonly CataloguePiece[] = CATALOGUE_SEED_ROWS.map(
   (row) => row.piece
 );

@@ -709,7 +709,7 @@ test("the empty state lists the four real gaps, each checked against code", asyn
   assert.equal(by.payment_capture.resolved, PAYMENT_CAPTURE_ENABLED);
   assert.equal(by.payment_capture.resolved, false);
 
-  // The seeded catalogue is the five heirloom pieces plus four demonstration
+  // The seeded catalogue is the five pieces from the counter plus demonstration
   // pieces that DO carry a weight and a fineness. The gap reports the database
   // rather than an opinion about it, so it resolves — and the wording has to
   // follow, because "none has been weighed" is now simply false.

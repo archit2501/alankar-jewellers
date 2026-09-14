@@ -31,18 +31,6 @@ export const images = {
     "height": 1750,
     "srcSet": "/images/catalogue/bridal-tikka-worn-400.webp 400w, /images/catalogue/bridal-tikka-worn-800.webp 800w, /images/catalogue/bridal-tikka-worn-1400.webp 1400w"
   },
-  "chandbali-earrings-front": {
-    "src": "/images/catalogue/chandbali-earrings-front-1400.webp",
-    "width": 1400,
-    "height": 1750,
-    "srcSet": "/images/catalogue/chandbali-earrings-front-400.webp 400w, /images/catalogue/chandbali-earrings-front-800.webp 800w, /images/catalogue/chandbali-earrings-front-1400.webp 1400w"
-  },
-  "chandbali-earrings-reverse": {
-    "src": "/images/catalogue/chandbali-earrings-reverse-1400.webp",
-    "width": 1400,
-    "height": 1750,
-    "srcSet": "/images/catalogue/chandbali-earrings-reverse-400.webp 400w, /images/catalogue/chandbali-earrings-reverse-800.webp 800w, /images/catalogue/chandbali-earrings-reverse-1400.webp 1400w"
-  },
   "founder-portrait-a": {
     "src": "/images/catalogue/founder-portrait-a-900.webp",
     "width": 900,
@@ -79,18 +67,6 @@ export const images = {
     "height": 1750,
     "srcSet": "/images/catalogue/gold-jhumka-worn-400.webp 400w, /images/catalogue/gold-jhumka-worn-800.webp 800w, /images/catalogue/gold-jhumka-worn-1400.webp 1400w"
   },
-  "jadau-haar-front": {
-    "src": "/images/catalogue/jadau-haar-front-1400.webp",
-    "width": 1400,
-    "height": 1750,
-    "srcSet": "/images/catalogue/jadau-haar-front-400.webp 400w, /images/catalogue/jadau-haar-front-800.webp 800w, /images/catalogue/jadau-haar-front-1400.webp 1400w"
-  },
-  "jadau-haar-reverse": {
-    "src": "/images/catalogue/jadau-haar-reverse-1400.webp",
-    "width": 1400,
-    "height": 1750,
-    "srcSet": "/images/catalogue/jadau-haar-reverse-400.webp 400w, /images/catalogue/jadau-haar-reverse-800.webp 800w, /images/catalogue/jadau-haar-reverse-1400.webp 1400w"
-  },
   "jadau-kangan-front": {
     "src": "/images/catalogue/jadau-kangan-front-1400.webp",
     "width": 1400,
@@ -108,18 +84,6 @@ export const images = {
     "width": 1400,
     "height": 1750,
     "srcSet": "/images/catalogue/jadau-kangan-worn-400.webp 400w, /images/catalogue/jadau-kangan-worn-800.webp 800w, /images/catalogue/jadau-kangan-worn-1400.webp 1400w"
-  },
-  "kundan-kada-front": {
-    "src": "/images/catalogue/kundan-kada-front-1400.webp",
-    "width": 1400,
-    "height": 1750,
-    "srcSet": "/images/catalogue/kundan-kada-front-400.webp 400w, /images/catalogue/kundan-kada-front-800.webp 800w, /images/catalogue/kundan-kada-front-1400.webp 1400w"
-  },
-  "kundan-kada-reverse": {
-    "src": "/images/catalogue/kundan-kada-reverse-1400.webp",
-    "width": 1400,
-    "height": 1750,
-    "srcSet": "/images/catalogue/kundan-kada-reverse-400.webp 400w, /images/catalogue/kundan-kada-reverse-800.webp 800w, /images/catalogue/kundan-kada-reverse-1400.webp 1400w"
   },
   "lotus-pendant-front": {
     "src": "/images/catalogue/lotus-pendant-front-1400.webp",
@@ -139,29 +103,29 @@ export const images = {
     "height": 1750,
     "srcSet": "/images/catalogue/lotus-pendant-worn-400.webp 400w, /images/catalogue/lotus-pendant-worn-800.webp 800w, /images/catalogue/lotus-pendant-worn-1400.webp 1400w"
   },
-  "maang-tikka-front": {
-    "src": "/images/catalogue/maang-tikka-front-1400.webp",
+  "medallion-temple-haar-front": {
+    "src": "/images/catalogue/medallion-temple-haar-front-1400.webp",
     "width": 1400,
     "height": 1750,
-    "srcSet": "/images/catalogue/maang-tikka-front-400.webp 400w, /images/catalogue/maang-tikka-front-800.webp 800w, /images/catalogue/maang-tikka-front-1400.webp 1400w"
+    "srcSet": "/images/catalogue/medallion-temple-haar-front-400.webp 400w, /images/catalogue/medallion-temple-haar-front-800.webp 800w, /images/catalogue/medallion-temple-haar-front-1400.webp 1400w"
   },
-  "maang-tikka-reverse": {
-    "src": "/images/catalogue/maang-tikka-reverse-1400.webp",
+  "meenakari-bridal-choker-front": {
+    "src": "/images/catalogue/meenakari-bridal-choker-front-1400.webp",
     "width": 1400,
     "height": 1750,
-    "srcSet": "/images/catalogue/maang-tikka-reverse-400.webp 400w, /images/catalogue/maang-tikka-reverse-800.webp 800w, /images/catalogue/maang-tikka-reverse-1400.webp 1400w"
+    "srcSet": "/images/catalogue/meenakari-bridal-choker-front-400.webp 400w, /images/catalogue/meenakari-bridal-choker-front-800.webp 800w, /images/catalogue/meenakari-bridal-choker-front-1400.webp 1400w"
   },
-  "polki-choker-front": {
-    "src": "/images/catalogue/polki-choker-front-1400.webp",
+  "parrot-temple-haar-front": {
+    "src": "/images/catalogue/parrot-temple-haar-front-1400.webp",
     "width": 1400,
     "height": 1750,
-    "srcSet": "/images/catalogue/polki-choker-front-400.webp 400w, /images/catalogue/polki-choker-front-800.webp 800w, /images/catalogue/polki-choker-front-1400.webp 1400w"
+    "srcSet": "/images/catalogue/parrot-temple-haar-front-400.webp 400w, /images/catalogue/parrot-temple-haar-front-800.webp 800w, /images/catalogue/parrot-temple-haar-front-1400.webp 1400w"
   },
-  "polki-choker-reverse": {
-    "src": "/images/catalogue/polki-choker-reverse-1400.webp",
+  "peacock-temple-haar-front": {
+    "src": "/images/catalogue/peacock-temple-haar-front-1400.webp",
     "width": 1400,
     "height": 1750,
-    "srcSet": "/images/catalogue/polki-choker-reverse-400.webp 400w, /images/catalogue/polki-choker-reverse-800.webp 800w, /images/catalogue/polki-choker-reverse-1400.webp 1400w"
+    "srcSet": "/images/catalogue/peacock-temple-haar-front-400.webp 400w, /images/catalogue/peacock-temple-haar-front-800.webp 800w, /images/catalogue/peacock-temple-haar-front-1400.webp 1400w"
   },
   "polki-ring-front": {
     "src": "/images/catalogue/polki-ring-front-1400.webp",
@@ -204,6 +168,12 @@ export const images = {
     "width": 1400,
     "height": 1750,
     "srcSet": "/images/catalogue/slim-kada-worn-400.webp 400w, /images/catalogue/slim-kada-worn-800.webp 800w, /images/catalogue/slim-kada-worn-1400.webp 1400w"
+  },
+  "temple-arch-haar-front": {
+    "src": "/images/catalogue/temple-arch-haar-front-1400.webp",
+    "width": 1400,
+    "height": 1750,
+    "srcSet": "/images/catalogue/temple-arch-haar-front-400.webp 400w, /images/catalogue/temple-arch-haar-front-800.webp 800w, /images/catalogue/temple-arch-haar-front-1400.webp 1400w"
   },
   "workshop-bench": {
     "src": "/images/catalogue/workshop-bench-900.webp",

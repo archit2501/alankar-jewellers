@@ -168,8 +168,8 @@ const SESSION_SECRET = "test-session-secret-fedcba9876543210";
 const ADMIN_EMAIL = "owner@alankar.test";
 const ORIGIN = "http://localhost";
 
-const HAAR = "jadau-haar";
-const HAAR_VARIANT = "var_jadau-haar";
+const BRIDAL = "meenakari-bridal-choker";
+const BRIDAL_VARIANT = "var_meenakari-bridal-choker";
 const SHOP_STATE = "08";
 
 /** IBJA's 916 figure on the day this was written, as published: ₹1,37,053. */
@@ -280,7 +280,7 @@ function seatRate({
 }
 
 function makePriceable({ stockQuantity = 1 } = {}) {
-  sqlite.prepare("UPDATE products SET sale_mode = 'buy_online' WHERE slug = ?").run(HAAR);
+  sqlite.prepare("UPDATE products SET sale_mode = 'buy_online' WHERE slug = ?").run(BRIDAL);
   sqlite
     .prepare(
       `UPDATE variants
@@ -294,12 +294,12 @@ function makePriceable({ stockQuantity = 1 } = {}) {
               is_unique_piece = 1
         WHERE id = ?`
     )
-    .run(stockQuantity, HAAR_VARIANT);
+    .run(stockQuantity, BRIDAL_VARIANT);
 }
 
 /** One real order, placed the way a customer places one. */
 async function placeAnOrder() {
-  const added = await addToCart(db, { token: null, slug: HAAR });
+  const added = await addToCart(db, { token: null, slug: BRIDAL });
   assert.equal(added.ok, true, `add to cart failed: ${JSON.stringify(added)}`);
 
   const resolution = await resolveCheckout(db, {
@@ -927,7 +927,7 @@ test("the numbers screen draws SVG charts, each with a text alternative", async 
   sqlite
     .prepare("UPDATE orders SET placed_at = ? WHERE 1 = 1")
     .run(new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString());
-  sqlite.prepare("UPDATE variants SET stock_quantity = 1 WHERE id = ?").run(HAAR_VARIANT);
+  sqlite.prepare("UPDATE variants SET stock_quantity = 1 WHERE id = ?").run(BRIDAL_VARIANT);
   await placeAnOrder();
 
   const { response, html } = await getPage("/admin/numbers");
@@ -974,7 +974,7 @@ test("no chart and no tile prints money the shop has not received", async () => 
   sqlite
     .prepare("UPDATE orders SET placed_at = ? WHERE 1 = 1")
     .run(new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString());
-  sqlite.prepare("UPDATE variants SET stock_quantity = 1 WHERE id = ?").run(HAAR_VARIANT);
+  sqlite.prepare("UPDATE variants SET stock_quantity = 1 WHERE id = ?").run(BRIDAL_VARIANT);
   await placeAnOrder();
 
   const { html } = await getPage("/admin/numbers");

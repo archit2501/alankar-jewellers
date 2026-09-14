@@ -1513,12 +1513,13 @@ test("a handle the shop never issued is refused before the database is asked", a
 test("the panel can also manage stock it did not enter", async () => {
   // The five seeded pieces carry their own SKUs. A panel that only understood
   // its own handles would orphan everything already in the database.
-  const piece = await readPiece(db, "AJ-JADAU-HAAR-01");
+  const piece = await readPiece(db, "AJ-MEENA-CHOKER-01");
   assert.ok(piece, "the seeded stock must be readable");
   assert.equal(piece.status, "active");
   assert.equal(piece.pricingMode, "on_request");
   assert.equal(piece.huid, null);
-  // Seeded as exempt, which is the truth for Jadau — so it has no gap there.
+  // Seeded as kundan, which QCO cl. 2(3) exempts, so it has no gap there. The
+  // four temple haars are plain gold and would, correctly, show one.
   assert.equal(hallmarkAnswered(piece), true);
   assert.deepEqual(
     gapsFor(piece)
@@ -1527,7 +1528,7 @@ test("the panel can also manage stock it did not enter", async () => {
     ["photograph", "weight"]
   );
 
-  const { response, html } = await getPage("/admin/pieces/AJ-JADAU-HAAR-01");
+  const { response, html } = await getPage("/admin/pieces/AJ-MEENA-CHOKER-01");
   assert.equal(response.status, 200);
-  assert.ok(html.includes("Jadau haar"));
+  assert.ok(html.includes("Meenakari bridal choker"));
 });

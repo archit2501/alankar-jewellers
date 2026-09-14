@@ -108,24 +108,24 @@ const objects: { key: ImageKey; name: string; note: string }[] = [
     note: "Every stone is pushed into its seat by hand, one at a time.",
   },
   {
-    key: "jadau-haar-front",
-    name: "Jadau",
-    note: "Uncut stones held by pressed gold rather than by claws.",
+    key: "meenakari-bridal-choker-front",
+    name: "Kundan",
+    note: "Stones seated in gold and closed by hand, in one row across the choker.",
   },
   {
-    key: "polki-choker-reverse",
-    name: "Meenakari",
-    note: "The reverse is enamelled whether or not a room ever sees it.",
+    key: "peacock-temple-haar-front",
+    name: "Temple work",
+    note: "Figures and peacocks raised from the gold, the recesses left dark so the relief reads.",
   },
   {
-    key: "chandbali-earrings-front",
-    name: "Chandbali",
-    note: "The crescent, hung so that it swings rather than sits.",
+    key: "medallion-temple-haar-front",
+    name: "Medallions",
+    note: "Every link its own embossed disc, joined so the chain still moves.",
   },
   {
-    key: "kundan-kada-front",
-    name: "Kada",
-    note: "Weight you register in the hand before you look at it.",
+    key: "temple-arch-haar-front",
+    name: "Bells",
+    note: "Gold drops along the lower edge that move when the piece is worn.",
   },
 ];
 

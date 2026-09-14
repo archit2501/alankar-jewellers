@@ -177,7 +177,7 @@ function migratedDatabase() {
   sqlite.exec("COMMIT");
 
   // These suites are about CART MECHANICS -- forged tokens, hold arbitration,
-  // races -- and they drive the two heirloom pieces, which the shop has marked
+  // races -- and they drive pieces from the counter, which the shop has marked
   // `enquire_only`. The add path now refuses those, correctly, so the fixture
   // makes them buyable rather than the tests pretending the refusal is a bug.
   // Enforcement of `sale_mode` itself is tested separately and in both
@@ -193,9 +193,9 @@ function freshCart() {
   return { sqlite, db: d1CartDb(d1Over(sqlite)) };
 }
 
-const HAAR = "jadau-haar";
-const CHOKER = "polki-choker";
-const HAAR_VARIANT = "var_jadau-haar";
+const BRIDAL = "meenakari-bridal-choker";
+const HAAR = "peacock-temple-haar";
+const BRIDAL_VARIANT = "var_meenakari-bridal-choker";
 
 function count(sqlite, sql, ...params) {
   return sqlite.prepare(sql).get(...params).c;
@@ -214,7 +214,7 @@ function count(sqlite, sql, ...params) {
  * private viewing is."
  *
  * For weeks the admin wrote it, the audit log tracked it, checkout refused on
- * it -- and the cart's add path did not read it at all, so an heirloom piece
+ * it -- and the cart's add path did not read it at all, so an enquire-only piece
  * could be added, priced and shown a total before anything objected. Hiding the
  * button was not enough either: /api/cart takes a plain form POST.
  *
@@ -225,9 +225,9 @@ test("a piece the shop has not put on sale online cannot be added to a cart", as
   const { sqlite, db } = freshCart();
 
   // The fixture opens everything; close one piece the way the owner would.
-  sqlite.prepare("UPDATE products SET sale_mode = 'enquire_only' WHERE slug = ?").run(HAAR);
+  sqlite.prepare("UPDATE products SET sale_mode = 'enquire_only' WHERE slug = ?").run(BRIDAL);
 
-  const refused = await addToCart(db, { token: null, slug: HAAR });
+  const refused = await addToCart(db, { token: null, slug: BRIDAL });
   assert.equal(refused.ok, false);
   assert.equal(refused.reason, "not_for_sale_online");
 
@@ -238,7 +238,7 @@ test("a piece the shop has not put on sale online cannot be added to a cart", as
 
   // The other piece is untouched and still works, so the refusal is about this
   // piece rather than a broken add path.
-  const allowed = await addToCart(db, { token: null, slug: CHOKER });
+  const allowed = await addToCart(db, { token: null, slug: HAAR });
   assert.equal(allowed.ok, true);
 });
 
@@ -247,11 +247,11 @@ test("the refusal is about sale mode, not stock, and says so", async () => {
 
   // In stock AND not for sale online. The two reasons must not be confused:
   // "sold out" would send a customer away from a piece that is sitting there.
-  sqlite.prepare("UPDATE products SET sale_mode = 'appointment_only' WHERE slug = ?").run(HAAR);
-  const stock = count(sqlite, "SELECT stock_quantity AS c FROM variants WHERE id = ?", HAAR_VARIANT);
+  sqlite.prepare("UPDATE products SET sale_mode = 'appointment_only' WHERE slug = ?").run(BRIDAL);
+  const stock = count(sqlite, "SELECT stock_quantity AS c FROM variants WHERE id = ?", BRIDAL_VARIANT);
   assert.ok(stock > 0, "the piece must be in stock for this to mean anything");
 
-  const result = await addToCart(db, { token: null, slug: HAAR });
+  const result = await addToCart(db, { token: null, slug: BRIDAL });
   assert.equal(result.ok, false);
   assert.equal(result.reason, "not_for_sale_online");
 });
@@ -329,7 +329,7 @@ test("only notice codes the shop publishes survive the round trip", () => {
 test("adding a piece creates a cart, a line, and a hold", async () => {
   const { sqlite, db } = freshCart();
 
-  const result = await addToCart(db, { token: null, slug: HAAR });
+  const result = await addToCart(db, { token: null, slug: BRIDAL });
 
   assert.equal(result.ok, true);
   assert.equal(result.cartCreated, true);
@@ -348,16 +348,16 @@ test("adding a piece creates a cart, a line, and a hold", async () => {
 
   const line = sqlite.prepare("SELECT * FROM cart_items").get();
   assert.equal(line.cart_id, result.cartId);
-  assert.equal(line.variant_id, HAAR_VARIANT);
+  assert.equal(line.variant_id, BRIDAL_VARIANT);
   assert.equal(line.quantity, 1);
 });
 
 test("NO PRICE IS EVER WRITTEN TO A CART LINE", async () => {
   const { sqlite, db } = freshCart();
 
-  const first = await addToCart(db, { token: null, slug: HAAR });
+  const first = await addToCart(db, { token: null, slug: BRIDAL });
+  await addToCart(db, { token: first.cartId, slug: BRIDAL });
   await addToCart(db, { token: first.cartId, slug: HAAR });
-  await addToCart(db, { token: first.cartId, slug: CHOKER });
   await readCart(db, { token: first.cartId });
 
   const lines = sqlite.prepare("SELECT * FROM cart_items").all();
@@ -384,8 +384,8 @@ test("NO PRICE IS EVER WRITTEN TO A CART LINE", async () => {
 test("adding the same piece twice leaves one line, not two and not a quantity of two", async () => {
   const { sqlite, db } = freshCart();
 
-  const first = await addToCart(db, { token: null, slug: HAAR });
-  const second = await addToCart(db, { token: first.cartId, slug: HAAR });
+  const first = await addToCart(db, { token: null, slug: BRIDAL });
+  const second = await addToCart(db, { token: first.cartId, slug: BRIDAL });
 
   assert.equal(second.ok, true);
   assert.equal(second.cartId, first.cartId, "a second add started a new cart");
@@ -410,8 +410,8 @@ test("adding the same piece twice leaves one line, not two and not a quantity of
 test("removing a piece deletes the line and releases the hold, in one transaction", async () => {
   const { sqlite, db } = freshCart();
 
-  const added = await addToCart(db, { token: null, slug: HAAR });
-  const removed = await removeFromCart(db, { token: added.cartId, slug: HAAR });
+  const added = await addToCart(db, { token: null, slug: BRIDAL });
+  const removed = await removeFromCart(db, { token: added.cartId, slug: BRIDAL });
 
   assert.equal(removed.ok, true);
   assert.equal(removed.removed, true);
@@ -430,7 +430,7 @@ test("removing a piece deletes the line and releases the hold, in one transactio
 
   // A second remove is not an error and is not a fake success: it reports that
   // nothing was deleted.
-  const again = await removeFromCart(db, { token: added.cartId, slug: HAAR });
+  const again = await removeFromCart(db, { token: added.cartId, slug: BRIDAL });
   assert.equal(again.ok, true);
   assert.equal(again.removed, false);
   assert.equal(again.released, false);
@@ -443,8 +443,8 @@ test("THE RACE: two carts claim one unique piece and exactly one wins", async ()
 
   // Both shoppers arrive with no cart, and both go for the same piece.
   const [a, b] = await Promise.all([
-    addToCart(db, { token: null, slug: HAAR }),
-    addToCart(db, { token: null, slug: HAAR }),
+    addToCart(db, { token: null, slug: BRIDAL }),
+    addToCart(db, { token: null, slug: BRIDAL }),
   ]);
 
   assert.equal(a.ok, true);
@@ -461,7 +461,7 @@ test("THE RACE: two carts claim one unique piece and exactly one wins", async ()
     count(
       sqlite,
       "SELECT count(*) AS c FROM stock_reservations WHERE status = 'held' AND variant_id = ?",
-      HAAR_VARIANT
+      BRIDAL_VARIANT
     ),
     1
   );
@@ -480,7 +480,7 @@ test("THE ARBITER IS THE DATABASE: a second live hold cannot be inserted at all"
         `INSERT INTO stock_reservations (id, variant_id, cart_id, quantity, status, expires_at)
          VALUES (?, ?, ?, 1, 'held', '2999-01-01T00:00:00.000Z')`
       )
-      .run(id, HAAR_VARIANT, "cart-one");
+      .run(id, BRIDAL_VARIANT, "cart-one");
 
   sqlite
     .prepare("INSERT INTO carts (id, status) VALUES ('cart-one', 'open')")
@@ -502,15 +502,15 @@ test("THE ARBITER IS THE DATABASE: a second live hold cannot be inserted at all"
 test("a released piece is picked up by whoever else has it in their cart", async () => {
   const { sqlite, db } = freshCart();
 
-  const winner = await addToCart(db, { token: null, slug: HAAR });
-  const waiter = await addToCart(db, { token: null, slug: HAAR });
+  const winner = await addToCart(db, { token: null, slug: BRIDAL });
+  const waiter = await addToCart(db, { token: null, slug: BRIDAL });
   assert.equal(winner.claimed, true);
   assert.equal(waiter.claimed, false);
 
   // The winner changes their mind. The release happens in the same transaction
   // as the delete, so there is no window in which the line is gone and the
   // piece is still locked away.
-  await removeFromCart(db, { token: winner.cartId, slug: HAAR });
+  await removeFromCart(db, { token: winner.cartId, slug: BRIDAL });
 
   const snapshot = await readCart(db, { token: waiter.cartId });
   assert.equal(snapshot.lines.length, 1);
@@ -522,7 +522,7 @@ test("a released piece is picked up by whoever else has it in their cart", async
     count(
       sqlite,
       "SELECT count(*) AS c FROM stock_reservations WHERE status = 'held' AND variant_id = ?",
-      HAAR_VARIANT
+      BRIDAL_VARIANT
     ),
     1
   );
@@ -532,8 +532,8 @@ test("an expired hold is swept on read and the piece becomes claimable again", a
   const { sqlite, db } = freshCart();
 
   const start = Date.parse("2026-08-09T10:00:00.000Z");
-  const winner = await addToCart(db, { token: null, slug: HAAR, nowMs: start });
-  const waiter = await addToCart(db, { token: null, slug: HAAR, nowMs: start });
+  const winner = await addToCart(db, { token: null, slug: BRIDAL, nowMs: start });
+  const waiter = await addToCart(db, { token: null, slug: BRIDAL, nowMs: start });
   assert.equal(winner.claimed, true);
   assert.equal(waiter.claimed, false);
 
@@ -574,23 +574,23 @@ test("an expired hold is swept on read and the piece becomes claimable again", a
 test("one cart cannot read another cart", async () => {
   const { db } = freshCart();
 
-  const mine = await addToCart(db, { token: null, slug: HAAR });
-  const theirs = await addToCart(db, { token: null, slug: CHOKER });
+  const mine = await addToCart(db, { token: null, slug: BRIDAL });
+  const theirs = await addToCart(db, { token: null, slug: HAAR });
 
   const minesnapshot = await readCart(db, { token: mine.cartId });
   const theirsSnapshot = await readCart(db, { token: theirs.cartId });
 
   assert.deepEqual(
     minesnapshot.lines.map((line) => line.slug),
-    [HAAR]
+    [BRIDAL]
   );
   assert.deepEqual(
     theirsSnapshot.lines.map((line) => line.slug),
-    [CHOKER]
+    [HAAR]
   );
 
   // And one cart cannot remove out of another.
-  const attempt = await removeFromCart(db, { token: mine.cartId, slug: CHOKER });
+  const attempt = await removeFromCart(db, { token: mine.cartId, slug: HAAR });
   assert.equal(attempt.ok, true);
   assert.equal(attempt.removed, false);
   assert.equal((await readCart(db, { token: theirs.cartId })).lines.length, 1);
@@ -602,7 +602,7 @@ test("a forged token is never adopted as a cart id", async () => {
   // Well formed, but it names nothing. An attacker planting this in a victim's
   // browser must not end up sharing the victim's cart.
   const forged = newCartToken();
-  const result = await addToCart(db, { token: forged, slug: HAAR });
+  const result = await addToCart(db, { token: forged, slug: BRIDAL });
 
   assert.equal(result.ok, true);
   assert.equal(result.cartCreated, true);
@@ -624,7 +624,7 @@ test("a malformed token never reaches a query and never creates that cart", asyn
     const snapshot = await readCart(db, { token: malformed });
     assert.deepEqual(snapshot, { cartId: null, lines: [] });
 
-    const result = await addToCart(db, { token: malformed, slug: HAAR });
+    const result = await addToCart(db, { token: malformed, slug: BRIDAL });
     assert.equal(result.ok, true);
     assert.ok(isWellFormedCartToken(result.cartId));
     assert.equal(count(sqlite, "SELECT count(*) AS c FROM carts WHERE id = ?", malformed), 0);
@@ -642,9 +642,9 @@ test("an unknown slug is refused rather than written", async () => {
 
 test("a sold piece cannot be added", async () => {
   const { sqlite, db } = freshCart();
-  sqlite.prepare("UPDATE variants SET stock_quantity = 0 WHERE id = ?").run(HAAR_VARIANT);
+  sqlite.prepare("UPDATE variants SET stock_quantity = 0 WHERE id = ?").run(BRIDAL_VARIANT);
 
-  const result = await addToCart(db, { token: null, slug: HAAR });
+  const result = await addToCart(db, { token: null, slug: BRIDAL });
   assert.deepEqual(result, { ok: false, reason: "sold_out" });
   assert.equal(count(sqlite, "SELECT count(*) AS c FROM cart_items"), 0);
 });
@@ -720,7 +720,7 @@ async function post(body, { cookie, form = false } = {}) {
 }
 
 test("POST adds a piece, issues a cart cookie, and returns no price", async () => {
-  const { response, body, token } = await post({ action: "add", slug: HAAR });
+  const { response, body, token } = await post({ action: "add", slug: BRIDAL });
 
   assert.equal(response.status, 201);
   assert.equal(body.ok, true);
@@ -741,10 +741,10 @@ test("POST adds a piece, issues a cart cookie, and returns no price", async () =
 });
 
 test("POSTing the same piece twice says so instead of pretending", async () => {
-  const first = await post({ action: "add", slug: CHOKER });
+  const first = await post({ action: "add", slug: HAAR });
   assert.equal(first.response.status, 201);
 
-  const second = await post({ action: "add", slug: CHOKER }, { cookie: first.token });
+  const second = await post({ action: "add", slug: HAAR }, { cookie: first.token });
 
   // NOT a fabricated 201. The appointments route answers a repeat submission
   // with a fake success; a customer re-adding a piece must be told the truth.
@@ -755,9 +755,9 @@ test("POSTing the same piece twice says so instead of pretending", async () => {
 });
 
 test("a second, different piece is added rather than throttled away", async () => {
-  const first = await post({ action: "add", slug: "kundan-kada" });
+  const first = await post({ action: "add", slug: "parrot-temple-haar" });
   const second = await post(
-    { action: "add", slug: "maang-tikka" },
+    { action: "add", slug: "medallion-temple-haar" },
     { cookie: first.token }
   );
 
@@ -766,7 +766,7 @@ test("a second, different piece is added rather than throttled away", async () =
 });
 
 test("GET returns this cart and only this cart, and mints nothing", async () => {
-  const mine = await post({ action: "add", slug: "chandbali-earrings" });
+  const mine = await post({ action: "add", slug: "temple-arch-haar" });
 
   const response = await fetchWorker("/api/cart", {
     headers: { cookie: `${CART_COOKIE}=${mine.token}` },
@@ -776,7 +776,7 @@ test("GET returns this cart and only this cart, and mints nothing", async () => 
   assert.equal(response.status, 200);
   assert.deepEqual(
     body.cart.items.map((item) => item.slug),
-    ["chandbali-earrings"]
+    ["temple-arch-haar"]
   );
   // A read must not create a cart, or a crawler mints one per request.
   assert.equal(setCookieOf(response), null);
@@ -789,7 +789,7 @@ test("GET returns this cart and only this cart, and mints nothing", async () => 
 
 test("a forged cookie is replaced with a server-issued one, not honoured", async () => {
   const forged = newCartToken();
-  const { response, token } = await post({ action: "add", slug: HAAR }, { cookie: forged });
+  const { response, token } = await post({ action: "add", slug: BRIDAL }, { cookie: forged });
 
   assert.equal(response.status, 201);
   assert.notEqual(token, forged);
@@ -804,7 +804,7 @@ test("a forged cookie is replaced with a server-issued one, not honoured", async
 
 test("a malformed cookie is ignored rather than becoming a cart", async () => {
   const { response, token } = await post(
-    { action: "add", slug: HAAR },
+    { action: "add", slug: BRIDAL },
     { cookie: "' OR 1=1 --" }
   );
 
@@ -814,26 +814,26 @@ test("a malformed cookie is ignored rather than becoming a cart", async () => {
 });
 
 test("a browser form is answered with a redirect, and the outcome survives it", async () => {
-  const added = await post({ action: "add", slug: HAAR }, { form: true });
+  const added = await post({ action: "add", slug: BRIDAL }, { form: true });
   assert.equal(added.response.status, 303);
   assert.equal(added.response.headers.get("location"), "/cart?notice=added");
   assert.ok(isWellFormedCartToken(added.token));
 
   const again = await post(
-    { action: "add", slug: HAAR },
+    { action: "add", slug: BRIDAL },
     { form: true, cookie: added.token }
   );
   assert.equal(again.response.headers.get("location"), "/cart?notice=already-in-cart");
 
   const removed = await post(
-    { action: "remove", slug: HAAR },
+    { action: "remove", slug: BRIDAL },
     { form: true, cookie: added.token }
   );
   assert.equal(removed.response.status, 303);
   assert.equal(removed.response.headers.get("location"), "/cart?notice=removed");
 
   const noop = await post(
-    { action: "remove", slug: HAAR },
+    { action: "remove", slug: BRIDAL },
     { form: true, cookie: added.token }
   );
   // Nothing was removed, and the redirect says exactly that.
@@ -841,8 +841,8 @@ test("a browser form is answered with a redirect, and the outcome survives it", 
 });
 
 test("a removal through the endpoint releases the reservation", async () => {
-  const added = await post({ action: "add", slug: "kundan-kada" });
-  const variant = "var_kundan-kada";
+  const added = await post({ action: "add", slug: "parrot-temple-haar" });
+  const variant = "var_parrot-temple-haar";
   assert.equal(
     count(
       worker,
@@ -853,7 +853,7 @@ test("a removal through the endpoint releases the reservation", async () => {
   );
 
   const removed = await post(
-    { action: "remove", slug: "kundan-kada" },
+    { action: "remove", slug: "parrot-temple-haar" },
     { cookie: added.token }
   );
   assert.equal(removed.response.status, 200);
@@ -874,7 +874,7 @@ test("bad input is refused, and refused specifically", async () => {
   assert.equal(unknown.response.status, 404);
   assert.equal(unknown.body.ok, false);
 
-  const badAction = await post({ action: "empty", slug: HAAR });
+  const badAction = await post({ action: "empty", slug: BRIDAL });
   assert.equal(badAction.response.status, 400);
   assert.equal(badAction.body.ok, false);
 
@@ -897,7 +897,7 @@ test("a cross-site POST cannot swap a shopper's cart out from under them", async
       origin: "https://not-alankar.example",
       host: "localhost",
     },
-    body: new URLSearchParams({ action: "add", slug: HAAR }).toString(),
+    body: new URLSearchParams({ action: "add", slug: BRIDAL }).toString(),
   });
 
   assert.equal(foreign.headers.get("location"), "/cart?notice=bad-request");
@@ -912,7 +912,7 @@ test("a cross-site POST cannot swap a shopper's cart out from under them", async
       origin: "http://localhost",
       host: "localhost",
     },
-    body: JSON.stringify({ action: "add", slug: HAAR }),
+    body: JSON.stringify({ action: "add", slug: BRIDAL }),
   });
   assert.equal(own.status, 201);
 });
@@ -922,13 +922,13 @@ test("NO FAKE SUCCESS: an unreachable store is reported, never answered 201", as
   delete env.DB;
 
   try {
-    const { response, body } = await post({ action: "add", slug: HAAR });
+    const { response, body } = await post({ action: "add", slug: BRIDAL });
     assert.equal(response.status, 503);
     assert.equal(body.ok, false);
     assert.match(body.error, /nothing was changed/i);
 
     // And the form flow does not silently claim it worked either.
-    const form = await post({ action: "add", slug: HAAR }, { form: true });
+    const form = await post({ action: "add", slug: BRIDAL }, { form: true });
     assert.equal(form.response.headers.get("location"), "/cart?notice=unavailable");
 
     const read = await fetchWorker("/api/cart");
@@ -960,10 +960,10 @@ test("an empty cart is an invitation, with exactly one h1", async () => {
 });
 
 test("a piece in the cart renders on request, with no zero and no total", async () => {
-  const added = await post({ action: "add", slug: HAAR });
+  const added = await post({ action: "add", slug: BRIDAL });
   const body = await cartHtml(added.token);
 
-  assert.ok(body.includes("Jadau haar"));
+  assert.ok(body.includes("Meenakari bridal choker"));
   assert.ok(body.includes("Price on request"));
   assert.ok(body.includes("Not quoted"));
 
@@ -978,7 +978,7 @@ test("a piece in the cart renders on request, with no zero and no total", async 
 });
 
 test("the cart never renders the cart token", async () => {
-  const added = await post({ action: "add", slug: CHOKER });
+  const added = await post({ action: "add", slug: HAAR });
   const body = await cartHtml(added.token);
 
   // The token is a bearer credential. It travels in an HttpOnly cookie and it
@@ -988,7 +988,7 @@ test("the cart never renders the cart token", async () => {
 });
 
 test("every image on the cart declares intrinsic dimensions and a srcset", async () => {
-  const added = await post({ action: "add", slug: "maang-tikka" });
+  const added = await post({ action: "add", slug: "medallion-temple-haar" });
   const body = await cartHtml(added.token);
 
   const tags = body.match(/<img\b[^>]*>/g) ?? [];
@@ -1002,13 +1002,13 @@ test("every image on the cart declares intrinsic dimensions and a srcset", async
 });
 
 test("the hold state is stated on the page", async () => {
-  const added = await post({ action: "add", slug: "chandbali-earrings" });
+  const added = await post({ action: "add", slug: "temple-arch-haar" });
   const mine = await cartHtml(added.token);
   assert.match(mine, /Held for you/);
 
   // A second cart holding the same piece is told the truth about it.
   const other = await post(
-    { action: "add", slug: "chandbali-earrings" },
+    { action: "add", slug: "temple-arch-haar" },
     { cookie: newCartToken() }
   );
   const theirs = await cartHtml(other.token);
@@ -1041,7 +1041,7 @@ test("the storefront carries an add-to-cart control that needs no JavaScript", a
   assert.match(shop, /name="action"\s+value="add"/);
   assert.ok(shop.includes("Add to cart"));
 
-  const product = await renderPage(`/shop/${HAAR}`);
+  const product = await renderPage(`/shop/${BRIDAL}`);
   assert.match(product, /<form[^>]*action="\/api\/cart"/);
-  assert.match(product, /name="slug"\s+value="jadau-haar"/);
+  assert.match(product, /name="slug"\s+value="meenakari-bridal-choker"/);
 });
