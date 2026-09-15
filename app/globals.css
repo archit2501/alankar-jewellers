@@ -4786,3 +4786,76 @@ a.contact__value:hover {
     gap: 2rem;
   }
 }
+
+/* --- Policy pages ----------------------------------------------------------
+   A plain reading page on the haveli field. Links are sindoor, never gold:
+   gold is illegal as a letterform on a light field (see tokens.css). The
+   colophon is darbar-deep, so gold-leaf is legal there. */
+
+.policy {
+  padding-block: var(--m-2);
+}
+
+.policy__inner {
+  max-width: 72ch;
+}
+
+.policy__inner h1 {
+  margin: 0 0 var(--s-5);
+  font-size: var(--d-l);
+}
+
+.policy__inner h2 {
+  margin: var(--m-1) 0 var(--s-3);
+  font-size: var(--t-lg);
+}
+
+.policy__inner a {
+  color: var(--sindoor);
+  text-decoration: underline;
+  text-underline-offset: var(--s-1);
+}
+
+.policy__list {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.policy__list li + li {
+  margin-top: var(--s-2);
+}
+
+.policy-pending {
+  margin-top: var(--m-1);
+  padding: var(--s-5);
+  border: var(--rule-hair) solid var(--plaster-sunk);
+  background: var(--plaster-lift);
+}
+
+.policy-pending p {
+  margin: 0;
+}
+
+.policy-pending p + p {
+  margin-top: var(--s-3);
+}
+
+.policy-colophon {
+  padding: var(--m-1) var(--gutter);
+  color: var(--plaster-sunk);
+  font-size: var(--t-xs);
+}
+
+.policy-colophon a,
+.policy-links a {
+  color: var(--gold-leaf);
+  text-decoration: underline;
+  text-underline-offset: var(--s-1);
+}
+
+.policy-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-5);
+  margin-top: var(--s-3);
+}

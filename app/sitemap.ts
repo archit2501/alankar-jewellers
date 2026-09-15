@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { CATALOGUE_SEED } from "./_data/catalogue";
+import { POLICY_PAGES, isPublished } from "./_policies/facts";
 import { site } from "./site-config";
 
 /**
@@ -27,6 +28,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "daily",
       priority: 0.9,
     },
+    // Policy pages join only once published. While a page is still waiting on
+    // the shop it is noindex, and listing a noindex URL here would contradict it.
+    ...POLICY_PAGES.filter(isPublished).map((page) => ({
+      url: `${site.url}${page.href}`,
+      lastModified: new Date(),
+      changeFrequency: "yearly" as const,
+      priority: 0.3,
+    })),
     // One entry per piece. Read from the seed rather than from D1: a sitemap
     // that throws when the database is briefly unreachable is worse than one
     // that is briefly stale, and this route has no other reason to touch D1.

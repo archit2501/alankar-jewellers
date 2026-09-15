@@ -21,6 +21,7 @@ import {
 import { isBuyable, type PricedPiece } from "../_data/types";
 import { AppointmentProvider } from "../_components/appointment";
 import { SiteHeader } from "../_components/site-header";
+import { PolicyLinks } from "../_components/policy-links";
 import { site } from "../site-config";
 
 /**
@@ -559,6 +560,7 @@ export default async function ShopPage({
         <p>
           {site.name}, since {site.foundedYear}. <Link href="/">Back to the shop</Link>
         </p>
+        <PolicyLinks inline />
       </footer>
       </div>
     </AppointmentProvider>

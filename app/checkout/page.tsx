@@ -86,6 +86,7 @@ import {
 } from "../_data/orders";
 import { AppointmentProvider } from "../_components/appointment";
 import { SiteHeader } from "../_components/site-header";
+import { PolicyLinks } from "../_components/policy-links";
 import { site } from "../site-config";
 
 export const dynamic = "force-dynamic";
@@ -107,6 +108,7 @@ function Colophon() {
         {site.name}, since {site.foundedYear}.{" "}
         <Link href="/cart">Back to your cart</Link>
       </p>
+      <PolicyLinks inline />
     </footer>
   );
 }

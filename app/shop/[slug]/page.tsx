@@ -114,6 +114,7 @@ import {
 } from "../../_seo/product-schema";
 import { serializeJsonLd } from "../../_seo/structured-data";
 import { SiteHeader } from "../../_components/site-header";
+import { PolicyLinks } from "../../_components/policy-links";
 import { site } from "../../site-config";
 
 export const dynamic = "force-dynamic";
@@ -621,6 +622,7 @@ export default async function ProductPage({
               <Link href="/">Back to the shop</Link>
             </nav>
           </div>
+          <PolicyLinks inline />
         </footer>
 
         {/* Product + Offer, referencing the JewelryStore node that

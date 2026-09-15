@@ -26,6 +26,7 @@ import { BrandMark } from "./_components/brand-mark";
 import { ContactDetails } from "./_components/contact-details";
 import { Flip } from "./_components/flip";
 import { SiteHeader } from "./_components/site-header";
+import { PolicyLinks } from "./_components/policy-links";
 import { images } from "./_media/images";
 import type { ImageKey } from "./_media/images";
 
@@ -695,6 +696,10 @@ export default function Home() {
             <Link href="/founders">The people</Link>
             <a href="#visit">Visit us</a>
             <AppointmentTrigger>Private appointments</AppointmentTrigger>
+          </div>
+          <div className="footer__column">
+            <p className="label">Policies</p>
+            <PolicyLinks />
           </div>
           <div className="rule-gold footer__rule" aria-hidden="true" />
           <div className="footer__closing">

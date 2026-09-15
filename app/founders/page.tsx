@@ -23,6 +23,7 @@ import Link from "next/link";
 import { AppointmentProvider, AppointmentTrigger } from "../_components/appointment";
 import { Flip } from "../_components/flip";
 import { SiteHeader } from "../_components/site-header";
+import { PolicyLinks } from "../_components/policy-links";
 import { images, type ImageKey } from "../_media/images";
 import { founder, site } from "../site-config";
 import "./founders.css";
@@ -437,6 +438,7 @@ export default function FoundersPage() {
               <Link href="/">Back to the shop</Link>
             </p>
           </div>
+          <PolicyLinks inline />
         </footer>
       </div>
     </AppointmentProvider>

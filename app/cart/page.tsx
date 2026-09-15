@@ -96,6 +96,7 @@ import type { PricedPiece } from "../_data/types";
 import { images } from "../_media/images";
 import { AppointmentProvider } from "../_components/appointment";
 import { SiteHeader } from "../_components/site-header";
+import { PolicyLinks } from "../_components/policy-links";
 import { site } from "../site-config";
 
 export const dynamic = "force-dynamic";
@@ -492,6 +493,7 @@ export default async function CartPage({
           {site.name}, since {site.foundedYear}.{" "}
           <Link href="/shop">Back to the catalogue</Link>
         </p>
+        <PolicyLinks inline />
       </footer>
       </div>
     </AppointmentProvider>

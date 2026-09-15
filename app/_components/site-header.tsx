@@ -39,7 +39,9 @@ export type SiteHeaderRoute =
   | "pdp"
   | "cart"
   | "checkout"
-  | "founders";
+  | "founders"
+  // A policy page is not a nav destination, so nothing in the band is marked current.
+  | "policy";
 
 /**
  * `current` lists the routes on which an item is the page you are already on.
