@@ -4792,6 +4792,19 @@ a.contact__value:hover {
    gold is illegal as a letterform on a light field (see tokens.css). The
    colophon is darbar-deep, so gold-leaf is legal there. */
 
+/* A short policy page left the colophon halfway up the screen with a strip of
+   plaster under it. The page is a column and main takes the slack, so the
+   colophon always meets the bottom edge. */
+.policy-page {
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+}
+
+.policy-page > main {
+  flex: 1;
+}
+
 .policy {
   padding-block: var(--m-2);
 }
@@ -4823,6 +4836,11 @@ a.contact__value:hover {
 
 .policy__list li + li {
   margin-top: var(--s-2);
+}
+
+/* A paragraph straight after a list sat flush against its last item. */
+.policy__list + .prose {
+  margin-top: var(--s-5);
 }
 
 .policy-pending {
