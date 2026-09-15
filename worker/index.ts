@@ -27,22 +27,78 @@ interface ExecutionContext {
 // dangerouslyAllowSVG: true in next.config.js and uncomment below:
 // const imageConfig: ImageConfig = { dangerouslyAllowSVG: true };
 
+/**
+ * SECURITY HEADERS, ON EVERY RESPONSE THE WORKER PRODUCES.
+ *
+ * Before this the storefront sent none, and `/admin` could be loaded inside
+ * another site's frame: a sign-in form that a hostile page can overlay and
+ * click-jack. Set here, once, so a page added next year inherits them instead
+ * of depending on someone remembering.
+ *
+ * WHAT THIS DOES NOT COVER: static files. Cloudflare serves `dist/client`
+ * before this script runs, so images, fonts and bundles get their headers from
+ * `public/_headers` instead.
+ *
+ * ONLY WHERE ABSENT. The admin already sends a stricter
+ * `Referrer-Policy: same-origin`; overwriting it with the storefront default
+ * would weaken the one surface that most needs it.
+ *
+ * THE CSP IS DELIBERATELY NARROW. No `script-src`: the framework hydrates with
+ * inline scripts, and a script policy without nonces would either break the
+ * page or need 'unsafe-inline', which defeats the point. What IS pinned costs
+ * nothing: no framing, no <base> hijack, no plugins, and forms may only post
+ * back to this origin, which every form on the site already does.
+ *
+ * `payment=()` will need revisiting when a payment gateway is added, if its
+ * checkout uses the Payment Request API.
+ */
+const SECURITY_HEADERS: ReadonlyArray<readonly [string, string]> = [
+  [
+    "Content-Security-Policy",
+    "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'",
+  ],
+  ["X-Frame-Options", "DENY"],
+  ["X-Content-Type-Options", "nosniff"],
+  ["Referrer-Policy", "strict-origin-when-cross-origin"],
+  ["Strict-Transport-Security", "max-age=31536000; includeSubDomains"],
+  ["Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(), usb=()"],
+];
+
+function withSecurityHeaders(response: Response): Response {
+  const headers = new Headers(response.headers);
+  let changed = false;
+  for (const [name, value] of SECURITY_HEADERS) {
+    if (!headers.has(name)) {
+      headers.set(name, value);
+      changed = true;
+    }
+  }
+  if (!changed) return response;
+  // Framework responses can carry immutable headers, so build a new Response
+  // rather than mutating in place. The body stream is passed through untouched.
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
     if (url.pathname === "/_vinext/image") {
       const allowedWidths = [...DEFAULT_DEVICE_SIZES, ...DEFAULT_IMAGE_SIZES];
-      return handleImageOptimization(request, {
+      return withSecurityHeaders(await handleImageOptimization(request, {
         fetchAsset: (path) => env.ASSETS.fetch(new Request(new URL(path, request.url))),
         transformImage: async (body, { width, format, quality }) => {
           const result = await env.IMAGES.input(body).transform(width > 0 ? { width } : {}).output({ format, quality });
           return result.response();
         },
-      }, allowedWidths);
+      }, allowedWidths));
     }
 
-    return handler.fetch(request, env, ctx);
+    return withSecurityHeaders(await handler.fetch(request, env, ctx));
   },
 
   /**
