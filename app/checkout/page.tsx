@@ -673,17 +673,23 @@ function OrderForm({
       <fieldset className="checkout-fieldset">
         <legend className="checkout-legend">Tax details</legend>
 
-        <label className="checkout-field">
-          <span>PAN {panNeeded ? "(required for this order)" : "(optional)"}</span>
-          <input
-            name="pan"
-            type="text"
-            maxLength={10}
-            pattern="[A-Za-z]{5}[0-9]{4}[A-Za-z]"
-            required={panNeeded}
-            autoComplete="off"
-          />
-        </label>
+        {/* ASKED FOR ONLY WHEN THE LAW REQUIRES IT. The note below has always said
+            "below Rs 2,00,000 we do not ask for it" while this field rendered
+            anyway, labelled optional. A PAN nobody needs is data the shop should
+            not collect, so below the threshold the field is simply not here. */}
+        {panNeeded ? (
+          <label className="checkout-field">
+            <span>PAN (required for this order)</span>
+            <input
+              name="pan"
+              type="text"
+              maxLength={10}
+              pattern="[A-Za-z]{5}[0-9]{4}[A-Za-z]"
+              required
+              autoComplete="off"
+            />
+          </label>
+        ) : null}
         <label className="checkout-field">
           <span>GSTIN, if you are buying for a business (optional)</span>
           <input name="gstin" type="text" maxLength={15} autoComplete="off" />

@@ -333,6 +333,13 @@
   list-style: none;
 }
 
+/* Focusable because it scrolls. currentColor, so the ring is legible on
+   whichever field the strip sits on. */
+.f-strip__list:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: var(--s-2);
+}
+
 .f-object {
   min-width: 0;
   scroll-snap-align: start;

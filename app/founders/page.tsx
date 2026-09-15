@@ -331,7 +331,15 @@ export default function FoundersPage() {
                 </h2>
               </div>
               <div className="rule-gold rule rule--full" aria-hidden="true" />
-              <ul className="f-strip__list">
+              {/* A sideways-scrolling strip of figures has nothing focusable
+                  inside it, so a keyboard user could not scroll it at all. The
+                  strip itself is the tab stop, and the label says what it holds
+                  and which way it moves. */}
+              <ul
+                className="f-strip__list"
+                tabIndex={0}
+                aria-label="Five pieces of the work, scroll sideways"
+              >
                 {objects.map((object) => {
                   const asset = images[object.key];
                   return (

@@ -247,430 +247,435 @@ function PieceBody({ piece }: { piece: Piece }) {
 export default function Home() {
   return (
     <AppointmentProvider>
-      <main id="top">
+      {/* #top is the page, not the main landmark: the brand mark scrolls back
+          to it, and the site header and footer sit OUTSIDE main, as on every
+          other page, so a screen reader can skip straight to the content. */}
+      <div id="top">
         <SiteHeader current="home" />
+        <main>
 
-        {/* DARBAR. The court, and the only symmetrical composition on the page.
-            It is built as a DOORWAY YOU ARE LOOKING THROUGH rather than as a
-            column of type: the name and the headline are the inscription over
-            the opening, two doubled gold rules are the lintel and the sill, and
-            between them a jali wall runs to both edges of the screen with one
-            multifoil arch cut through it. The piece stands inside that arch and
-            is the brightest thing on the page, because the field darkens toward
-            the corners while a warm glow sits behind the stone.
+          {/* DARBAR. The court, and the only symmetrical composition on the page.
+              It is built as a DOORWAY YOU ARE LOOKING THROUGH rather than as a
+              column of type: the name and the headline are the inscription over
+              the opening, two doubled gold rules are the lintel and the sill, and
+              between them a jali wall runs to both edges of the screen with one
+              multifoil arch cut through it. The piece stands inside that arch and
+              is the brightest thing on the page, because the field darkens toward
+              the corners while a warm glow sits behind the stone.
 
-            The arch is not decoration — every catalogue photograph was shot on
-            an inconsistent grey studio sweep, so cutting each one to the arch
-            turns a rectangle that cannot match any field colour into a mounted
-            miniature that does not have to. Here it does a second job: it is
-            the hole in the wall, so the grey sweep reads as light coming from
-            inside the alcove.
+              The arch is not decoration — every catalogue photograph was shot on
+              an inconsistent grey studio sweep, so cutting each one to the arch
+              turns a rectangle that cannot match any field colour into a mounted
+              miniature that does not have to. Here it does a second job: it is
+              the hole in the wall, so the grey sweep reads as light coming from
+              inside the alcove.
 
-            Order matters for depth. Field and grain, then the jali wall, then
-            the vignette that pushes the wall back into shadow, then the glow,
-            then the arch and the piece. Five planes, not one. */}
-        <section className="hero grained" aria-labelledby="hero-title">
-          <div className="hero__head">
-            <p className="deva hero__deva" aria-hidden="true">
-              अलंकार
-            </p>
-            <h1 id="hero-title">Jewels that become heirlooms.</h1>
-          </div>
-
-          <div className="rule-gold hero__rule" aria-hidden="true" />
-
-          <div className="hero__stage">
-            <div className="jali-veil hero__flank hero__flank--start" aria-hidden="true" />
-            <div className="jali-veil hero__flank hero__flank--end" aria-hidden="true" />
-            <div className="hero__vignette" aria-hidden="true" />
-            <div className="hero__niche">
-              <div className="hero__glow" aria-hidden="true" />
-              <div className="hero__arch arch-frame">
-                <img
-                  className="hero__image arch"
-                  src={heroImage.src}
-                  srcSet={heroImage.srcSet}
-                  sizes="(max-width: 780px) 74vw, 440px"
-                  width={heroImage.width}
-                  height={heroImage.height}
-                  alt="The rani haar worn: three strands falling below the collarbone with the drop at the centre"
-                  fetchPriority="high"
-                  decoding="sync"
-                />
-                {/* The alcove. Every catalogue photograph was shot on a flat,
-                    cold grey sweep, and at this size that sweep is the largest
-                    single area on the screen — it was reading as a grey slab
-                    dropped on the meena green. This overlay is cut to the same arch
-                    and does three things to it: warms it toward the field,
-                    darkens it at the crown and the rim so it recedes like the
-                    back of a niche, and lays one soft pool of light over the
-                    piece itself. It never touches the stones' own colour, which
-                    is the one thing on this page that has to stay honest. */}
-                <div className="hero__lamp arch" aria-hidden="true" />
-              </div>
+              Order matters for depth. Field and grain, then the jali wall, then
+              the vignette that pushes the wall back into shadow, then the glow,
+              then the arch and the piece. Five planes, not one. */}
+          <section className="hero grained" aria-labelledby="hero-title">
+            <div className="hero__head">
+              <p className="deva hero__deva" aria-hidden="true">
+                अलंकार
+              </p>
+              <h1 id="hero-title">Jewels that become heirlooms.</h1>
             </div>
-          </div>
 
-          <div className="rule-gold hero__rule hero__rule--sill" aria-hidden="true" />
+            <div className="rule-gold hero__rule" aria-hidden="true" />
 
-          <div className="hero__foot">
-            <p className="hero__caption">
-              The rani haar, worn.
-            </p>
-            <p className="hero__lede">
-              The front is what the room sees. The back is often enamelled, and
-              only the person wearing it knows it is there. Where a back has been
-              photographed, it is shown here too.
-            </p>
-            <div className="hero__actions">
-              <a className="button" href="#collections">
-                See the pieces
-              </a>
-              <AppointmentTrigger className="button button--ghost">
-                Book a viewing
-              </AppointmentTrigger>
-            </div>
-          </div>
-        </section>
-
-        {/* The screen between the court and the house. */}
-        <div className="jali-break" aria-hidden="true">
-          <div className="jali-band" />
-        </div>
-
-        {/* HAVELI, and the one place on the page that is a room rather than a
-            page: a jeweller's shop wall of arched alcoves cut into lime
-            plaster, each holding one piece, each lit.
-
-            The previous version stacked three shapes per piece — a teak
-            RECTANGLE, an arch-masked photograph inside it, and the cold grey
-            studio sweep inside that — which read as a dark box with a sticker
-            on it. Here the RECESS ITSELF is the arch: one silhouette, cut into
-            a sunk-plaster wall, ruled in brass and casting its own cusped
-            shadow back onto the wall. `.piece__lamp` is the same device the
-            hero uses (`.hero__lamp`): a second arch-masked layer that warms
-            the sweep toward the wood, drops the empty crown and the rim into
-            shadow, and lays one pool of light over the stones.
-
-            The wall is one object rather than five: a lead band (the haar,
-            its note, and the commission card stacked in the column beside it)
-            over a shelf of four, all four sills on one line and only their
-            crowns staggering. Nothing floats in a plaster void any more,
-            because the void is now the wall. */}
-        <section
-          className="section section--haveli grained"
-          id="collections"
-          aria-labelledby="collections-title"
-        >
-          <div className="section-head pieces__head">
-            <div>
-              <h2 id="collections-title">In the shop now.</h2>
-            </div>
-            <p className="lede">
-              Five pieces from the counter, each one of a kind. They are priced
-              on request, so ask to see any of them.
-            </p>
-            <div className="rule-brass section-head__rule" aria-hidden="true" />
-          </div>
-
-          <div className="pieces">
-            <div className="pieces__wall grained">
-              {/* The lead band: the haar in the deepest alcove, its label at
-                  the crown line and the commission card down at the sill, so
-                  the column beside it is full top to bottom. */}
-              <div className="pieces__band pieces__band--lead">
-                <article className="piece piece--lead" id={pieces[0].id}>
-                  <Alcove piece={pieces[0]} sizes="(max-width: 780px) 78vw, (max-width: 1100px) 44vw, 480px" />
-                  <PieceBody piece={pieces[0]} />
-                </article>
-
-                <div className="pieces__note panel grained">
-                  <div className="pieces__note-inner illuminated illuminated--brass">
-                    <h3>Something else in mind?</h3>
-                    <p>
-                      Bridal sets and one-off commissions start with a
-                      conversation rather than a catalogue. Tell us what the
-                      occasion is and we will show you what is possible.
-                    </p>
-                    <AppointmentTrigger className="text-action" interest="A bespoke piece">
-                      Start a commission
-                    </AppointmentTrigger>
-                  </div>
+            <div className="hero__stage">
+              <div className="jali-veil hero__flank hero__flank--start" aria-hidden="true" />
+              <div className="jali-veil hero__flank hero__flank--end" aria-hidden="true" />
+              <div className="hero__vignette" aria-hidden="true" />
+              <div className="hero__niche">
+                <div className="hero__glow" aria-hidden="true" />
+                <div className="hero__arch arch-frame">
+                  <img
+                    className="hero__image arch"
+                    src={heroImage.src}
+                    srcSet={heroImage.srcSet}
+                    sizes="(max-width: 780px) 74vw, 440px"
+                    width={heroImage.width}
+                    height={heroImage.height}
+                    alt="The rani haar worn: three strands falling below the collarbone with the drop at the centre"
+                    fetchPriority="high"
+                    decoding="sync"
+                  />
+                  {/* The alcove. Every catalogue photograph was shot on a flat,
+                      cold grey sweep, and at this size that sweep is the largest
+                      single area on the screen — it was reading as a grey slab
+                      dropped on the meena green. This overlay is cut to the same arch
+                      and does three things to it: warms it toward the field,
+                      darkens it at the crown and the rim so it recedes like the
+                      back of a niche, and lays one soft pool of light over the
+                      piece itself. It never touches the stones' own colour, which
+                      is the one thing on this page that has to stay honest. */}
+                  <div className="hero__lamp arch" aria-hidden="true" />
                 </div>
               </div>
+            </div>
 
-              {/* The shelf. Four alcoves on one sill line, the choker first
-                  because it is the one piece that is wider than it is tall. */}
-              <div className="pieces__band pieces__band--shelf">
-                {pieces.slice(1).map((piece) => (
-                  <article className="piece" id={piece.id} key={piece.id}>
-                    <Alcove
-                      piece={piece}
-                      sizes="(max-width: 780px) 78vw, (max-width: 1100px) 38vw, 280px"
-                    />
-                    <PieceBody piece={piece} />
-                  </article>
-                ))}
+            <div className="rule-gold hero__rule hero__rule--sill" aria-hidden="true" />
+
+            <div className="hero__foot">
+              <p className="hero__caption">
+                The rani haar, worn.
+              </p>
+              <p className="hero__lede">
+                The front is what the room sees. The back is often enamelled, and
+                only the person wearing it knows it is there. Where a back has been
+                photographed, it is shown here too.
+              </p>
+              <div className="hero__actions">
+                <a className="button" href="#collections">
+                  See the pieces
+                </a>
+                <AppointmentTrigger className="button button--ghost">
+                  Book a viewing
+                </AppointmentTrigger>
               </div>
-            </div>
-
-            <div className="rule-brass pieces__sill" aria-hidden="true" />
-          </div>
-        </section>
-
-        {/* DARBAR, and the deepest field on the site. This section carries the
-            brand's one real argument, so it is made from the centre the way an
-            argument is made in a court: the piece stands in the middle under a
-            gold arch and the case for it is set in two columns either side. */}
-        <section
-          className="section section--darbar-deep grained"
-          id="reverse"
-          aria-labelledby="reverse-title"
-        >
-          <div className="opener">
-            <h2 id="reverse-title">The part with no audience.</h2>
-            <div className="rule-gold rule rule--center" aria-hidden="true" />
-          </div>
-
-          <div className="reverse">
-            <div className="reverse__aside reverse__aside--start">
-              <p className="prose">
-                In Jadau and Polki work the back of a piece is enamelled:
-                opaque green, red and white meenakari fired into gold that
-                nobody but the wearer will ever see.
-              </p>
-            </div>
-
-            <div className="reverse__media">
-              <Flip
-                framed
-                front="rani-haar-front"
-                back="rani-haar-reverse"
-                alt="Three-strand rani haar of kundan-set polki roundels strung with carved ruby and emerald beads and pearls"
-                altBack="The same haar turned over: every roundel and the pendant enamelled with a green and pink lotus"
-                caption="Lotus meenakari on the reverse of every roundel"
-                sizes="(max-width: 1100px) 84vw, 420px"
-              />
-            </div>
-
-            <div className="reverse__aside">
-              <p className="prose">
-                It is the half of the craft that cannot be sold on sight, which
-                is exactly why it tells you the most about who made the thing.
-              </p>
-              <p className="reverse__pull">
-                You should not have to take our word for the side you cannot
-                see.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* The screen between the court and the workshop. */}
-        <div className="jali-break" aria-hidden="true">
-          <div className="jali-band" />
-        </div>
-
-          {/* ON A PERSON.
-              The rest of this page is objects: an alcove, a diptych, a bench.
-              That is the right register for showing what a piece IS, and it is
-              useless for showing what a piece is LIKE to wear -- scale, weight,
-              where it sits. Every photograph above is on a studio sweep, and a
-              sweep has no size.
-
-              Cropped tight and faces out of frame on purpose. The subject is the
-              jewellery; a model looking down the lens turns a jeweller's page
-              into a fashion campaign, which this shop is not. */}
-          <section
-            className="section section--haveli grained worn-band"
-            id="worn"
-            aria-labelledby="worn-title"
-          >
-            <div className="wrap">
-              <div className="worn-band__head">
-                <h2 id="worn-title">On, rather than under glass.</h2>
-                <div className="rule-brass rule rule--center" aria-hidden="true" />
-                <p className="lede worn-band__lede">
-                  A piece photographed alone has no size. These are the same
-                  pieces on a person, which is the only honest answer to how they
-                  will sit on you.
-                </p>
-              </div>
-
-              <ul className="worn-band__list">
-                {WORN.map((entry) => {
-                  const asset = images[entry.key];
-                  return (
-                    <li className="worn-band__item" key={entry.key}>
-                      <figure className="worn-band__figure">
-                        <img
-                          className="worn-band__image"
-                          src={asset.src}
-                          srcSet={asset.srcSet}
-                          sizes="(max-width: 780px) 86vw, 30vw"
-                          width={asset.width}
-                          height={asset.height}
-                          alt={entry.alt}
-                          loading="lazy"
-                          decoding="async"
-                        />
-                        <figcaption className="worn-band__caption">{entry.caption}</figcaption>
-                      </figure>
-                    </li>
-                  );
-                })}
-              </ul>
             </div>
           </section>
 
-
-        {/* VITRINE — the inside of the case. Warm dark teak rather than red:
-            this is the workroom, not the showroom. The bench photograph stays a
-            rectangle on purpose. The arch is reserved for the jewellery, and
-            dressing a documentary photograph as a miniature would be the first
-            dishonest thing on the page. */}
-        <section
-          className="section section--vitrine section--bleed-end grained"
-          id="craft"
-          aria-labelledby="craft-title"
-        >
-          <div className="craft">
-            <div className="craft__copy">
-              <h2 id="craft-title">Made slowly. Worn forever.</h2>
-              <div className="rule-gold rule" aria-hidden="true" />
-              <p className="prose">
-                A jadau setting is not claw work. The stone is bedded into
-                shellac and the gold is worked up around it in thin foil, one
-                stone at a time, until the metal closes on the girdle by itself.
-              </p>
-              <p className="prose">
-                The enamel goes on before any of that, because it has to be
-                fired hot enough that no stone could survive it. Which is to
-                say: the back of the piece is made first.
-              </p>
-              <AppointmentTrigger className="text-action" interest="A bespoke piece">
-                Begin a bespoke conversation
-              </AppointmentTrigger>
-            </div>
-            <figure className="craft__media">
-              <img
-                src={images["workshop-hands"].src}
-                srcSet={images["workshop-hands"].srcSet}
-                sizes="(max-width: 1100px) 100vw, 50vw"
-                width={images["workshop-hands"].width}
-                height={images["workshop-hands"].height}
-                alt="Two hands at a wooden bench, setting a rose-cut stone into a gold bezel with a steel tool"
-                loading="lazy"
-                decoding="async"
-              />
-              <figcaption>
-                Closing gold around a rose-cut stone, by hand, at the bench.
-              </figcaption>
-            </figure>
+          {/* The screen between the court and the house. */}
+          <div className="jali-break" aria-hidden="true">
+            <div className="jali-band" />
           </div>
-        </section>
 
-        {/* Back out of the workshop into the house. Brass on plaster, because
-            the screen belongs to the register it opens onto. */}
-        <div className="jali-break jali-break--haveli" aria-hidden="true">
-          <div className="jali-band jali-band--brass" />
-        </div>
+          {/* HAVELI, and the one place on the page that is a room rather than a
+              page: a jeweller's shop wall of arched alcoves cut into lime
+              plaster, each holding one piece, each lit.
 
-        {/* HAVELI. The family, and the one date the business can evidence, set
-            as the display figure it is on a raised plaster panel with
-            illuminated brass corners. */}
-        <section
-          className="section section--haveli grained"
-          id="legacy"
-          aria-labelledby="legacy-title"
-        >
-          <div className="house">
-            <div className="house__intro">
-              <h2 id="legacy-title">One date, and no mythology.</h2>
-              <div className="rule-brass rule" aria-hidden="true" />
-              <p className="prose">
-                Alankar has been setting stones by hand since 1980. Everything
-                else a jeweller usually writes on a page like this (heritage,
-                integrity, generations of trust) could be said by anyone and
-                checked by no one, so here is only the part you can check.
+              The previous version stacked three shapes per piece — a teak
+              RECTANGLE, an arch-masked photograph inside it, and the cold grey
+              studio sweep inside that — which read as a dark box with a sticker
+              on it. Here the RECESS ITSELF is the arch: one silhouette, cut into
+              a sunk-plaster wall, ruled in brass and casting its own cusped
+              shadow back onto the wall. `.piece__lamp` is the same device the
+              hero uses (`.hero__lamp`): a second arch-masked layer that warms
+              the sweep toward the wood, drops the empty crown and the rim into
+              shadow, and lays one pool of light over the stones.
+
+              The wall is one object rather than five: a lead band (the haar,
+              its note, and the commission card stacked in the column beside it)
+              over a shelf of four, all four sills on one line and only their
+              crowns staggering. Nothing floats in a plaster void any more,
+              because the void is now the wall. */}
+          <section
+            className="section section--haveli grained"
+            id="collections"
+            aria-labelledby="collections-title"
+          >
+            <div className="section-head pieces__head">
+              <div>
+                <h2 id="collections-title">In the shop now.</h2>
+              </div>
+              <p className="lede">
+                Five pieces from the counter, each one of a kind. They are priced
+                on request, so ask to see any of them.
               </p>
-              <p className="prose">
-                The people who have run the counter since then have their own
-                page, because a family business is a list of people before it is
-                a list of claims.
-              </p>
-              <a className="text-action" href="/founders">
-                Meet the people behind the counter
-              </a>
+              <div className="rule-brass section-head__rule" aria-hidden="true" />
             </div>
 
-            <div className="house__record grained">
-              <div className="house__record-inner illuminated illuminated--brass">
-                <p className="house__since">Founded</p>
-                <p className="house__year">1980</p>
-                {/* Tabular, which is the one job a hairline is allowed to do
-                    anywhere in this design. */}
-                <dl className="facts">
-                  {facts.map((fact) => (
-                    <div className="facts__row" key={fact.label}>
-                      <dt>{fact.label}</dt>
-                      <dd>{fact.value}</dd>
+            <div className="pieces">
+              <div className="pieces__wall grained">
+                {/* The lead band: the haar in the deepest alcove, its label at
+                    the crown line and the commission card down at the sill, so
+                    the column beside it is full top to bottom. */}
+                <div className="pieces__band pieces__band--lead">
+                  <article className="piece piece--lead" id={pieces[0].id}>
+                    <Alcove piece={pieces[0]} sizes="(max-width: 780px) 78vw, (max-width: 1100px) 44vw, 480px" />
+                    <PieceBody piece={pieces[0]} />
+                  </article>
+
+                  <div className="pieces__note panel grained">
+                    <div className="pieces__note-inner illuminated illuminated--brass">
+                      <h3>Something else in mind?</h3>
+                      <p>
+                        Bridal sets and one-off commissions start with a
+                        conversation rather than a catalogue. Tell us what the
+                        occasion is and we will show you what is possible.
+                      </p>
+                      <AppointmentTrigger className="text-action" interest="A bespoke piece">
+                        Start a commission
+                      </AppointmentTrigger>
                     </div>
+                  </div>
+                </div>
+
+                {/* The shelf. Four alcoves on one sill line, the choker first
+                    because it is the one piece that is wider than it is tall. */}
+                <div className="pieces__band pieces__band--shelf">
+                  {pieces.slice(1).map((piece) => (
+                    <article className="piece" id={piece.id} key={piece.id}>
+                      <Alcove
+                        piece={piece}
+                        sizes="(max-width: 780px) 78vw, (max-width: 1100px) 38vw, 280px"
+                      />
+                      <PieceBody piece={piece} />
+                    </article>
                   ))}
-                </dl>
+                </div>
+              </div>
+
+              <div className="rule-brass pieces__sill" aria-hidden="true" />
+            </div>
+          </section>
+
+          {/* DARBAR, and the deepest field on the site. This section carries the
+              brand's one real argument, so it is made from the centre the way an
+              argument is made in a court: the piece stands in the middle under a
+              gold arch and the case for it is set in two columns either side. */}
+          <section
+            className="section section--darbar-deep grained"
+            id="reverse"
+            aria-labelledby="reverse-title"
+          >
+            <div className="opener">
+              <h2 id="reverse-title">The part with no audience.</h2>
+              <div className="rule-gold rule rule--center" aria-hidden="true" />
+            </div>
+
+            <div className="reverse">
+              <div className="reverse__aside reverse__aside--start">
+                <p className="prose">
+                  In Jadau and Polki work the back of a piece is enamelled:
+                  opaque green, red and white meenakari fired into gold that
+                  nobody but the wearer will ever see.
+                </p>
+              </div>
+
+              <div className="reverse__media">
+                <Flip
+                  framed
+                  front="rani-haar-front"
+                  back="rani-haar-reverse"
+                  alt="Three-strand rani haar of kundan-set polki roundels strung with carved ruby and emerald beads and pearls"
+                  altBack="The same haar turned over: every roundel and the pendant enamelled with a green and pink lotus"
+                  caption="Lotus meenakari on the reverse of every roundel"
+                  sizes="(max-width: 1100px) 84vw, 420px"
+                />
+              </div>
+
+              <div className="reverse__aside">
+                <p className="prose">
+                  It is the half of the craft that cannot be sold on sight, which
+                  is exactly why it tells you the most about who made the thing.
+                </p>
+                <p className="reverse__pull">
+                  You should not have to take our word for the side you cannot
+                  see.
+                </p>
               </div>
             </div>
+          </section>
+
+          {/* The screen between the court and the workshop. */}
+          <div className="jali-break" aria-hidden="true">
+            <div className="jali-band" />
           </div>
-        </section>
 
-        {/* The screen back into the court. */}
-        <div className="jali-break" aria-hidden="true">
-          <div className="jali-band" />
-        </div>
+            {/* ON A PERSON.
+                The rest of this page is objects: an alcove, a diptych, a bench.
+                That is the right register for showing what a piece IS, and it is
+                useless for showing what a piece is LIKE to wear -- scale, weight,
+                where it sits. Every photograph above is on a studio sweep, and a
+                sweep has no size.
 
-        {/* DARBAR. The page closes in the room it is asking you to come to, and
-            it closes ceremonially: this is the invitation, so it is red and
-            gold again rather than a pale contact footer. */}
-        <section
-          className="section visit section--darbar section--bleed-start grained"
-          id="visit"
-          aria-labelledby="visit-title"
-        >
-          <div className="visit__intro">
-            <figure className="visit__media">
-              <img
-                src={images["workshop-bench"].src}
-                srcSet={images["workshop-bench"].srcSet}
-                sizes="(max-width: 1100px) 100vw, 50vw"
-                width={images["workshop-bench"].width}
-                height={images["workshop-bench"].height}
-                alt="A jeweller's bench with a dish of uncut stones, files, tweezers and a part-finished gold pendant"
-                loading="lazy"
-                decoding="async"
-              />
-            </figure>
-            <div className="visit__copy">
-              <h2 id="visit-title">A private experience, on your own time.</h2>
-              <div className="rule-gold rule" aria-hidden="true" />
-              <p className="prose">
-                Pieces are seen in the inner salon, away from the counter, with
-                someone who can tell you where a stone came from and what the
-                back of it looks like before you turn it over.
-              </p>
-              <AppointmentTrigger className="button">
-                Book an Appointment
-              </AppointmentTrigger>
+                Cropped tight and faces out of frame on purpose. The subject is the
+                jewellery; a model looking down the lens turns a jeweller's page
+                into a fashion campaign, which this shop is not. */}
+            <section
+              className="section section--haveli grained worn-band"
+              id="worn"
+              aria-labelledby="worn-title"
+            >
+              <div className="wrap">
+                <div className="worn-band__head">
+                  <h2 id="worn-title">On, rather than under glass.</h2>
+                  <div className="rule-brass rule rule--center" aria-hidden="true" />
+                  <p className="lede worn-band__lede">
+                    A piece photographed alone has no size. These are the same
+                    pieces on a person, which is the only honest answer to how they
+                    will sit on you.
+                  </p>
+                </div>
+
+                <ul className="worn-band__list">
+                  {WORN.map((entry) => {
+                    const asset = images[entry.key];
+                    return (
+                      <li className="worn-band__item" key={entry.key}>
+                        <figure className="worn-band__figure">
+                          <img
+                            className="worn-band__image"
+                            src={asset.src}
+                            srcSet={asset.srcSet}
+                            sizes="(max-width: 780px) 86vw, 30vw"
+                            width={asset.width}
+                            height={asset.height}
+                            alt={entry.alt}
+                            loading="lazy"
+                            decoding="async"
+                          />
+                          <figcaption className="worn-band__caption">{entry.caption}</figcaption>
+                        </figure>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </section>
+
+
+          {/* VITRINE — the inside of the case. Warm dark teak rather than red:
+              this is the workroom, not the showroom. The bench photograph stays a
+              rectangle on purpose. The arch is reserved for the jewellery, and
+              dressing a documentary photograph as a miniature would be the first
+              dishonest thing on the page. */}
+          <section
+            className="section section--vitrine section--bleed-end grained"
+            id="craft"
+            aria-labelledby="craft-title"
+          >
+            <div className="craft">
+              <div className="craft__copy">
+                <h2 id="craft-title">Made slowly. Worn forever.</h2>
+                <div className="rule-gold rule" aria-hidden="true" />
+                <p className="prose">
+                  A jadau setting is not claw work. The stone is bedded into
+                  shellac and the gold is worked up around it in thin foil, one
+                  stone at a time, until the metal closes on the girdle by itself.
+                </p>
+                <p className="prose">
+                  The enamel goes on before any of that, because it has to be
+                  fired hot enough that no stone could survive it. Which is to
+                  say: the back of the piece is made first.
+                </p>
+                <AppointmentTrigger className="text-action" interest="A bespoke piece">
+                  Begin a bespoke conversation
+                </AppointmentTrigger>
+              </div>
+              <figure className="craft__media">
+                <img
+                  src={images["workshop-hands"].src}
+                  srcSet={images["workshop-hands"].srcSet}
+                  sizes="(max-width: 1100px) 100vw, 50vw"
+                  width={images["workshop-hands"].width}
+                  height={images["workshop-hands"].height}
+                  alt="Two hands at a wooden bench, setting a rose-cut stone into a gold bezel with a steel tool"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <figcaption>
+                  Closing gold around a rose-cut stone, by hand, at the bench.
+                </figcaption>
+              </figure>
             </div>
+          </section>
+
+          {/* Back out of the workshop into the house. Brass on plaster, because
+              the screen belongs to the register it opens onto. */}
+          <div className="jali-break jali-break--haveli" aria-hidden="true">
+            <div className="jali-band jali-band--brass" />
           </div>
 
-          <div className="rule-gold rule rule--full visit__break" aria-hidden="true" />
+          {/* HAVELI. The family, and the one date the business can evidence, set
+              as the display figure it is on a raised plaster panel with
+              illuminated brass corners. */}
+          <section
+            className="section section--haveli grained"
+            id="legacy"
+            aria-labelledby="legacy-title"
+          >
+            <div className="house">
+              <div className="house__intro">
+                <h2 id="legacy-title">One date, and no mythology.</h2>
+                <div className="rule-brass rule" aria-hidden="true" />
+                <p className="prose">
+                  Alankar has been setting stones by hand since 1980. Everything
+                  else a jeweller usually writes on a page like this (heritage,
+                  integrity, generations of trust) could be said by anyone and
+                  checked by no one, so here is only the part you can check.
+                </p>
+                <p className="prose">
+                  The people who have run the counter since then have their own
+                  page, because a family business is a list of people before it is
+                  a list of claims.
+                </p>
+                <a className="text-action" href="/founders">
+                  Meet the people behind the counter
+                </a>
+              </div>
 
-          <ContactDetails />
-        </section>
+              <div className="house__record grained">
+                <div className="house__record-inner illuminated illuminated--brass">
+                  <p className="house__since">Founded</p>
+                  <p className="house__year">1980</p>
+                  {/* Tabular, which is the one job a hairline is allowed to do
+                      anywhere in this design. */}
+                  <dl className="facts">
+                    {facts.map((fact) => (
+                      <div className="facts__row" key={fact.label}>
+                        <dt>{fact.label}</dt>
+                        <dd>{fact.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </section>
 
-        <div className="jali-break" aria-hidden="true">
-          <div className="jali-band" />
-        </div>
+          {/* The screen back into the court. */}
+          <div className="jali-break" aria-hidden="true">
+            <div className="jali-band" />
+          </div>
+
+          {/* DARBAR. The page closes in the room it is asking you to come to, and
+              it closes ceremonially: this is the invitation, so it is red and
+              gold again rather than a pale contact footer. */}
+          <section
+            className="section visit section--darbar section--bleed-start grained"
+            id="visit"
+            aria-labelledby="visit-title"
+          >
+            <div className="visit__intro">
+              <figure className="visit__media">
+                <img
+                  src={images["workshop-bench"].src}
+                  srcSet={images["workshop-bench"].srcSet}
+                  sizes="(max-width: 1100px) 100vw, 50vw"
+                  width={images["workshop-bench"].width}
+                  height={images["workshop-bench"].height}
+                  alt="A jeweller's bench with a dish of uncut stones, files, tweezers and a part-finished gold pendant"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </figure>
+              <div className="visit__copy">
+                <h2 id="visit-title">A private experience, on your own time.</h2>
+                <div className="rule-gold rule" aria-hidden="true" />
+                <p className="prose">
+                  Pieces are seen in the inner salon, away from the counter, with
+                  someone who can tell you where a stone came from and what the
+                  back of it looks like before you turn it over.
+                </p>
+                <AppointmentTrigger className="button">
+                  Book an Appointment
+                </AppointmentTrigger>
+              </div>
+            </div>
+
+            <div className="rule-gold rule rule--full visit__break" aria-hidden="true" />
+
+            <ContactDetails />
+          </section>
+
+          <div className="jali-break" aria-hidden="true">
+            <div className="jali-band" />
+          </div>
+        </main>
 
         <footer className="site-footer grained">
           <div className="footer__brand">
@@ -707,7 +712,7 @@ export default function Home() {
             <small>© {new Date().getFullYear()} Alankar Jewellers.</small>
           </div>
         </footer>
-      </main>
+      </div>
     </AppointmentProvider>
   );
 }
